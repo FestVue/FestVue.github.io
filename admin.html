@@ -156,10 +156,11 @@
                         </div>
                     </div>
                     
-                    <div style="overflow-x: auto;">
-                        <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                                        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                        <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; white-space: nowrap;">
                             </table>
                     </div>
+
                 </div>
             </section>
 
@@ -527,14 +528,13 @@
             calculateLeaderboard(); // പോയിന്റ് നില കണക്കാക്കാൻ വിളിക്കുന്നു
         }
 
-        function calculateLeaderboard() {
+                function calculateLeaderboard() {
             const results = globalDbData.Results || [];
             const students = globalDbData.Students || [];
             
             let groupPoints = {};
-            let studentPoints = {}; // { chestNo: {name, gender, group, points} }
+            let studentPoints = {};
 
-            // 5, 3, 1 എന്ന രീതിയിൽ പോയിന്റ് നൽകുന്നു
             results.forEach(res => {
                 const vals = Object.values(res);
                 const first = vals[1], second = vals[2], third = vals[3];
@@ -544,15 +544,17 @@
                     const st = students.find(s => Object.values(s)[0] == chestNo);
                     if(st) {
                         const stVals = Object.values(st);
-                        const name = stVals[1], gender = stVals[2], group = stVals[5];
+                        const name = stVals[1];
+                        // സ്പേസുകൾ ഒഴിവാക്കി കൃത്യമായി ജെൻഡർ എടുക്കുന്നു
+                        const gender = (stVals[2] || "").toString().trim().toLowerCase(); 
+                        const group = stVals[5];
                         
-                        // ഗ്രൂപ്പ് പോയിന്റ് കൂട്ടുന്നു
                         if(group) {
                             groupPoints[group] = (groupPoints[group] || 0) + points;
                         }
-                        // വ്യക്തിഗത പോയിന്റ് കൂട്ടുന്നു
+                        
                         if(!studentPoints[chestNo]) {
-                            studentPoints[chestNo] = { name: name, gender: gender.toLowerCase(), group: group, points: 0 };
+                            studentPoints[chestNo] = { name: name, gender: gender, group: group, points: 0 };
                         }
                         studentPoints[chestNo].points += points;
                     }
@@ -563,7 +565,7 @@
                 awardPoints(third, 1);
             });
 
-            // ഗ്രൂപ്പുകളെ പോയിന്റ് അടിസ്ഥാനത്തിൽ റാങ്ക് ചെയ്യുന്നു
+            // ഗ്രൂപ്പ് ലീഡർബോർഡ്
             let groupHTML = "";
             let sortedGroups = Object.entries(groupPoints).sort((a, b) => b[1] - a[1]);
             if(sortedGroups.length > 0) {
@@ -574,28 +576,44 @@
                                   </div>`;
                 });
                 document.getElementById('groupLeaderboard').innerHTML = groupHTML;
+            } else {
+                document.getElementById('groupLeaderboard').innerHTML = '<p style="color: #64748b;">No results published yet.</p>';
             }
 
-            // ഏറ്റവും മികച്ച ആൺകുട്ടിയെയും പെൺകുട്ടിയെയും കണ്ടെത്തുന്നു
+            // ഇൻഡിവിജ്വൽ ചാമ്പ്യന്മാർ
             let bestBoy = null, bestGirl = null;
             Object.entries(studentPoints).forEach(([chestNo, data]) => {
-                if(data.gender === "male" || data.gender === "boys") {
+                // കൃത്യമായി ജെൻഡർ പരിശോധിക്കുന്നു
+                if(data.gender === "male" || data.gender === "boys" || data.gender === "m") {
                     if(!bestBoy || data.points > bestBoy.points) bestBoy = data;
-                } else if(data.gender === "female" || data.gender === "girls") {
+                } else if(data.gender === "female" || data.gender === "girls" || data.gender === "f") {
                     if(!bestGirl || data.points > bestGirl.points) bestGirl = data;
                 }
             });
 
             let topScorersHTML = "";
-            if(bestBoy) topScorersHTML += `<div style="padding: 10px; background: #f0fdf4; border-radius: 6px; margin-bottom: 10px;">
-                                            <span style="font-size: 0.8rem; color: #166534; font-weight: bold;">Top Boy</span><br>
-                                            <b>${bestBoy.name}</b> (${bestBoy.group}) - <span style="color:var(--primary); font-weight:bold;">${bestBoy.points} Pts</span>
-                                          </div>`;
-            if(bestGirl) topScorersHTML += `<div style="padding: 10px; background: #fffbeb; border-radius: 6px;">
-                                            <span style="font-size: 0.8rem; color: #b45309; font-weight: bold;">Top Girl</span><br>
-                                            <b>${bestGirl.name}</b> (${bestGirl.group}) - <span style="color:var(--primary); font-weight:bold;">${bestGirl.points} Pts</span>
-                                          </div>`;
-            if(topScorersHTML) document.getElementById('individualScorers').innerHTML = topScorersHTML;
+            
+            // ബോയ്സ് കാർഡ്
+            if(bestBoy) {
+                topScorersHTML += `<div style="padding: 10px; background: #f0fdf4; border-radius: 6px; margin-bottom: 10px;">
+                                    <span style="font-size: 0.8rem; color: #166534; font-weight: bold;">Top Boy</span><br>
+                                    <b>${bestBoy.name}</b> (${bestBoy.group || "No Group"}) - <span style="color:var(--primary); font-weight:bold;">${bestBoy.points} Pts</span>
+                                  </div>`;
+            } else {
+                topScorersHTML += `<div style="padding: 10px; border: 1px dashed #ccc; border-radius: 6px; margin-bottom: 10px; color: #64748b; font-size: 0.85rem;">No points assigned to any boy yet.</div>`;
+            }
+            
+            // ഗേൾസ് കാർഡ്
+            if(bestGirl) {
+                topScorersHTML += `<div style="padding: 10px; background: #fffbeb; border-radius: 6px;">
+                                    <span style="font-size: 0.8rem; color: #b45309; font-weight: bold;">Top Girl</span><br>
+                                    <b>${bestGirl.name}</b> (${bestGirl.group || "No Group"}) - <span style="color:var(--primary); font-weight:bold;">${bestGirl.points} Pts</span>
+                                  </div>`;
+            } else {
+                topScorersHTML += `<div style="padding: 10px; border: 1px dashed #ccc; border-radius: 6px; color: #64748b; font-size: 0.85rem;">No points assigned to any girl yet.</div>`;
+            }
+            
+            document.getElementById('individualScorers').innerHTML = topScorersHTML;
         }
 
         // കോഡുകൾക്ക് പകരം മുഴുവൻ ഡാറ്റയും വെച്ച് ടേബിൾ ഉണ്ടാക്കാനുള്ള ഹെൽപർ ഫംഗ്ഷൻ
