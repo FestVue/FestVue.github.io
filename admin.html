@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestVue - Admin Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; --sidebar-width: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+        
+        #loginView { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { background: var(--white); padding: 40px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); width: 100%; max-width: 400px; margin: 20px; }
+        .logo-section { text-align: center; margin-bottom: 30px; }
+        .text-logo { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+        .text-logo span { color: var(--accent); }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 1rem; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 106, 56, 0.1); }
+        .primary-btn { width: 100%; padding: 12px; background-color: var(--primary); color: var(--white); border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .primary-btn:hover { background-color: #03522b; }
+        .message { margin-top: 15px; text-align: center; font-size: 0.9rem; font-weight: 500; }
+        
+        #dashboardView { display: none; height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--primary); color: var(--white); height: 100vh; position: fixed; left: 0; top: 0; transition: 0.3s; z-index: 1000; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h2 { font-weight: 700; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .sidebar-menu { list-style: none; padding: 20px 0; }
+        .sidebar-menu li a { color: var(--white); text-decoration: none; padding: 15px 25px; display: block; font-size: 0.95rem; transition: 0.3s; opacity: 0.8; font-weight: 500; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: rgba(255,255,255,0.1); border-left: 4px solid var(--accent); opacity: 1; }
+        .sidebar-menu i { margin-right: 12px; width: 20px; text-align: center; }
+        
+        .main-content { margin-left: var(--sidebar-width); transition: 0.3s; min-height: 100vh; display: flex; flex-direction: column; }
+        .top-header { background: var(--white); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .menu-toggle { background: none; border: none; font-size: 1.5rem; color: var(--text); cursor: pointer; }
+        .content-area { padding: 30px; flex-grow: 1; }
+        
+        .page-section { display: none; animation: fadeIn 0.4s; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--white); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; }
+        .card-header { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .btn-small { width: auto; padding: 10px 20px; margin-top: 10px; }
+        
+        @media (max-width: 768px) {
+            .sidebar { left: calc(-1 * var(--sidebar-width)); }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; }
+        }
+        
+        /* Auto uppercase for inputs */
+        #chestNo, #studentName, #groupName, #eventCode, #studentClass { text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div id="loginView">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="text-logo">Fest<span>Vue</span></div>
+                <p style="margin-top: 10px; opacity: 0.8;">Institution Admin Portal</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="primary-btn" id="loginBtn">Login</button>
+                <div id="loginMessage" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboardView">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Fest<span>Vue</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="nav-link active" onclick="switchTab('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('students')"><i class="fas fa-user-graduate"></i> Manage Students</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('events')"><i class="fas fa-list-alt"></i> Manage Events</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('registration')"><i class="fas fa-clipboard-check"></i> Event Registration</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('results')"><i class="fas fa-trophy"></i> Publish Results</a></li>
+                <li><a href="#" style="margin-top: 40px; color: #ff5a5f;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h3 id="instNameDisplay">Institution Dashboard</h3>
+            </header>
+            
+            <div class="content-area">
+                <section id="dashboard" class="page-section active">
+                
+                <div class="form-grid" style="margin-bottom: 25px;">
+                    <div class="card" style="margin-bottom: 0; border-left: 4px solid var(--primary); padding: 20px;">
+                        <h4 style="color: #64748b; font-size: 0.9rem;">Total Students</h4>
+                        <h2 id="statStudents" style="font-size: 2rem; color: var(--primary);">0</h2>
+                    </div>
+                    <div class="card" style="margin-bottom: 0; border-left: 4px solid var(--accent); padding: 20px;">
+                        <h4 style="color: #64748b; font-size: 0.9rem;">Total Events</h4>
+                        <h2 id="statEvents" style="font-size: 2rem; color: var(--accent);">0</h2>
+                    </div>
+                    <div class="card" style="margin-bottom: 0; border-left: 4px solid #10b981; padding: 20px;">
+                        <h4 style="color: #64748b; font-size: 0.9rem;">Total Registrations</h4>
+                        <h2 id="statRegs" style="font-size: 2rem; color: #10b981;">0</h2>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-bottom: 25px;">
+                    <div class="card" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px;">🏆 Group Standings</h3>
+                        <div id="groupLeaderboard" style="font-size: 0.95rem;">
+                            <p style="color: #64748b;">No results published yet.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px;">🌟 Top Scorers</h3>
+                        <div id="individualScorers" style="font-size: 0.95rem;">
+                             <p style="color: #64748b;">No results published yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <h3>Data Overview</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="reportDataType" onchange="renderTable()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none;">
+                                <option value="Students">Registered Students</option>
+                                <option value="Events">All Events</option>
+                                <option value="Registrations">Event Registrations</option>
+                                <option value="Results">Published Results</option>
+                            </select>
+                            <button onclick="downloadCSV()" class="primary-btn btn-small" style="background-color: #10b981; margin: 0;"><i class="fas fa-file-excel"></i> Export CSV</button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                            </table>
+                    </div>
+                </div>
+            </section>
+
+                <section id="students" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3>Add New Student</h3></div>
+                        <form id="studentForm">
+                            <div class="form-grid">
+                                <div class="input-group"><label>Chest No.</label><input type="text" id="chestNo" required></div>
+                                <div class="input-group"><label>Full Name</label><input type="text" id="studentName" required></div>
+                                <div class="input-group"><label>Gender</label><select id="gender" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
+                                <div class="input-group"><label>Class</label><input type="text" id="studentClass" placeholder="e.g., 1, 2, LKG" required></div>
+                                <div class="input-group"><label>Category</label><select id="category" required><option value="">Select Category</option></select></div>
+                                <div class="input-group"><label>Group / House</label><input type="text" id="groupName"></div>
+                            </div>
+                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-save"></i> Save Student</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="events" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3>Create New Event</h3></div>
+                        <form id="eventForm">
+                            <div class="form-grid">
+                                <div class="input-group"><label>Event Code</label><input type="text" id="eventCode" required></div>
+                                <div class="input-group"><label>Event Name</label><input type="text" id="eventName" required></div>
+                                <div class="input-group"><label>Target Category</label><select id="eventCategory" required><option value="">Select Category</option></select></div>
+                                <div class="input-group"><label>Target Gender</label><select id="eventGender" required><option value="Boys">Boys</option><option value="Girls">Girls</option><option value="Common">Common</option></select></div>
+                            </div>
+                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-save"></i> Save Event</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="registration" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3>Assign Student to Event</h3></div>
+                        <form id="registrationForm">
+                            <div class="form-grid">
+                                <div class="input-group"><label>Select Event</label><select id="regEventSelect" required><option value="">-- Choose Event --</option></select></div>
+                                <div class="input-group"><label>Select Student</label><select id="regStudentSelect" required><option value="">-- Select Event First --</option></select></div>
+                            </div>
+                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-plus-circle"></i> Register</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="results" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3>Declare Winners</h3></div>
+                        <form id="resultForm">
+                            <div class="input-group" style="max-width: 300px;"><label>Select Event</label><select id="resEventSelect" required><option value="">-- Choose Event --</option></select></div>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                            <div class="form-grid">
+                                <div class="input-group"><label style="color: #D4AF37;"><i class="fas fa-medal"></i> 1st Place</label><select id="firstPlace" required><option value="">-- Select Event First --</option></select></div>
+                                <div class="input-group"><label style="color: #94a3b8;"><i class="fas fa-medal"></i> 2nd Place</label><select id="secondPlace"><option value="">-- Select Event First --</option></select></div>
+                                <div class="input-group"><label style="color: #b45309;"><i class="fas fa-medal"></i> 3rd Place</label><select id="thirdPlace"><option value="">-- Select Event First --</option></select></div>
+                            </div>
+                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-bullhorn"></i> Publish Result</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. UI LOGIC (SPA Navigation)
+        // ==========================================
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            if(window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            targetSheetId = null;
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('loginView').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+        }
+        
+        // Auto Collapse Sidebar logic
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+        window.addEventListener('scroll', function() {
+            if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
+        });
+
+        // ==========================================
+        // 2. BACKEND API CONNECTION & FILTERING
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        let targetSheetId = sessionStorage.getItem("targetSheetId");
+        let globalDbData = {}; // ഫിൽറ്ററിംഗ് ചെയ്യാൻ ഡാറ്റ ഇവിടെ സേവ് ചെയ്യുന്നു
+
+        // ലോഗിൻ പരിശോധന
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const msg = document.getElementById('loginMessage');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            btn.disabled = true; msg.innerText = "";
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "login", username: user, password: pass })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    sessionStorage.setItem("targetSheetId", data.targetSheetId);
+                    sessionStorage.setItem("instName", data.institutionName);
+                    targetSheetId = data.targetSheetId;
+                    
+                    msg.style.color = "green"; msg.innerText = "Login Successful!";
+                    setTimeout(() => {
+                        document.getElementById('loginView').style.display = 'none';
+                        document.getElementById('dashboardView').style.display = 'flex';
+                        document.getElementById('instNameDisplay').innerText = data.institutionName;
+                        loadDropdownData();
+                    }, 1000);
+                } else {
+                    msg.style.color = "red"; msg.innerText = data.message;
+                    btn.innerText = "Login"; btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                msg.style.color = "red"; msg.innerText = "Network Error.";
+                btn.innerText = "Login"; btn.disabled = false;
+            });
+        });
+
+        // ഡാറ്റ സേവ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+        function saveToBackend(sheetName, rowData, formId, btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: sheetName, rowData: rowData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("Success: Data saved successfully!");
+                    document.getElementById(formId).reset();
+                    if(sheetName === 'Events' || sheetName === 'Students' || sheetName === 'Registrations') {
+                        loadDropdownData(); // ഡ്രോപ്പ്ഡൗൺ റിഫ്രഷ് ചെയ്യാൻ
+                    }
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => alert("Network Error! Please try again."))
+            .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
+        }
+
+        // ഫോം സബ്മിഷനുകൾ
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rowData = [
+                document.getElementById('chestNo').value.toUpperCase(),
+                document.getElementById('studentName').value.toUpperCase(),
+                document.getElementById('gender').value,
+                document.getElementById('studentClass').value.toUpperCase(), // Class Added
+                document.getElementById('category').value,
+                document.getElementById('groupName').value.toUpperCase()
+            ];
+            saveToBackend("Students", rowData, "studentForm", this.querySelector('button'));
+        });
+
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rowData = [
+                document.getElementById('eventCode').value.toUpperCase(),
+                document.getElementById('eventName').value,
+                document.getElementById('eventCategory').value,
+                document.getElementById('eventGender').value
+            ];
+            saveToBackend("Events", rowData, "eventForm", this.querySelector('button'));
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rowData = [ document.getElementById('regEventSelect').value, document.getElementById('regStudentSelect').value ];
+            saveToBackend("Registrations", rowData, "registrationForm", this.querySelector('button'));
+        });
+
+        document.getElementById('resultForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rowData = [
+                document.getElementById('resEventSelect').value,
+                document.getElementById('firstPlace').value,
+                document.getElementById('secondPlace').value,
+                document.getElementById('thirdPlace').value
+            ];
+            saveToBackend("Results", rowData, "resultForm", this.querySelector('button'));
+        });
+
+        // ==========================================
+        // 3. SMART DROPDOWNS & FILTERING
+        // ==========================================
+        function loadDropdownData() {
+            if(!targetSheetId) return;
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId })
+            })
+            .then(response => response.json())
+            .then(data => { 
+                if(data.status === "success") {
+                    globalDbData = data.data;
+                    populateDropdowns();
+                }
+            })
+            .catch(error => console.log("Dropdown error", error));
+        }
+
+        function populateDropdowns() {
+            const events = globalDbData.Events || [];
+            const settings = globalDbData.Settings || []; // കാറ്റഗറി ഫെച്ച് ചെയ്യാൻ
+
+            // 1. Populate Categories dynamically
+            let catOptions = '<option value="">-- Select Category --</option>';
+            settings.forEach(row => {
+                const values = Object.values(row);
+                if(values.length > 0 && values[0]) {
+                    catOptions += `<option value="${values[0]}">${values[0]}</option>`;
+                }
+            });
+            document.getElementById('category').innerHTML = catOptions;
+            document.getElementById('eventCategory').innerHTML = catOptions;
+
+            // 2. Populate Events
+            let eventOptions = '<option value="">-- Choose Event --</option>';
+            events.forEach(ev => {
+                const values = Object.values(ev);
+                if(values.length >= 2) {
+                    eventOptions += `<option value="${values[0]}">${values[0]} - ${values[1]}</option>`;
+                }
+            });
+            document.getElementById('regEventSelect').innerHTML = eventOptions;
+            document.getElementById('resEventSelect').innerHTML = eventOptions;
+            
+            // സ്റ്റുഡന്റ് ഡ്രോപ്പ്ഡൗണുകൾ ഇവന്റ് സെലക്ട് ചെയ്ത ശേഷം മാത്രം ലോഡ് ചെയ്യാൻ സെറ്റ് ചെയ്യുന്നു
+            const defaultText = '<option value="">-- Select Event First --</option>';
+            document.getElementById('regStudentSelect').innerHTML = defaultText;
+            document.getElementById('firstPlace').innerHTML = defaultText;
+            document.getElementById('secondPlace').innerHTML = defaultText;
+            document.getElementById('thirdPlace').innerHTML = defaultText;
+        }
+
+        // EVENT REGISTRATION FILTERING: മാപ്പിംഗ് ഉൾപ്പെടുത്തിയത്
+        document.getElementById('regEventSelect').addEventListener('change', function() {
+            const selectedEventCode = this.value;
+            const events = globalDbData.Events || [];
+            const students = globalDbData.Students || [];
+            const dropdown = document.getElementById('regStudentSelect');
+
+            if(!selectedEventCode) {
+                dropdown.innerHTML = '<option value="">-- Select Event First --</option>';
+                return;
+            }
+
+            const eventDetails = events.find(ev => (ev['Event Code'] || Object.values(ev)[0]) === selectedEventCode);
+            if(!eventDetails) return;
+
+            const targetCategory = (eventDetails['Category'] || eventDetails['Target Category'] || Object.values(eventDetails)[2] || "").toString().trim().toLowerCase();
+            const targetGender = (eventDetails['Gender'] || eventDetails['Target Gender'] || Object.values(eventDetails)[3] || "").toString().trim().toLowerCase();
+
+            let filteredStudents = students.filter(st => {
+                const stCategory = (st['Category'] || Object.values(st)[4] || "").toString().trim().toLowerCase();
+                const stGender = (st['Gender'] || Object.values(st)[2] || "").toString().trim().toLowerCase();
+
+                const categoryMatch = (stCategory === targetCategory);
+                
+                // MAPPING LOGIC: Male ആണെങ്കിൽ Boys പരിപാടികളിലേക്കും, Female ആണെങ്കിൽ Girls പരിപാടികളിലേക്കും മാച്ച് ചെയ്യുന്നു. Common ആണെങ്കിൽ രണ്ടുപേർക്കും വരാം.
+                const genderMatch = (targetGender === "common") || 
+                                    (targetGender === "boys" && stGender === "male") || 
+                                    (targetGender === "girls" && stGender === "female") ||
+                                    (targetGender === stGender); // ഗൂഗിൾ ഷീറ്റിൽ പഴയ ഡാറ്റ Boys എന്ന് തന്നെയാണെങ്കിൽ അതും വർക്ക് ചെയ്യാൻ
+
+                return categoryMatch && genderMatch;
+            });
+
+            let options = '<option value="">-- Choose Student --</option>';
+            filteredStudents.forEach(st => {
+                const chestNo = st['Chest No'] || Object.values(st)[0];
+                const name = st['Name'] || Object.values(st)[1];
+                options += `<option value="${chestNo}">${chestNo} - ${name}</option>`;
+            });
+            
+            dropdown.innerHTML = options;
+        });
+
+        // RESULTS PUBLISHING FILTERING: പരിപാടിക്ക് രജിസ്റ്റർ ചെയ്ത കുട്ടികളെ മാത്രം കാണിക്കാൻ
+        document.getElementById('resEventSelect').addEventListener('change', function() {
+            const selectedEventCode = this.value;
+            const registrations = globalDbData.Registrations || [];
+            const students = globalDbData.Students || [];
+            
+            const firstDropdown = document.getElementById('firstPlace');
+            const secondDropdown = document.getElementById('secondPlace');
+            const thirdDropdown = document.getElementById('thirdPlace');
+
+            if(!selectedEventCode) {
+                const def = '<option value="">-- Select Event First --</option>';
+                firstDropdown.innerHTML = secondDropdown.innerHTML = thirdDropdown.innerHTML = def;
+                return;
+            }
+
+            const registeredChestNos = registrations
+                .filter(reg => Object.values(reg)[0] === selectedEventCode)
+                .map(reg => Object.values(reg)[1]);
+
+            let options = '<option value="">-- Select Student --</option>';
+            
+            registeredChestNos.forEach(chestNo => {
+                const student = students.find(st => Object.values(st)[0] == chestNo);
+                const name = student ? Object.values(student)[1] : "Unknown";
+                options += `<option value="${chestNo}">${chestNo} - ${name}</option>`;
+            });
+
+            firstDropdown.innerHTML = secondDropdown.innerHTML = thirdDropdown.innerHTML = options;
+        });
+
+        // പേജ് ലോഡ് ആകുമ്പോൾ തന്നെ ലോഗിൻ ചെയ്തിട്ടുണ്ടെങ്കിൽ ഡാഷ്‌ബോർഡ് കാണിക്കാൻ
+        window.onload = function() {
+            if(targetSheetId) {
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('dashboardView').style.display = 'flex';
+                document.getElementById('instNameDisplay').innerText = sessionStorage.getItem("instName") || "Dashboard";
+                loadDropdownData();
+            }
+        };
+
+        // ==========================================
+        // 4. DASHBOARD STATS, LEADERBOARD, OVERVIEW & EXCEL
+        // ==========================================
+        
+        function updateDashboardStats() {
+            document.getElementById('statStudents').innerText = (globalDbData.Students || []).length;
+            document.getElementById('statEvents').innerText = (globalDbData.Events || []).length;
+            document.getElementById('statRegs').innerText = (globalDbData.Registrations || []).length;
+            
+            calculateLeaderboard(); // പോയിന്റ് നില കണക്കാക്കാൻ വിളിക്കുന്നു
+        }
+
+        function calculateLeaderboard() {
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            
+            let groupPoints = {};
+            let studentPoints = {}; // { chestNo: {name, gender, group, points} }
+
+            // 5, 3, 1 എന്ന രീതിയിൽ പോയിന്റ് നൽകുന്നു
+            results.forEach(res => {
+                const vals = Object.values(res);
+                const first = vals[1], second = vals[2], third = vals[3];
+
+                const awardPoints = (chestNo, points) => {
+                    if(!chestNo) return;
+                    const st = students.find(s => Object.values(s)[0] == chestNo);
+                    if(st) {
+                        const stVals = Object.values(st);
+                        const name = stVals[1], gender = stVals[2], group = stVals[5];
+                        
+                        // ഗ്രൂപ്പ് പോയിന്റ് കൂട്ടുന്നു
+                        if(group) {
+                            groupPoints[group] = (groupPoints[group] || 0) + points;
+                        }
+                        // വ്യക്തിഗത പോയിന്റ് കൂട്ടുന്നു
+                        if(!studentPoints[chestNo]) {
+                            studentPoints[chestNo] = { name: name, gender: gender.toLowerCase(), group: group, points: 0 };
+                        }
+                        studentPoints[chestNo].points += points;
+                    }
+                };
+
+                awardPoints(first, 5);
+                awardPoints(second, 3);
+                awardPoints(third, 1);
+            });
+
+            // ഗ്രൂപ്പുകളെ പോയിന്റ് അടിസ്ഥാനത്തിൽ റാങ്ക് ചെയ്യുന്നു
+            let groupHTML = "";
+            let sortedGroups = Object.entries(groupPoints).sort((a, b) => b[1] - a[1]);
+            if(sortedGroups.length > 0) {
+                sortedGroups.forEach((g, index) => {
+                    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
+                    groupHTML += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee;">
+                                    <span>${medal} <b>${g[0]}</b></span> <span style="font-weight:bold; color:var(--primary);">${g[1]} Pts</span>
+                                  </div>`;
+                });
+                document.getElementById('groupLeaderboard').innerHTML = groupHTML;
+            }
+
+            // ഏറ്റവും മികച്ച ആൺകുട്ടിയെയും പെൺകുട്ടിയെയും കണ്ടെത്തുന്നു
+            let bestBoy = null, bestGirl = null;
+            Object.entries(studentPoints).forEach(([chestNo, data]) => {
+                if(data.gender === "male" || data.gender === "boys") {
+                    if(!bestBoy || data.points > bestBoy.points) bestBoy = data;
+                } else if(data.gender === "female" || data.gender === "girls") {
+                    if(!bestGirl || data.points > bestGirl.points) bestGirl = data;
+                }
+            });
+
+            let topScorersHTML = "";
+            if(bestBoy) topScorersHTML += `<div style="padding: 10px; background: #f0fdf4; border-radius: 6px; margin-bottom: 10px;">
+                                            <span style="font-size: 0.8rem; color: #166534; font-weight: bold;">Top Boy</span><br>
+                                            <b>${bestBoy.name}</b> (${bestBoy.group}) - <span style="color:var(--primary); font-weight:bold;">${bestBoy.points} Pts</span>
+                                          </div>`;
+            if(bestGirl) topScorersHTML += `<div style="padding: 10px; background: #fffbeb; border-radius: 6px;">
+                                            <span style="font-size: 0.8rem; color: #b45309; font-weight: bold;">Top Girl</span><br>
+                                            <b>${bestGirl.name}</b> (${bestGirl.group}) - <span style="color:var(--primary); font-weight:bold;">${bestGirl.points} Pts</span>
+                                          </div>`;
+            if(topScorersHTML) document.getElementById('individualScorers').innerHTML = topScorersHTML;
+        }
+
+        // കോഡുകൾക്ക് പകരം മുഴുവൻ ഡാറ്റയും വെച്ച് ടേബിൾ ഉണ്ടാക്കാനുള്ള ഹെൽപർ ഫംഗ്ഷൻ
+        function getMappedData(dataType) {
+            const rawData = globalDbData[dataType] || [];
+            const students = globalDbData.Students || [];
+            const events = globalDbData.Events || [];
+
+            const getStudentDetails = (chestNo) => {
+                if(!chestNo) return "";
+                const st = students.find(s => Object.values(s)[0] == chestNo);
+                return st ? `${Object.values(st)[1]} (${chestNo}) - ${Object.values(st)[5] || ""}` : chestNo;
+            };
+            const getEventName = (eventCode) => {
+                const ev = events.find(e => Object.values(e)[0] == eventCode);
+                return ev ? `${Object.values(ev)[1]} [${eventCode}]` : eventCode;
+            };
+
+            if(dataType === "Registrations") {
+                return rawData.map(row => {
+                    const vals = Object.values(row);
+                    const st = students.find(s => Object.values(s)[0] == vals[1]);
+                    return {
+                        "Event": getEventName(vals[0]),
+                        "Chest No": vals[1],
+                        "Student Name": st ? Object.values(st)[1] : "",
+                        "Class": st ? Object.values(st)[3] : "",
+                        "Category": st ? Object.values(st)[4] : "",
+                        "Group": st ? Object.values(st)[5] : ""
+                    };
+                });
+            } else if(dataType === "Results") {
+                return rawData.map(row => {
+                    const vals = Object.values(row);
+                    return {
+                        "Event": getEventName(vals[0]),
+                        "1st Place (5 Pts)": getStudentDetails(vals[1]),
+                        "2nd Place (3 Pts)": getStudentDetails(vals[2]),
+                        "3rd Place (1 Pt)": getStudentDetails(vals[3])
+                    };
+                });
+            }
+            return rawData; // Students, Events എന്നിവയ്ക്ക് പഴയത് മതി
+        }
+
+        function renderTable() {
+            const dataType = document.getElementById('reportDataType').value;
+            const table = document.getElementById('dataTable');
+            
+            const mappedData = getMappedData(dataType); // മാപ്പ് ചെയ്ത ഡാറ്റ എടുക്കുന്നു
+            
+            if(mappedData.length === 0) {
+                table.innerHTML = "<tr><td style='padding: 20px; text-align: center; color: red;'>No data available.</td></tr>";
+                return;
+            }
+
+            const headers = Object.keys(mappedData[0]);
+            let tableHTML = '<thead><tr style="background-color: var(--primary); color: white;">';
+            headers.forEach(head => { tableHTML += `<th style="padding: 12px; border: 1px solid #ddd;">${head}</th>`; });
+            tableHTML += '</tr></thead><tbody>';
+
+            mappedData.forEach(row => {
+                tableHTML += '<tr style="border-bottom: 1px solid #eee;">';
+                headers.forEach(head => { tableHTML += `<td style="padding: 10px; border-right: 1px solid #eee;">${row[head] || ""}</td>`; });
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</tbody>';
+            
+            table.innerHTML = tableHTML;
+        }
+
+        function downloadCSV() {
+            const dataType = document.getElementById('reportDataType').value;
+            const mappedData = getMappedData(dataType);
+            
+            if(mappedData.length === 0) { alert("No data to download!"); return; }
+
+            const headers = Object.keys(mappedData[0]);
+            let csvContent = headers.join(",") + "\n"; 
+
+            mappedData.forEach(row => {
+                let rowData = headers.map(head => {
+                    let cellData = row[head] ? row[head].toString() : "";
+                    return `"${cellData.replace(/"/g, '""')}"`;
+                });
+                csvContent += rowData.join(",") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `${dataType}_FestVue_Data.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // loadDropdownData ഫംഗ്ഷനെ അപ്ഡേറ്റ് ചെയ്യുന്നു
+        const originalLoadDropdownData = loadDropdownData;
+        loadDropdownData = function() {
+            if(!targetSheetId) return;
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId })
+            })
+            .then(response => response.json())
+            .then(data => { 
+                if(data.status === "success") {
+                    globalDbData = data.data;
+                    populateDropdowns();
+                    updateDashboardStats(); // ലീഡർബോർഡ് കാൽക്കുലേഷൻ ഉൾപ്പെടെ ഇവിടെ നടക്കും
+                    renderTable();
+                }
+            })
+            .catch(error => console.log("Dropdown error", error));
+        }
+    </script>
+</body>
+</html>
