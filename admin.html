@@ -332,13 +332,13 @@
             if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
         });
 
-        // ഗൂഗിൾ ആപ്പ് സ്ക്രിപ്റ്റിലേക്ക് ഒരുമിച്ച് ഡാറ്റ അയക്കുമ്പോൾ ബ്ലോക്ക് ആവാതിരിക്കാനുള്ള Delay Function
-        const delay = ms => new Promise(res => setTimeout(res, ms));
-
         // ==========================================
         // 2. BACKEND API CONNECTION 
         // ==========================================
+        
+        // ശ്രദ്ധിക്കുക: ആപ്പ് സ്ക്രിപ്റ്റിൽ നിന്ന് കിട്ടിയ പുതിയ URL ഇവിടെ നൽകുക!
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        
         let targetSheetId = sessionStorage.getItem("targetSheetId");
         let globalDbData = {}; 
 
@@ -466,22 +466,28 @@
             container.appendChild(div);
         }
 
+        // Students Bulk Save
         document.getElementById('studentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // DUPLICATE VALIDATION - STUDENTS (Case & Type Insensitive)
             const existingChestNos = (globalDbData.Students || []).map(s => Object.values(s)[0].toString().trim().toUpperCase());
             let currentBatch = [];
             let duplicates = [];
+            let rowsDataToSave = [];
             const rows = document.querySelectorAll('.student-row');
             
             rows.forEach(row => {
                 const chestNo = row.querySelector('.st-chest').value.toString().trim().toUpperCase();
-                const name = row.querySelector('.st-name').value;
+                const name = row.querySelector('.st-name').value.toUpperCase();
                 if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) {
                     duplicates.push(`${chestNo} (${name})`);
                 } else {
                     currentBatch.push(chestNo);
+                    rowsDataToSave.push([
+                        chestNo, name,
+                        row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(),
+                        row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()
+                    ]);
                 }
             });
 
@@ -494,35 +500,34 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
             
-            let successCount = 0;
             try {
-                for (const row of rows) {
-                    const rowData = [
-                        row.querySelector('.st-chest').value.toUpperCase(), row.querySelector('.st-name').value.toUpperCase(),
-                        row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(),
-                        row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()
-                    ];
-                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Students", rowData: rowData }) });
-                    let data = await res.json();
-                    if(data.status === "success") successCount++;
-                    
-                    await delay(600); // 0.6 second delay to prevent Google Apps Script Crash
+                // പുത്തൻ BULK API ഉപയോഗിച്ച് ഒറ്റയടിക്ക് സേവ് ചെയ്യുന്നു
+                let res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) 
+                });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    alert(`Success: ${rowsDataToSave.length} Students saved successfully!`);
+                    this.reset();
+                    document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
+                    loadDropdownData();
+                } else {
+                    alert("Error: " + data.message);
                 }
-                alert(`Success: ${successCount} Students saved successfully!`);
-                this.reset();
-                document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
-                loadDropdownData();
-            } catch (error) { alert("Network Error while saving some students. Please check connection."); } 
+            } catch (error) { alert("Network Error while saving students. Please check connection."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
+        // Events Bulk Save
         document.getElementById('eventForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // DUPLICATE VALIDATION - EVENTS
             const existingEvents = (globalDbData.Events || []).map(ev => Object.values(ev)[0].toString().trim().toUpperCase());
             let currentBatch = [];
             let duplicates = [];
+            let rowsDataToSave = [];
             const rows = document.querySelectorAll('.event-row');
             
             rows.forEach(row => {
@@ -532,6 +537,10 @@
                     duplicates.push(`${eventCode} (${eventName})`);
                 } else {
                     currentBatch.push(eventCode);
+                    rowsDataToSave.push([
+                        eventCode, eventName,
+                        row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value
+                    ]);
                 }
             });
 
@@ -544,24 +553,20 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
             
-            let successCount = 0;
             try {
-                for (const row of rows) {
-                    const rowData = [
-                        row.querySelector('.ev-code').value.toUpperCase(), row.querySelector('.ev-name').value,
-                        row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value
-                    ];
-                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Events", rowData: rowData }) });
-                    let data = await res.json();
-                    if(data.status === "success") successCount++;
-                    
-                    await delay(600); // 0.6 second delay
-                }
-                alert(`Success: ${successCount} Events saved successfully!`);
-                this.reset();
-                document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
-                loadDropdownData();
-            } catch (error) { alert("Network Error while saving some events."); } 
+                let res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) 
+                });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    alert(`Success: ${rowsDataToSave.length} Events saved successfully!`);
+                    this.reset();
+                    document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
+                    loadDropdownData();
+                } else { alert("Error: " + data.message); }
+            } catch (error) { alert("Network Error while saving events."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
@@ -616,11 +621,11 @@
             document.querySelectorAll('.reg-student-select').forEach(sel => sel.innerHTML = options);
         });
 
+        // Registrations Bulk Save
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const eventCode = document.getElementById('regEventSelect').value;
             
-            // DUPLICATE VALIDATION - REGISTRATIONS (String based check)
             const existingRegs = globalDbData.Registrations || [];
             let currentBatch = [];
             let duplicates = [];
@@ -654,25 +659,25 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
 
-            let successCount = 0;
             try {
-                for (const rowData of registrationsToSave) {
-                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Registrations", rowData: rowData }) });
-                    let data = await res.json();
-                    if(data.status === "success") successCount++;
-                    
-                    await delay(600); // 0.6 second delay
-                }
-                alert(`Success: ${successCount} Students registered successfully!`);
-                this.reset();
-                document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove());
-                loadDropdownData();
+                let res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Registrations", rowsData: registrationsToSave }) 
+                });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    alert(`Success: ${registrationsToSave.length} Students registered successfully!`);
+                    this.reset();
+                    document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove());
+                    loadDropdownData();
+                } else { alert("Error: " + data.message); }
             } catch (error) { alert("Network Error while saving registrations."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         // ==========================================
-        // 6. RESULTS LOGIC & TIES
+        // 6. RESULTS LOGIC & TIES (OVERWRITE/APPEAL)
         // ==========================================
         document.getElementById('resEventSelect').addEventListener('change', function() {
             const selectedEventCode = this.value;
@@ -707,11 +712,11 @@
             container.appendChild(div);
         }
 
+        // Result Save (Appeal & Bulk)
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const eventCode = document.getElementById('resEventSelect').value;
             
-            // CHECK IF ALREADY PUBLISHED (Appeal Logic)
             const existingResults = globalDbData.Results || [];
             const isAlreadyPublished = existingResults.some(res => Object.values(res)[0].toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase());
             
@@ -722,7 +727,6 @@
                 }
             }
             
-            // DUPLICATE VALIDATION - RESULTS
             let selectedStudents = [];
             let duplicates = [];
             let resultsToSave = [];
@@ -755,16 +759,20 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...'; btn.disabled = true;
             
             try {
-                for (const rowData of resultsToSave) {
-                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Results", rowData: rowData }) });
-                    
-                    await delay(600); // 0.6 second delay
-                }
-                alert("Success: All results published!");
-                this.reset();
-                document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
-                loadDropdownData();
-            } catch (error) { alert("Error publishing some results. Check connection."); } 
+                // പുതിയ API വഴി പഴയത് ഡിലീറ്റ് ചെയ്ത് പുതിയത് സേവ് ചെയ്യുന്നു
+                let res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "saveResults", targetSheetId: targetSheetId, eventCode: eventCode, rowsData: resultsToSave }) 
+                });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    alert("Success: Results published successfully!");
+                    this.reset();
+                    document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
+                    loadDropdownData();
+                } else { alert("Error: " + data.message); }
+            } catch (error) { alert("Error publishing results. Check connection."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
