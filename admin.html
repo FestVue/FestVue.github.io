@@ -4,27 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FestVue - Admin Portal</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; --sidebar-width: 260px;
-        }
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; --sidebar-width: 260px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
         
-        /* --- Login View --- */
         #loginView { display: flex; justify-content: center; align-items: center; height: 100vh; }
         .login-card { background: var(--white); padding: 40px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); width: 100%; max-width: 400px; margin: 20px; }
         .logo-section { text-align: center; margin-bottom: 30px; }
         .text-logo { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
         .text-logo span { color: var(--accent); }
         
-        /* --- Forms & Inputs --- */
         .input-group { margin-bottom: 20px; width: 100%; }
         .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #475569; }
         .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background-color: #f8fafc; transition: 0.3s; }
@@ -35,8 +29,7 @@
         
         #chestNo, #studentName, #groupName, #eventCode, #studentClass { text-transform: uppercase; }
         .message { margin-top: 15px; text-align: center; font-size: 0.9rem; font-weight: 500; }
-
-        /* --- Dashboard & Sidebar --- */
+        
         #dashboardView { display: none; min-height: 100vh; width: 100%; }
         .sidebar { width: var(--sidebar-width); background-color: var(--primary); color: var(--white); height: 100vh; position: fixed; left: 0; top: 0; transition: 0.3s; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
         .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -47,9 +40,11 @@
         .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: rgba(255,255,255,0.15); border-left: 4px solid var(--accent); opacity: 1; }
         .sidebar-menu i { margin-right: 12px; width: 20px; text-align: center; }
         
-        /* --- Main Content --- */
         .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); transition: 0.3s; min-height: 100vh; display: flex; flex-direction: column; }
-        .top-header { background: var(--white); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; }
+        
+        /* പുതിയ മാറ്റം: Header Freeze ചെയ്യാൻ */
+        .top-header { background: var(--white); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; position: sticky; top: 0; z-index: 999; }
+        
         .menu-toggle { background: none; border: none; font-size: 1.5rem; color: var(--text); cursor: pointer; }
         #instNameDisplay { white-space: normal; word-wrap: break-word; text-align: right; max-width: 70%; line-height: 1.3; font-size: 1.1rem; color: var(--primary); font-weight: 600; }
         
@@ -58,15 +53,13 @@
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* --- Grid Systems --- */
         .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid #f1f5f9; width: 100%; }
         .card-header { margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; width: 100%; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; align-items: end; width: 100%; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; width: 100%; }
         .stat-card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid; display: flex; flex-direction: column; justify-content: center; }
         .leaderboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 25px; width: 100%; }
-
-        /* --- Responsive View --- */
+        
         @media (max-width: 768px) {
             .sidebar { left: calc(-1 * var(--sidebar-width)); }
             .sidebar.active { left: 0; }
@@ -82,7 +75,6 @@
     </style>
 </head>
 <body>
-
     <div id="loginView">
         <div class="login-card">
             <div class="logo-section">
@@ -90,14 +82,8 @@
                 <p style="margin-top: 10px; opacity: 0.8;">Institution Admin Portal</p>
             </div>
             <form id="loginForm">
-                <div class="input-group">
-                    <label>Username</label>
-                    <input type="text" id="username" placeholder="Enter username" required>
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="password" placeholder="Enter password" required>
-                </div>
+                <div class="input-group"><label>Username</label><input type="text" id="username" placeholder="Enter username" required></div>
+                <div class="input-group"><label>Password</label><input type="password" id="password" placeholder="Enter password" required></div>
                 <button type="submit" class="primary-btn" id="loginBtn">Login</button>
                 <div id="loginMessage" class="message"></div>
             </form>
@@ -106,15 +92,14 @@
 
     <div id="dashboardView">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Fest<span>Vue</span></h2>
-            </div>
+            <div class="sidebar-header"><h2>Fest<span>Vue</span></h2></div>
             <ul class="sidebar-menu">
                 <li><a href="#" class="nav-link active" onclick="switchTab('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('students')"><i class="fas fa-user-graduate"></i> Manage Students</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('events')"><i class="fas fa-list-alt"></i> Manage Events</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('registration')"><i class="fas fa-clipboard-check"></i> Event Registration</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('results')"><i class="fas fa-trophy"></i> Publish Results</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('settingsPage')"><i class="fas fa-cog"></i> Manage Categories</a></li>
                 <li><a href="#" style="margin-top: 40px; color: #ff5a5f;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
@@ -128,36 +113,20 @@
             <div class="content-area">
                 <section id="dashboard" class="page-section active">
                     <div class="stats-grid">
-                        <div class="stat-card" style="border-left-color: var(--primary);">
-                            <h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Students</h4>
-                            <h2 id="statStudents" style="font-size: 2.2rem; color: var(--primary);">0</h2>
-                        </div>
-                        <div class="stat-card" style="border-left-color: var(--accent);">
-                            <h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Events</h4>
-                            <h2 id="statEvents" style="font-size: 2.2rem; color: var(--accent);">0</h2>
-                        </div>
-                        <div class="stat-card" style="border-left-color: #10b981;">
-                            <h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Registrations</h4>
-                            <h2 id="statRegs" style="font-size: 2.2rem; color: #10b981;">0</h2>
-                        </div>
+                        <div class="stat-card" style="border-left-color: var(--primary);"><h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Students</h4><h2 id="statStudents" style="font-size: 2.2rem; color: var(--primary);">0</h2></div>
+                        <div class="stat-card" style="border-left-color: var(--accent);"><h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Events</h4><h2 id="statEvents" style="font-size: 2.2rem; color: var(--accent);">0</h2></div>
+                        <div class="stat-card" style="border-left-color: #10b981;"><h4 style="color: #64748b; font-size: 0.95rem; margin-bottom: 5px;">Total Registrations</h4><h2 id="statRegs" style="font-size: 2.2rem; color: #10b981);">0</h2></div>
                     </div>
-
                     <div class="leaderboard-grid">
                         <div class="card" style="margin-bottom: 0;">
                             <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">🏆 Group Standings</h3>
-                            <div id="groupLeaderboard" style="font-size: 1rem;">
-                                <p style="color: #64748b;">Loading...</p>
-                            </div>
+                            <div id="groupLeaderboard" style="font-size: 1rem;"><p style="color: #64748b;">Loading...</p></div>
                         </div>
-                        
                         <div class="card" style="margin-bottom: 0;">
                             <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">🌟 Top Scorers</h3>
-                            <div id="individualScorers" style="font-size: 1rem;">
-                                 <p style="color: #64748b;">Loading...</p>
-                            </div>
+                            <div id="individualScorers" style="font-size: 1rem;"><p style="color: #64748b;">Loading...</p></div>
                         </div>
                     </div>
-
                     <div class="card">
                         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                             <h3>Data Overview</h3>
@@ -171,52 +140,54 @@
                                 <button onclick="downloadCSV()" class="primary-btn" style="background-color: #10b981; margin: 0; padding: 10px 20px;"><i class="fas fa-file-excel"></i> Export CSV</button>
                             </div>
                         </div>
-                        
                         <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                            <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; white-space: nowrap;">
-                            </table>
+                            <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; white-space: nowrap;"></table>
                         </div>
                     </div>
                 </section>
 
                 <section id="students" class="page-section">
                     <div class="card">
-                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="card-header">
                             <h3>Add New Students</h3>
-                            <button type="button" onclick="addStudentRow()" class="primary-btn btn-small" style="background-color: var(--accent); color: var(--text); margin: 0;"><i class="fas fa-plus"></i> Add Row</button>
                         </div>
                         <form id="studentForm">
                             <div id="studentRowsContainer">
                                 <div class="form-grid student-row" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
-                                    <div class="input-group"><label>Chest No.</label><input type="text" class="st-chest" required></div>
-                                    <div class="input-group"><label>Full Name</label><input type="text" class="st-name" required></div>
+                                    <div class="input-group"><label>Chest No.</label><input type="text" class="st-chest" required style="text-transform: uppercase;"></div>
+                                    <div class="input-group"><label>Full Name</label><input type="text" class="st-name" required style="text-transform: uppercase;"></div>
                                     <div class="input-group"><label>Gender</label><select class="st-gender" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
-                                    <div class="input-group"><label>Class</label><input type="text" class="st-class" placeholder="e.g., 1, 2" required></div>
+                                    <div class="input-group"><label>Class</label><input type="text" class="st-class" required style="text-transform: uppercase;"></div>
                                     <div class="input-group"><label>Category</label><select class="st-category" required><option value="">Select Category</option></select></div>
-                                    <div class="input-group"><label>Group / House</label><input type="text" class="st-group"></div>
+                                    <div class="input-group"><label>Group</label><input type="text" class="st-group" style="text-transform: uppercase;"></div>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-save"></i> Save All Students</button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" onclick="addStudentRow()" class="primary-btn btn-small" style="background-color: var(--accent); color: var(--text); margin: 0;"><i class="fas fa-plus"></i> Add Row</button>
+                                <button type="submit" class="primary-btn btn-small" style="margin: 0;"><i class="fas fa-save"></i> Save All Students</button>
+                            </div>
                         </form>
                     </div>
                 </section>
 
                 <section id="events" class="page-section">
                     <div class="card">
-                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="card-header">
                             <h3>Create New Events</h3>
-                            <button type="button" onclick="addEventRow()" class="primary-btn btn-small" style="background-color: var(--accent); color: var(--text); margin: 0;"><i class="fas fa-plus"></i> Add Row</button>
                         </div>
                         <form id="eventForm">
                             <div id="eventRowsContainer">
                                 <div class="form-grid event-row" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
-                                    <div class="input-group"><label>Event Code</label><input type="text" class="ev-code" required></div>
+                                    <div class="input-group"><label>Event Code</label><input type="text" class="ev-code" required style="text-transform: uppercase;"></div>
                                     <div class="input-group"><label>Event Name</label><input type="text" class="ev-name" required></div>
                                     <div class="input-group"><label>Category</label><select class="ev-category" required><option value="">Select Category</option></select></div>
                                     <div class="input-group"><label>Gender</label><select class="ev-gender" required><option value="Boys">Boys</option><option value="Girls">Girls</option><option value="Common">Common</option></select></div>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-save"></i> Save All Events</button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" onclick="addEventRow()" class="primary-btn btn-small" style="background-color: var(--accent); color: var(--text); margin: 0;"><i class="fas fa-plus"></i> Add Row</button>
+                                <button type="submit" class="primary-btn btn-small" style="margin: 0;"><i class="fas fa-save"></i> Save All Events</button>
+                            </div>
                         </form>
                     </div>
                 </section>
@@ -225,25 +196,18 @@
                     <div class="card">
                         <div class="card-header"><h3>Assign Students to Event</h3></div>
                         <form id="registrationForm">
-                            <div class="input-group" style="max-width: 300px;">
-                                <label>Select Event</label>
-                                <select id="regEventSelect" required>
-                                    <option value="">-- Choose Event --</option>
-                                </select>
-                            </div>
+                            <div class="input-group" style="max-width: 300px;"><label>Select Event</label><select id="regEventSelect" required><option value="">-- Choose Event --</option></select></div>
                             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                             <div class="input-group">
-                                <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                    <span>Select Students</span>
-                                    <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addRegistrationField()">+ Add Student</span>
-                                </label>
+                                <label style="margin-bottom: 15px;">Select Students</label>
                                 <div id="registrationStudentsContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                    <select class="reg-student-select" required>
-                                        <option value="">-- Select Event First --</option>
-                                    </select>
+                                    <select class="reg-student-select" required><option value="">-- Select Event First --</option></select>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-btn btn-small" style="margin-top: 15px;"><i class="fas fa-plus-circle"></i> Register All</button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" onclick="addRegistrationField()" class="primary-btn btn-small" style="background-color: var(--accent); color: var(--text); margin: 0;"><i class="fas fa-user-plus"></i> Add Student</button>
+                                <button type="submit" class="primary-btn btn-small" style="margin: 0;"><i class="fas fa-plus-circle"></i> Register All</button>
+                            </div>
                         </form>
                     </div>
                 </section>
@@ -252,72 +216,75 @@
                     <div class="card">
                         <div class="card-header"><h3>Declare Winners</h3></div>
                         <form id="resultForm">
-                            <div class="input-group" style="max-width: 300px;">
-                                <label>Select Event</label>
-                                <select id="resEventSelect" required>
-                                    <option value="">-- Choose Event --</option>
-                                </select>
-                            </div>
+                            <div class="input-group" style="max-width: 300px;"><label>Select Event</label><select id="resEventSelect" required><option value="">-- Choose Event --</option></select></div>
                             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                             <div class="form-grid">
                                 <div class="input-group">
-                                    <label style="color: #D4AF37; display: flex; justify-content: space-between;">
-                                        <span><i class="fas fa-medal"></i> 1st Place</span>
-                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem;" onclick="addWinnerField('firstPlaceContainer')">+ Add Tie</span>
-                                    </label>
+                                    <label style="color: #D4AF37;"><span><i class="fas fa-medal"></i> 1st Place</span></label>
                                     <div id="firstPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                         <select class="pos-1" required><option value="">-- Select Student --</option></select>
                                     </div>
+                                    <div style="margin-top: 8px;">
+                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('firstPlaceContainer')">+ Add Tie</span>
+                                    </div>
                                 </div>
                                 <div class="input-group">
-                                    <label style="color: #94a3b8; display: flex; justify-content: space-between;">
-                                        <span><i class="fas fa-medal"></i> 2nd Place</span>
-                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem;" onclick="addWinnerField('secondPlaceContainer')">+ Add Tie</span>
-                                    </label>
+                                    <label style="color: #94a3b8;"><span><i class="fas fa-medal"></i> 2nd Place</span></label>
                                     <div id="secondPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                         <select class="pos-2"><option value="">-- Select Student --</option></select>
                                     </div>
+                                    <div style="margin-top: 8px;">
+                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('secondPlaceContainer')">+ Add Tie</span>
+                                    </div>
                                 </div>
                                 <div class="input-group">
-                                    <label style="color: #b45309; display: flex; justify-content: space-between;">
-                                        <span><i class="fas fa-medal"></i> 3rd Place</span>
-                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem;" onclick="addWinnerField('thirdPlaceContainer')">+ Add Tie</span>
-                                    </label>
+                                    <label style="color: #b45309;"><span><i class="fas fa-medal"></i> 3rd Place</span></label>
                                     <div id="thirdPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                         <select class="pos-3"><option value="">-- Select Student --</option></select>
                                     </div>
+                                    <div style="margin-top: 8px;">
+                                        <span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('thirdPlaceContainer')">+ Add Tie</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-bullhorn"></i> Publish Result</button>
+                            <button type="submit" class="primary-btn btn-small" style="margin-top: 15px;"><i class="fas fa-bullhorn"></i> Publish Result</button>
                         </form>
+                    </div>
+                </section>
+
+                <section id="settingsPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3>Manage Categories</h3></div>
+                        <form id="categoryForm" style="max-width: 400px; margin-bottom: 30px;">
+                            <div class="input-group"><label>Add New Category</label><input type="text" id="newCategoryInput" placeholder="e.g., JUNIOR, SENIOR" required style="text-transform: uppercase;"></div>
+                            <button type="submit" class="primary-btn btn-small"><i class="fas fa-plus"></i> Add Category</button>
+                        </form>
+                        <h4>Current Categories</h4>
+                        <ul id="currentCategoriesList" style="list-style: none; margin-top: 15px; max-width: 400px;"></ul>
                     </div>
                 </section>
             </div>
         </main>
     </div>
 
-        <script>
+    <script>
         // ==========================================
-        // 1. UI LOGIC (SPA Navigation)
+        // 1. UI LOGIC 
         // ==========================================
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        
         function switchTab(tabId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
             if(window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
         }
-        
         function logout() {
-            sessionStorage.clear();
-            targetSheetId = null;
+            sessionStorage.clear(); targetSheetId = null;
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('loginView').style.display = 'flex';
             document.getElementById('loginForm').reset();
         }
-
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const menuBtn = document.querySelector('.menu-toggle');
@@ -327,36 +294,31 @@
                 }
             }
         });
-        
         window.addEventListener('scroll', function() {
             if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
         });
-
-        // ==========================================
-        // 2. BACKEND API CONNECTION 
-        // ==========================================
         
-        // ശ്രദ്ധിക്കുക: ആപ്പ് സ്ക്രിപ്റ്റിൽ നിന്ന് കിട്ടിയ പുതിയ URL ഇവിടെ നൽകുക!
+        const delay = ms => new Promise(res => setTimeout(res, ms));
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
-        
         let targetSheetId = sessionStorage.getItem("targetSheetId");
         let globalDbData = {}; 
 
+        function getVal(row, index) {
+            if (!row) return "";
+            const keys = Object.keys(row).filter(k => k !== 'rowIndex');
+            return keys[index] ? row[keys[index]] : "";
+        }
+
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
             const msg = document.getElementById('loginMessage');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            btn.disabled = true; msg.innerText = "";
-            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...'; btn.disabled = true; msg.innerText = "";
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "login", username: user, password: pass })
-            })
-            .then(response => response.json())
-            .then(data => {
+                body: JSON.stringify({ action: "login", username: document.getElementById('username').value, password: document.getElementById('password').value })
+            }).then(response => response.json()).then(data => {
                 if(data.status === "success") {
                     sessionStorage.setItem("targetSheetId", data.targetSheetId);
                     sessionStorage.setItem("instName", data.institutionName);
@@ -370,20 +332,17 @@
                     }, 1000);
                 } else {
                     msg.style.color = "red"; msg.innerText = data.message;
-                    btn.innerText = "Login"; btn.disabled = false;
+                    btn.innerHTML = originalText; btn.disabled = false;
                 }
-            })
-            .catch(error => {
-                msg.style.color = "red"; msg.innerText = "Network Error. Check URL.";
-                btn.innerText = "Login"; btn.disabled = false;
+            }).catch(error => { 
+                msg.style.color = "red"; msg.innerText = "Network Error. Check URL."; 
+                btn.innerHTML = originalText; btn.disabled = false; 
             });
         });
 
         // ==========================================
         // 3. DATA LOADING & DROPDOWNS
         // ==========================================
-        let categoryOptionsHTML = '<option value="">Select Category</option>';
-
         function loadDropdownData() {
             if(!targetSheetId) return;
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId }) })
@@ -394,34 +353,27 @@
                     populateDropdowns();
                     updateDashboardStats();
                     renderTable();
-                } else {
-                    alert("Failed to load data: " + data.message);
-                }
-            }).catch(error => {
-                console.log("Dropdown error", error);
-                alert("Network error while loading data. Please check your connection.");
-            });
+                    renderSettingsCategories();
+                } else { alert("Failed to load data: " + data.message); }
+            }).catch(error => { console.log(error); alert("Network error while loading data."); });
         }
 
+        let categoryOptionsHTML = '<option value="">Select Category</option>';
         function populateDropdowns() {
             const events = globalDbData.Events || [];
             const settings = globalDbData.Settings || [];
             
             categoryOptionsHTML = '<option value="">-- Select Category --</option>';
             settings.forEach(row => {
-                const values = Object.values(row);
-                if(values.length > 0 && values[0]) {
-                    categoryOptionsHTML += `<option value="${values[0]}">${values[0]}</option>`;
-                }
+                const catName = getVal(row, 0);
+                if(catName) categoryOptionsHTML += `<option value="${catName}">${catName}</option>`;
             });
             document.querySelectorAll('.st-category, .ev-category').forEach(sel => { sel.innerHTML = categoryOptionsHTML; });
 
             let eventOptions = '<option value="">-- Choose Event --</option>';
             events.forEach(ev => {
-                const values = Object.values(ev);
-                if(values.length >= 2) {
-                    eventOptions += `<option value="${values[0]}">${values[0]} - ${values[1]}</option>`;
-                }
+                const evCode = getVal(ev, 0); const evName = getVal(ev, 1);
+                if(evCode) eventOptions += `<option value="${evCode}">${evCode} - ${evName}</option>`;
             });
             document.getElementById('regEventSelect').innerHTML = eventOptions;
             document.getElementById('resEventSelect').innerHTML = eventOptions;
@@ -432,270 +384,271 @@
         }
 
         // ==========================================
-        // 4. BULK ENTRY LOGIC (Students & Events)
+        // Edit, Delete & Settings Category Handlers
+        // ==========================================
+        let editingRowData = { index: null, sheet: null };
+
+        async function deleteRow(sheetName, rowIndex) {
+            if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return;
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: sheetName, rowIndex: rowIndex }) });
+                if((await res.json()).status === "success") { alert("Deleted successfully!"); loadDropdownData(); } 
+                else { alert("Error deleting data."); }
+            } catch(e) { alert("Failed to delete."); }
+        }
+
+        function editRow(sheetName, rowIndex, rowDataJson) {
+            const rowData = JSON.parse(decodeURIComponent(rowDataJson));
+            editingRowData = { index: rowIndex, sheet: sheetName };
+            
+            if(sheetName === "Students") {
+                switchTab("students");
+                document.querySelector('.st-chest').value = getVal(rowData, 0);
+                document.querySelector('.st-name').value = getVal(rowData, 1);
+                document.querySelector('.st-gender').value = getVal(rowData, 2);
+                document.querySelector('.st-class').value = getVal(rowData, 3);
+                document.querySelector('.st-category').value = getVal(rowData, 4);
+                document.querySelector('.st-group').value = getVal(rowData, 5);
+                document.querySelector('#studentForm button[type="submit"]').innerHTML = '<i class="fas fa-edit"></i> Update Student';
+            } else if(sheetName === "Events") {
+                switchTab("events");
+                document.querySelector('.ev-code').value = getVal(rowData, 0);
+                document.querySelector('.ev-name').value = getVal(rowData, 1);
+                document.querySelector('.ev-category').value = getVal(rowData, 2);
+                document.querySelector('.ev-gender').value = getVal(rowData, 3);
+                document.querySelector('#eventForm button[type="submit"]').innerHTML = '<i class="fas fa-edit"></i> Update Event';
+            }
+        }
+
+        function renderSettingsCategories() {
+            const settings = globalDbData.Settings || []; let html = "";
+            settings.forEach(row => {
+                const catName = getVal(row, 0);
+                if(catName) {
+                    html += `<li style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; margin-bottom:8px; border-radius:6px; border:1px solid #e2e8f0; font-weight:500;">
+                                <span>${catName}</span><button onclick="deleteRow('Settings', ${row.rowIndex})" style="background:none; border:none; color:#ff5a5f; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                             </li>`;
+                }
+            });
+            document.getElementById('currentCategoriesList').innerHTML = html || "<p style='color:#64748b;'>No categories added yet.</p>";
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('newCategoryInput');
+            const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...'; btn.disabled = true;
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Settings", rowData: [input.value.trim().toUpperCase(), "", "", ""] }) });
+                if((await res.json()).status === "success") { alert("Category added successfully!"); input.value = ""; loadDropdownData(); }
+            } catch(e) { alert("Failed to add category."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+        });
+
+        // ==========================================
+        // 4. BULK ENTRY FORMS (Students & Events)
         // ==========================================
         function addStudentRow() {
             const container = document.getElementById('studentRowsContainer');
-            const div = document.createElement('div');
-            div.className = 'form-grid student-row';
+            const div = document.createElement('div'); div.className = 'form-grid student-row';
             div.style.marginBottom = '20px'; div.style.borderBottom = '1px solid #f1f5f9'; div.style.paddingBottom = '20px'; div.style.position = 'relative';
-            div.innerHTML = `
-                <div class="input-group"><label>Chest No.</label><input type="text" class="st-chest" required style="text-transform: uppercase;"></div>
+            div.innerHTML = `<div class="input-group"><label>Chest No.</label><input type="text" class="st-chest" required style="text-transform: uppercase;"></div>
                 <div class="input-group"><label>Full Name</label><input type="text" class="st-name" required style="text-transform: uppercase;"></div>
                 <div class="input-group"><label>Gender</label><select class="st-gender" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
                 <div class="input-group"><label>Class</label><input type="text" class="st-class" required style="text-transform: uppercase;"></div>
                 <div class="input-group"><label>Category</label><select class="st-category" required>${categoryOptionsHTML}</select></div>
                 <div class="input-group"><label>Group</label><input type="text" class="st-group" style="text-transform: uppercase;"></div>
-                <button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>
-            `;
+                <button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>`;
             container.appendChild(div);
         }
 
         function addEventRow() {
             const container = document.getElementById('eventRowsContainer');
-            const div = document.createElement('div');
-            div.className = 'form-grid event-row';
+            const div = document.createElement('div'); div.className = 'form-grid event-row';
             div.style.marginBottom = '20px'; div.style.borderBottom = '1px solid #f1f5f9'; div.style.paddingBottom = '20px'; div.style.position = 'relative';
-            div.innerHTML = `
-                <div class="input-group"><label>Event Code</label><input type="text" class="ev-code" required style="text-transform: uppercase;"></div>
+            div.innerHTML = `<div class="input-group"><label>Event Code</label><input type="text" class="ev-code" required style="text-transform: uppercase;"></div>
                 <div class="input-group"><label>Event Name</label><input type="text" class="ev-name" required></div>
                 <div class="input-group"><label>Category</label><select class="ev-category" required>${categoryOptionsHTML}</select></div>
                 <div class="input-group"><label>Gender</label><select class="ev-gender" required><option value="Boys">Boys</option><option value="Girls">Girls</option><option value="Common">Common</option></select></div>
-                <button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>
-            `;
+                <button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>`;
             container.appendChild(div);
         }
 
-        // Students Bulk Save
         document.getElementById('studentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const existingChestNos = (globalDbData.Students || []).map(s => Object.values(s)[0].toString().trim().toUpperCase());
-            let currentBatch = [];
-            let duplicates = [];
-            let rowsDataToSave = [];
-            const rows = document.querySelectorAll('.student-row');
-            
-            rows.forEach(row => {
-                const chestNo = row.querySelector('.st-chest').value.toString().trim().toUpperCase();
-                const name = row.querySelector('.st-name').value.toUpperCase();
-                if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) {
-                    duplicates.push(`${chestNo} (${name})`);
-                } else {
-                    currentBatch.push(chestNo);
-                    rowsDataToSave.push([
-                        chestNo, name,
-                        row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(),
-                        row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()
-                    ]);
-                }
-            });
 
-            if(duplicates.length > 0) {
-                alert("⚠️ DUPLICATE ENTRIES FOUND!\n\nThe following Chest Numbers already exist in the database or have been entered multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct them and try saving again.");
-                return; 
-            }
-
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
-            
-            try {
-                // പുത്തൻ BULK API ഉപയോഗിച്ച് ഒറ്റയടിക്ക് സേവ് ചെയ്യുന്നു
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) 
-                });
-                let data = await res.json();
-                
-                if(data.status === "success") {
-                    alert(`Success: ${rowsDataToSave.length} Students saved successfully!`);
-                    this.reset();
-                    document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
-                    loadDropdownData();
-                } else {
-                    alert("Error: " + data.message);
-                }
-            } catch (error) { alert("Network Error while saving students. Please check connection."); } 
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
-        });
-
-        // Events Bulk Save
-        document.getElementById('eventForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const existingEvents = (globalDbData.Events || []).map(ev => Object.values(ev)[0].toString().trim().toUpperCase());
-            let currentBatch = [];
-            let duplicates = [];
-            let rowsDataToSave = [];
-            const rows = document.querySelectorAll('.event-row');
-            
-            rows.forEach(row => {
-                const eventCode = row.querySelector('.ev-code').value.toString().trim().toUpperCase();
-                const eventName = row.querySelector('.ev-name').value;
-                if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) {
-                    duplicates.push(`${eventCode} (${eventName})`);
-                } else {
-                    currentBatch.push(eventCode);
-                    rowsDataToSave.push([
-                        eventCode, eventName,
-                        row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value
-                    ]);
-                }
-            });
-
-            if(duplicates.length > 0) {
-                alert("⚠️ DUPLICATE EVENTS FOUND!\n\nThe following Event Codes already exist in the database or have been entered multiple times:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct the codes and try saving again.");
+            if(editingRowData.sheet === "Students" && editingRowData.index) {
+                const row = document.querySelector('.student-row');
+                const rowData = [
+                    row.querySelector('.st-chest').value.toUpperCase(), row.querySelector('.st-name').value.toUpperCase(),
+                    row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(),
+                    row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()
+                ];
+                const btn = this.querySelector('button[type="submit"]');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
+                try {
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "updateData", targetSheetId: targetSheetId, sheetName: "Students", rowIndex: editingRowData.index, rowData: rowData }) });
+                    if((await res.json()).status === "success") {
+                        alert("Student updated successfully!"); this.reset();
+                        btn.innerHTML = '<i class="fas fa-save"></i> Save All Students';
+                        editingRowData = { index: null, sheet: null };
+                        loadDropdownData(); switchTab('dashboard');
+                    }
+                } catch(err) { alert("Error updating."); } finally { btn.disabled = false; }
                 return;
             }
 
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
+            const existingChestNos = (globalDbData.Students || []).map(s => getVal(s, 0).toString().trim().toUpperCase());
+            let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
+            document.querySelectorAll('.student-row').forEach(row => {
+                const chestNo = row.querySelector('.st-chest').value.toString().trim().toUpperCase();
+                const name = row.querySelector('.st-name').value.toUpperCase();
+                if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) { duplicates.push(`${chestNo} (${name})`); } 
+                else { currentBatch.push(chestNo); rowsDataToSave.push([chestNo, name, row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(), row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()]); }
+            });
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND!\n\nThe following Chest Numbers already exist or are typed multiple times:\n• " + duplicates.join("\n• ")); return; }
             
+            const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
             try {
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) 
-                });
-                let data = await res.json();
-                
-                if(data.status === "success") {
-                    alert(`Success: ${rowsDataToSave.length} Events saved successfully!`);
-                    this.reset();
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
+                if((await res.json()).status === "success") {
+                    alert("Students saved successfully!"); this.reset();
+                    document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
+                    loadDropdownData();
+                }
+            } catch (error) { alert("Error saving students."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+        });
+
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if(editingRowData.sheet === "Events" && editingRowData.index) {
+                const row = document.querySelector('.event-row');
+                const rowData = [
+                    row.querySelector('.ev-code').value.toUpperCase(), row.querySelector('.ev-name').value,
+                    row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value
+                ];
+                const btn = this.querySelector('button[type="submit"]');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
+                try {
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "updateData", targetSheetId: targetSheetId, sheetName: "Events", rowIndex: editingRowData.index, rowData: rowData }) });
+                    if((await res.json()).status === "success") {
+                        alert("Event updated successfully!"); this.reset();
+                        btn.innerHTML = '<i class="fas fa-save"></i> Save All Events';
+                        editingRowData = { index: null, sheet: null };
+                        loadDropdownData(); switchTab('dashboard');
+                    }
+                } catch(err) { alert("Error updating."); } finally { btn.disabled = false; }
+                return; 
+            }
+
+            const existingEvents = (globalDbData.Events || []).map(ev => getVal(ev, 0).toString().trim().toUpperCase());
+            let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
+            document.querySelectorAll('.event-row').forEach(row => {
+                const eventCode = row.querySelector('.ev-code').value.toString().trim().toUpperCase();
+                const eventName = row.querySelector('.ev-name').value;
+                if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) { duplicates.push(`${eventCode} (${eventName})`); } 
+                else { currentBatch.push(eventCode); rowsDataToSave.push([eventCode, eventName, row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value]); }
+            });
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND!\n\nThe following Event Codes already exist:\n• " + duplicates.join("\n• ")); return; }
+            
+            const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
+                if((await res.json()).status === "success") {
+                    alert("Events saved successfully!"); this.reset();
                     document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
                     loadDropdownData();
-                } else { alert("Error: " + data.message); }
-            } catch (error) { alert("Network Error while saving events."); } 
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
+                }
+            } catch (error) { alert("Error saving events."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         // ==========================================
-        // 5. EVENT REGISTRATION BULK LOGIC
+        // 5. EVENT REGISTRATION 
         // ==========================================
         function addRegistrationField() {
             const container = document.getElementById('registrationStudentsContainer');
             const firstSelect = container.querySelector('select');
-            const div = document.createElement('div');
-            div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true);
-            newSelect.value = ""; newSelect.removeAttribute('required');
+            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
+            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
             div.appendChild(newSelect);
-            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer;"><i class="fas fa-times"></i></button>`;
+            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
             container.appendChild(div);
         }
 
         document.getElementById('regEventSelect').addEventListener('change', function() {
             const selectedEventCode = this.value;
-            const events = globalDbData.Events || [];
-            const students = globalDbData.Students || [];
-            
+            const events = globalDbData.Events || []; const students = globalDbData.Students || [];
             document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove());
+            if(!selectedEventCode) { document.querySelectorAll('.reg-student-select').forEach(sel => sel.innerHTML = '<option value="">-- Select Event First --</option>'); return; }
 
-            if(!selectedEventCode) { 
-                document.querySelectorAll('.reg-student-select').forEach(sel => sel.innerHTML = '<option value="">-- Select Event First --</option>');
-                return; 
-            }
-
-            const eventDetails = events.find(ev => (ev['Event Code'] || Object.values(ev)[0]) === selectedEventCode);
+            const eventDetails = events.find(ev => getVal(ev, 0) === selectedEventCode);
             if(!eventDetails) return;
 
-            const targetCategory = (eventDetails['Category'] || eventDetails['Target Category'] || Object.values(eventDetails)[2] || "").toString().trim().toLowerCase();
-            const targetGender = (eventDetails['Gender'] || eventDetails['Target Gender'] || Object.values(eventDetails)[3] || "").toString().trim().toLowerCase();
+            const targetCategory = getVal(eventDetails, 2).toString().trim().toLowerCase();
+            const targetGender = getVal(eventDetails, 3).toString().trim().toLowerCase();
 
             let filteredStudents = students.filter(st => {
-                const stCategory = (st['Category'] || Object.values(st)[4] || "").toString().trim().toLowerCase();
-                const stGender = (st['Gender'] || Object.values(st)[2] || "").toString().trim().toLowerCase();
-                const categoryMatch = (stCategory === targetCategory);
-                const genderMatch = (targetGender === "common") || (targetGender === "boys" && stGender === "male") || (targetGender === "girls" && stGender === "female") || (targetGender === stGender); 
+                const categoryMatch = (getVal(st, 4).toString().trim().toLowerCase() === targetCategory);
+                const stGender = getVal(st, 2).toString().trim().toLowerCase();
+                const genderMatch = (targetGender === "common") || (targetGender === "boys" && stGender === "male") || (targetGender === "girls" && stGender === "female") || (stGender === targetGender); 
                 return categoryMatch && genderMatch;
             });
             
             let options = '<option value="">-- Choose Student --</option>';
-            filteredStudents.forEach(st => {
-                const chestNo = st['Chest No'] || Object.values(st)[0];
-                const name = st['Name'] || Object.values(st)[1];
-                options += `<option value="${chestNo}">${chestNo} - ${name}</option>`;
-            });
-            
+            filteredStudents.forEach(st => { options += `<option value="${getVal(st, 0)}">${getVal(st, 0)} - ${getVal(st, 1)}</option>`; });
             document.querySelectorAll('.reg-student-select').forEach(sel => sel.innerHTML = options);
         });
 
-        // Registrations Bulk Save
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const eventCode = document.getElementById('regEventSelect').value;
-            
             const existingRegs = globalDbData.Registrations || [];
-            let currentBatch = [];
-            let duplicates = [];
-            let registrationsToSave = [];
+            let currentBatch = []; let duplicates = []; let registrationsToSave = [];
 
             document.querySelectorAll('.reg-student-select').forEach(select => {
                 if(select.value) {
                     const chestNo = select.value.toString().trim().toUpperCase();
-                    const isDbDuplicate = existingRegs.some(reg => Object.values(reg)[0].toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase() && Object.values(reg)[1].toString().trim().toUpperCase() === chestNo);
-                    
-                    if(isDbDuplicate || currentBatch.includes(chestNo)) {
-                        duplicates.push(chestNo);
-                    } else {
-                        currentBatch.push(chestNo);
-                        registrationsToSave.push([eventCode, chestNo]);
-                    }
+                    const isDbDuplicate = existingRegs.some(reg => getVal(reg, 0).toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase() && getVal(reg, 1).toString().trim().toUpperCase() === chestNo);
+                    if(isDbDuplicate || currentBatch.includes(chestNo)) { duplicates.push(chestNo); } 
+                    else { currentBatch.push(chestNo); registrationsToSave.push([eventCode, chestNo]); }
                 }
             });
 
-            if(duplicates.length > 0) {
-                alert("⚠️ ALREADY REGISTERED!\n\nThe following Chest Numbers are already registered for this event or have been selected multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease remove duplicates and try registering again.");
-                return;
-            }
-
-            if(registrationsToSave.length === 0) {
-                alert("Please select at least one student!");
-                return;
-            }
-
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
+            if(duplicates.length > 0) { alert("⚠️ ALREADY REGISTERED!\n\nThe following Chest Numbers are already registered for this event:\n• " + duplicates.join("\n• ")); return; }
+            if(registrationsToSave.length === 0) { alert("Please select at least one student!"); return; }
+            
+            const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
 
             try {
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Registrations", rowsData: registrationsToSave }) 
-                });
-                let data = await res.json();
-                
-                if(data.status === "success") {
-                    alert(`Success: ${registrationsToSave.length} Students registered successfully!`);
-                    this.reset();
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Registrations", rowsData: registrationsToSave }) });
+                if((await res.json()).status === "success") {
+                    alert("Students registered successfully!"); this.reset();
                     document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove());
                     loadDropdownData();
-                } else { alert("Error: " + data.message); }
-            } catch (error) { alert("Network Error while saving registrations."); } 
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
+                }
+            } catch (error) { alert("Error saving registrations."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         // ==========================================
-        // 6. RESULTS LOGIC & TIES (OVERWRITE/APPEAL)
+        // 6. RESULTS LOGIC & TIES
         // ==========================================
         document.getElementById('resEventSelect').addEventListener('change', function() {
             const selectedEventCode = this.value;
-            const registrations = globalDbData.Registrations || [];
-            const students = globalDbData.Students || [];
+            const registrations = globalDbData.Registrations || []; const students = globalDbData.Students || [];
             document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
             
             if(!selectedEventCode) {
                 const def = '<option value="">-- Select Event First --</option>';
-                document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = def);
-                return;
+                document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = def); return;
             }
-            const registeredChestNos = registrations.filter(reg => Object.values(reg)[0] === selectedEventCode).map(reg => Object.values(reg)[1]);
+            const registeredChestNos = registrations.filter(reg => getVal(reg, 0) === selectedEventCode).map(reg => getVal(reg, 1));
             let options = '<option value="">-- Select Student --</option>';
             registeredChestNos.forEach(chestNo => {
-                const student = students.find(st => Object.values(st)[0] == chestNo);
-                const name = student ? Object.values(student)[1] : "Unknown";
-                options += `<option value="${chestNo}">${chestNo} - ${name}</option>`;
+                const student = students.find(st => getVal(st, 0) == chestNo);
+                options += `<option value="${chestNo}">${chestNo} - ${student ? getVal(student, 1) : "Unknown"}</option>`;
             });
             document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = options);
         });
@@ -703,81 +656,52 @@
         function addWinnerField(containerId) {
             const container = document.getElementById(containerId);
             const firstSelect = container.querySelector('select');
-            const div = document.createElement('div');
-            div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true);
-            newSelect.value = ""; newSelect.removeAttribute('required');
+            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
+            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
             div.appendChild(newSelect);
-            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer;"><i class="fas fa-times"></i></button>`;
+            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
             container.appendChild(div);
         }
 
-        // Result Save (Appeal & Bulk)
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const eventCode = document.getElementById('resEventSelect').value;
-            
             const existingResults = globalDbData.Results || [];
-            const isAlreadyPublished = existingResults.some(res => Object.values(res)[0].toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase());
+            const isAlreadyPublished = existingResults.some(res => getVal(res, 0) === eventCode);
             
             if (isAlreadyPublished) {
-                const proceed = confirm("⚠️ ALREADY PUBLISHED!\n\nResults for this event are already in the database. Do you want to OVERWRITE the existing results (e.g., due to an appeal)?\n\nClick 'OK' to Proceed and overwrite, or 'Cancel' to abort.");
-                if (!proceed) {
-                    return; 
-                }
+                if (!confirm("⚠️ ALREADY PUBLISHED!\n\nResults for this event are already in the database. Do you want to OVERWRITE the existing results (e.g., due to an appeal)?\n\nClick 'OK' to Proceed and overwrite, or 'Cancel' to abort.")) return;
             }
             
-            let selectedStudents = [];
-            let duplicates = [];
-            let resultsToSave = [];
-            
+            let selectedStudents = []; let duplicates = []; let resultsToSave = [];
             const checkValues = (className, position) => {
                 document.querySelectorAll(className).forEach(select => {
                     if(select.value) {
                         const chestNo = select.value.toString().trim().toUpperCase();
-                        if(selectedStudents.includes(chestNo)) {
-                            duplicates.push(chestNo);
-                        } else {
-                            selectedStudents.push(chestNo);
-                            resultsToSave.push([eventCode, chestNo, position]);
-                        }
+                        if(selectedStudents.includes(chestNo)) { duplicates.push(chestNo); } 
+                        else { selectedStudents.push(chestNo); resultsToSave.push([eventCode, chestNo, position]); }
                     }
                 });
             };
             
-            checkValues('.pos-1', 1); 
-            checkValues('.pos-2', 2); 
-            checkValues('.pos-3', 3);
+            checkValues('.pos-1', 1); checkValues('.pos-2', 2); checkValues('.pos-3', 3);
             
-            if(duplicates.length > 0) {
-                alert("⚠️ INVALID RESULT ENTRY!\n\nThe following Chest Numbers have been assigned multiple positions in the same event:\n\n• " + duplicates.join("\n• ") + "\n\nA student can only receive one position per event. Please correct and try publishing again.");
-                return; 
-            }
+            if(duplicates.length > 0) { alert("⚠️ INVALID RESULT ENTRY!\n\nA student can only receive one position per event. Please correct and try publishing again."); return; }
 
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
+            const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...'; btn.disabled = true;
-            
             try {
-                // പുതിയ API വഴി പഴയത് ഡിലീറ്റ് ചെയ്ത് പുതിയത് സേവ് ചെയ്യുന്നു
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "saveResults", targetSheetId: targetSheetId, eventCode: eventCode, rowsData: resultsToSave }) 
-                });
-                let data = await res.json();
-                
-                if(data.status === "success") {
-                    alert("Success: Results published successfully!");
-                    this.reset();
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveResults", targetSheetId: targetSheetId, eventCode: eventCode, rowsData: resultsToSave }) });
+                if((await res.json()).status === "success") {
+                    alert("Results published successfully!"); this.reset();
                     document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
                     loadDropdownData();
-                } else { alert("Error: " + data.message); }
-            } catch (error) { alert("Error publishing results. Check connection."); } 
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
+                }
+            } catch (error) { alert("Error publishing results."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         // ==========================================
-        // 7. DASHBOARD STATS, LEADERBOARD & EXCEL
+        // 7. DASHBOARD STATS, TIES, GENDER FIX
         // ==========================================
         function updateDashboardStats() {
             document.getElementById('statStudents').innerText = (globalDbData.Students || []).length;
@@ -787,97 +711,95 @@
         }
 
         function calculateLeaderboard() {
-            const results = globalDbData.Results || [];
+            const results = globalDbData.Results || []; 
             const students = globalDbData.Students || [];
-            let groupPoints = {};
+            let groupPoints = {}; 
             let studentPoints = {};
 
             results.forEach(res => {
-                const vals = Object.values(res);
-                const chestNo = vals[1];
-                const position = parseInt(vals[2]);
-                
-                let points = 0;
-                if(position === 1) points = 5;
-                else if(position === 2) points = 3;
-                else if(position === 3) points = 1;
-
+                const chestNo = getVal(res, 1);
+                const position = parseInt(getVal(res, 2));
+                let points = position === 1 ? 5 : position === 2 ? 3 : position === 3 ? 1 : 0;
                 if(!chestNo || points === 0) return;
 
-                const st = students.find(s => Object.values(s)[0] == chestNo);
+                const st = students.find(s => getVal(s, 0) == chestNo);
                 if(st) {
-                    const stVals = Object.values(st);
-                    const name = stVals[1];
-                    const gender = (stVals[2] || "").toString().trim().toLowerCase(); 
-                    const group = stVals[5];
+                    const group = getVal(st, 5); 
+                    const rawGender = getVal(st, 2).toString().trim().toLowerCase(); 
+                    let genderCat = "other";
+                    if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
+                    if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
                     
-                    if(group) { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                    const name = getVal(st, 1);
+                    if(group) groupPoints[group] = (groupPoints[group] || 0) + points;
                     
-                    if(!studentPoints[chestNo]) {
-                        studentPoints[chestNo] = { name: name, gender: gender, group: group, points: 0 };
-                    }
+                    if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0 };
                     studentPoints[chestNo].points += points;
                 }
             });
 
             let groupHTML = "";
-            let sortedGroups = Object.entries(groupPoints).sort((a, b) => b[1] - a[1]);
-            if(sortedGroups.length > 0) {
-                sortedGroups.forEach((g, index) => {
-                    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
-                    groupHTML += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee;"> <span>${medal} <b>${g[0]}</b></span> <span style="font-weight:bold; color:var(--primary);">${g[1]} Pts</span> </div>`;
-                });
-                document.getElementById('groupLeaderboard').innerHTML = groupHTML;
-            } else { document.getElementById('groupLeaderboard').innerHTML = '<p style="color: #64748b;">No results published yet.</p>'; }
+            Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]).forEach((g, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
+                groupHTML += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eee;"><span>${medal} <b>${g[0]}</b></span><span style="font-weight:bold; color:var(--primary);">${g[1]} Pts</span></div>`;
+            });
+            document.getElementById('groupLeaderboard').innerHTML = groupHTML || "<p>No results yet.</p>";
 
-            let bestBoy = null, bestGirl = null;
-            Object.entries(studentPoints).forEach(([chestNo, data]) => {
-                if(data.gender === "male" || data.gender === "boys" || data.gender === "m") {
-                    if(!bestBoy || data.points > bestBoy.points) bestBoy = data;
-                } else if(data.gender === "female" || data.gender === "girls" || data.gender === "f") {
-                    if(!bestGirl || data.points > bestGirl.points) bestGirl = data;
+            let maxBoyPoints = 0; let maxGirlPoints = 0;
+            let topBoys = []; let topGirls = [];
+
+            Object.values(studentPoints).forEach(data => {
+                if (data.gender === "boys") {
+                    if (data.points > maxBoyPoints) {
+                        maxBoyPoints = data.points;
+                        topBoys = [data]; 
+                    } else if (data.points === maxBoyPoints && maxBoyPoints > 0) {
+                        topBoys.push(data); 
+                    }
+                } else if (data.gender === "girls") {
+                    if (data.points > maxGirlPoints) {
+                        maxGirlPoints = data.points;
+                        topGirls = [data]; 
+                    } else if (data.points === maxGirlPoints && maxGirlPoints > 0) {
+                        topGirls.push(data); 
+                    }
                 }
             });
 
-            let topScorersHTML = "";
-            if(bestBoy) {
-                topScorersHTML += `<div style="padding: 10px; background: #f0fdf4; border-radius: 6px; margin-bottom: 10px;"> <span style="font-size: 0.8rem; color: #166534; font-weight: bold;">Top Boy</span><br> <b>${bestBoy.name}</b> (${bestBoy.group || "No Group"}) - <span style="color:var(--primary); font-weight:bold;">${bestBoy.points} Pts</span> </div>`;
-            } else { topScorersHTML += `<div style="padding: 10px; border: 1px dashed #ccc; border-radius: 6px; margin-bottom: 10px; color: #64748b; font-size: 0.85rem;">No points assigned to any boy yet.</div>`; }
-            
-            if(bestGirl) {
-                topScorersHTML += `<div style="padding: 10px; background: #fffbeb; border-radius: 6px;"> <span style="font-size: 0.8rem; color: #b45309; font-weight: bold;">Top Girl</span><br> <b>${bestGirl.name}</b> (${bestGirl.group || "No Group"}) - <span style="color:var(--primary); font-weight:bold;">${bestGirl.points} Pts</span> </div>`;
-            } else { topScorersHTML += `<div style="padding: 10px; border: 1px dashed #ccc; border-radius: 6px; color: #64748b; font-size: 0.85rem;">No points assigned to any girl yet.</div>`; }
-            
-            document.getElementById('individualScorers').innerHTML = topScorersHTML;
+            let topHTML = "";
+            if (topBoys.length > 0) {
+                topHTML += `<div style="padding:10px; background:#f0fdf4; border-radius:6px; margin-bottom:10px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 0.8rem; color: #166534; font-weight: bold; display:block; margin-bottom:5px;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
+                topBoys.forEach(boy => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 5px;"><b>${boy.name}</b> <span style="font-size: 0.85rem; color:#475569;">(${boy.group || "No Group"})</span></div>`; });
+                topHTML += `</div>`;
+            } else { topHTML += `<div style="padding:10px; border:1px dashed #ccc; border-radius:6px; margin-bottom:10px; color:#64748b; font-size:0.85rem;">No boy scores yet.</div>`; }
+
+            if (topGirls.length > 0) {
+                topHTML += `<div style="padding:10px; background:#fffbeb; border-radius:6px; border: 1px solid #fde68a;">
+                            <span style="font-size: 0.8rem; color: #b45309; font-weight: bold; display:block; margin-bottom:5px;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
+                topGirls.forEach(girl => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 5px;"><b>${girl.name}</b> <span style="font-size: 0.85rem; color:#475569;">(${girl.group || "No Group"})</span></div>`; });
+                topHTML += `</div>`;
+            } else { topHTML += `<div style="padding:10px; border:1px dashed #ccc; border-radius:6px; color:#64748b; font-size:0.85rem;">No girl scores yet.</div>`; }
+
+            document.getElementById('individualScorers').innerHTML = topHTML;
         }
 
         function getMappedData(dataType) {
             const rawData = globalDbData[dataType] || [];
-            const students = globalDbData.Students || [];
-            const events = globalDbData.Events || [];
+            const students = globalDbData.Students || []; const events = globalDbData.Events || [];
             
-            const getStudentDetails = (chestNo) => {
-                if(!chestNo) return "";
-                const st = students.find(s => Object.values(s)[0] == chestNo);
-                return st ? `${Object.values(st)[1]} (${chestNo}) - ${Object.values(st)[5] || ""}` : chestNo;
-            };
-            const getEventName = (eventCode) => {
-                const ev = events.find(e => Object.values(e)[0] == eventCode);
-                return ev ? `${Object.values(ev)[1]} [${eventCode}]` : eventCode;
-            };
-
             if(dataType === "Registrations") {
                 return rawData.map(row => {
-                    const vals = Object.values(row);
-                    const st = students.find(s => Object.values(s)[0] == vals[1]);
-                    return { "Event": getEventName(vals[0]), "Chest No": vals[1], "Student Name": st ? Object.values(st)[1] : "", "Class": st ? Object.values(st)[3] : "", "Category": st ? Object.values(st)[4] : "", "Group": st ? Object.values(st)[5] : "" };
+                    const st = students.find(s => getVal(s, 0) == getVal(row, 1));
+                    const ev = events.find(e => getVal(e, 0) == getVal(row, 0));
+                    return { rowIndex: row.rowIndex, "Event": ev ? getVal(ev, 1) : getVal(row, 0), "Chest No": getVal(row, 1), "Student Name": st ? getVal(st, 1) : "Unknown", "Class": st ? getVal(st, 3) : "", "Category": st ? getVal(st, 4) : "", "Group": st ? getVal(st, 5) : "" };
                 });
             } else if(dataType === "Results") {
                 return rawData.map(row => {
-                    const vals = Object.values(row);
-                    const pos = vals[2];
-                    const posText = pos == 1 ? "1st Place (5 Pts)" : pos == 2 ? "2nd Place (3 Pts)" : "3rd Place (1 Pt)";
-                    return { "Event": getEventName(vals[0]), "Position": posText, "Student": getStudentDetails(vals[1]) };
+                    const st = students.find(s => getVal(s, 0) == getVal(row, 1));
+                    const ev = events.find(e => getVal(e, 0) == getVal(row, 0));
+                    const pos = getVal(row, 2);
+                    return { rowIndex: row.rowIndex, "Event": ev ? getVal(ev, 1) : getVal(row, 0), "Position": pos == 1 ? "1st Place" : pos == 2 ? "2nd Place" : "3rd Place", "Student": st ? getVal(st, 1) : getVal(row, 1) };
                 });
             }
             return rawData;
@@ -887,45 +809,46 @@
             const dataType = document.getElementById('reportDataType').value;
             const table = document.getElementById('dataTable');
             const mappedData = getMappedData(dataType); 
-            if(mappedData.length === 0) {
-                table.innerHTML = "<tr><td style='padding: 20px; text-align: center; color: #64748b;'>No data available.</td></tr>";
-                return;
-            }
-            const headers = Object.keys(mappedData[0]);
-            let tableHTML = '<thead><tr style="background-color: var(--primary); color: white;">';
-            headers.forEach(head => { tableHTML += `<th style="padding: 12px; border: 1px solid #ddd;">${head}</th>`; });
-            tableHTML += '</tr></thead><tbody>';
+            
+            if(mappedData.length === 0) { table.innerHTML = "<tr><td style='padding:20px; color:#64748b;'>No data available.</td></tr>"; return; }
+
+            const headers = Object.keys(mappedData[0]).filter(h => h !== "rowIndex");
+            let tableHTML = '<thead><tr style="background-color:var(--primary); color:white;">';
+            headers.forEach(head => { tableHTML += `<th style="padding:12px; border:1px solid #ddd;">${head}</th>`; });
+            tableHTML += `<th style="padding:12px; border:1px solid #ddd; text-align:center;">Actions</th></tr></thead><tbody>`;
+
             mappedData.forEach(row => {
-                tableHTML += '<tr style="border-bottom: 1px solid #eee;">';
-                headers.forEach(head => { tableHTML += `<td style="padding: 10px; border-right: 1px solid #eee;">${row[head] || ""}</td>`; });
-                tableHTML += '</tr>';
+                tableHTML += '<tr style="border-bottom:1px solid #eee;">';
+                headers.forEach(head => { tableHTML += `<td style="padding:10px; border-right:1px solid #eee;">${row[head] || ""}</td>`; });
+                
+                const rowDataJson = encodeURIComponent(JSON.stringify(row));
+                tableHTML += `<td style="padding:10px; text-align:center;">`;
+                
+                if(dataType === "Students" || dataType === "Events") {
+                    tableHTML += `<button onclick="editRow('${dataType}', ${row.rowIndex}, '${rowDataJson}')" class="primary-btn btn-small" style="background:#64748b; margin-right:5px; padding:5px 10px;"><i class="fas fa-edit"></i></button>`;
+                }
+                tableHTML += `<button onclick="deleteRow('${dataType}', ${row.rowIndex})" class="primary-btn btn-small" style="background:#ff5a5f; padding:5px 10px;"><i class="fas fa-trash"></i></button>`;
+                tableHTML += `</td></tr>`;
             });
-            tableHTML += '</tbody>';
-            table.innerHTML = tableHTML;
+            tableHTML += '</tbody>'; table.innerHTML = tableHTML;
         }
 
         function downloadCSV() {
             const dataType = document.getElementById('reportDataType').value;
             const mappedData = getMappedData(dataType);
-            if(mappedData.length === 0) { alert("No data to download!"); return; }
-            const headers = Object.keys(mappedData[0]);
+            if(mappedData.length === 0) return;
+            const headers = Object.keys(mappedData[0]).filter(h => h !== "rowIndex");
             let csvContent = headers.join(",") + "\n";
             mappedData.forEach(row => {
-                let rowData = headers.map(head => {
-                    let cellData = row[head] ? row[head].toString() : "";
-                    return `"${cellData.replace(/"/g, '""')}"`;
-                });
+                let rowData = headers.map(head => `"${(row[head] || "").toString().replace(/"/g, '""')}"`);
                 csvContent += rowData.join(",") + "\n";
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(blob));
-            link.setAttribute("download", `${dataType}_FestVue_Data.csv`);
-            link.style.visibility = 'hidden';
+            const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `${dataType}_FestVue_Data.csv`); link.style.visibility = 'hidden';
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        // Initialize dashboard loading
         window.onload = function() {
             if(targetSheetId) {
                 document.getElementById('loginView').style.display = 'none';
