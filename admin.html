@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root { --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; --sidebar-width: 260px; }
@@ -172,14 +172,14 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-file-csv" style="color: #10b981;"></i> Bulk Upload via CSV</h3>
+                            <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-file-excel" style="color: #10b981;"></i> Bulk Upload via Excel / CSV</h3>
                         </div>
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                             <button type="button" onclick="downloadStudentTemplate()" class="primary-btn btn-small" style="background-color: #64748b;"><i class="fas fa-download"></i> Download Template</button>
-                            <input type="file" id="studentCsvInput" accept=".csv" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; flex-grow: 1; max-width: 300px;">
-                            <button type="button" onclick="uploadStudentCSV(event)" class="primary-btn btn-small" style="background-color: #10b981;"><i class="fas fa-upload"></i> Upload Data</button>
+                            <input type="file" id="studentExcelInput" accept=".csv, .xls, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/csv" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; flex-grow: 1; max-width: 300px;">
+                            <button type="button" onclick="uploadStudentExcel(event)" class="primary-btn btn-small" style="background-color: #10b981;"><i class="fas fa-upload"></i> Upload Data</button>
                         </div>
-                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 15px;"><i class="fas fa-info-circle"></i> Instructions: Only upload the downloaded template file format. Data will be auto-formatted to UPPERCASE.</p>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 15px;"><i class="fas fa-info-circle"></i> Instructions: You can upload Excel (.xlsx) or CSV files. Data will be auto-formatted to UPPERCASE.</p>
                     </div>
                 </section>
 
@@ -204,14 +204,13 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-file-csv" style="color: #10b981;"></i> Bulk Upload via CSV</h3>
+                            <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-file-excel" style="color: #10b981;"></i> Bulk Upload via Excel / CSV</h3>
                         </div>
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                             <button type="button" onclick="downloadEventTemplate()" class="primary-btn btn-small" style="background-color: #64748b;"><i class="fas fa-download"></i> Download Template</button>
-                            <input type="file" id="eventCsvInput" accept=".csv" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; flex-grow: 1; max-width: 300px;">
-                            <button type="button" onclick="uploadEventCSV(event)" class="primary-btn btn-small" style="background-color: #10b981;"><i class="fas fa-upload"></i> Upload Data</button>
+                            <input type="file" id="eventExcelInput" accept=".csv, .xls, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/csv" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; flex-grow: 1; max-width: 300px;">
+                            <button type="button" onclick="uploadEventExcel(event)" class="primary-btn btn-small" style="background-color: #10b981;"><i class="fas fa-upload"></i> Upload Data</button>
                         </div>
-                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 15px;"><i class="fas fa-info-circle"></i> Instructions: Download the template, fill your events data correctly without changing headers, and upload.</p>
                     </div>
                 </section>
 
@@ -265,7 +264,6 @@
 
                 <section id="settingsPage" class="page-section">
                     <div class="settings-grid">
-                        
                         <div class="card">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Manage Groups</h3>
                             <form id="groupForm" style="margin-bottom: 20px;">
@@ -274,7 +272,6 @@
                             </form>
                             <ul id="groupList" style="list-style: none;"></ul>
                         </div>
-
                         <div class="card">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Manage Categories</h3>
                             <form id="categoryForm" style="margin-bottom: 20px;">
@@ -283,7 +280,6 @@
                             </form>
                             <ul id="categoryList" style="list-style: none;"></ul>
                         </div>
-
                         <div class="card">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Manage Classes</h3>
                             <form id="rawClassForm" style="margin-bottom: 20px;">
@@ -292,7 +288,6 @@
                             </form>
                             <ul id="rawClassList" style="list-style: none;"></ul>
                         </div>
-
                         <div class="card">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Class - Category Mapping</h3>
                             <form id="classForm" style="margin-bottom: 20px;">
@@ -302,10 +297,8 @@
                             </form>
                             <ul id="classList" style="list-style: none;"></ul>
                         </div>
-
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
@@ -552,11 +545,12 @@
         });
 
         // ==========================================
-        // 4. BULK ENTRY FORMS (Manual & CSV Upload)
+        // 4. BULK ENTRY FORMS (Manual & Excel Upload)
         // ==========================================
         
-        // --- CSV UPLOAD LOGIC FOR STUDENTS ---
+        // --- EXCEL UPLOAD LOGIC FOR STUDENTS ---
         function downloadStudentTemplate() {
+            // Download as CSV to keep it simple, but script accepts .xlsx to upload!
             const csvContent = "Chest No,Name,Gender,Class,Category,Group\n101,JOHN DOE,MALE,10A,SENIOR,RED";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
@@ -564,29 +558,36 @@
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        function uploadStudentCSV(event) {
-            const fileInput = document.getElementById('studentCsvInput');
-            if(!fileInput.files.length) { alert("Please select a CSV file first."); return; }
+        function uploadStudentExcel(event) {
+            const fileInput = document.getElementById('studentExcelInput');
+            if(!fileInput.files.length) { alert("Please select an Excel or CSV file first."); return; }
             
-            Papa.parse(fileInput.files[0], {
-                header: true, skipEmptyLines: true,
-                complete: async function(results) {
-                    const data = results.data;
-                    if(data.length === 0) { alert("File is empty!"); return; }
+            const btn = event.currentTarget; 
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading...'; btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json_data = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                    const actualHeaders = XLSX.utils.sheet_to_json(worksheet, {header: 1})[0] || [];
                     
                     const expectedHeaders = ["Chest No", "Name", "Gender", "Class", "Category", "Group"];
-                    const actualHeaders = results.meta.fields;
                     const isValidHeader = expectedHeaders.every(h => actualHeaders.includes(h));
                     
                     if(!isValidHeader) {
-                        alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template, use the exact format, and try again.`);
+                        alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template and try again.`);
+                        btn.innerHTML = originalText; btn.disabled = false;
                         return;
                     }
 
                     const existingChestNos = (globalDbData.Students || []).map(s => getVal(s, 0).toString().trim().toUpperCase());
                     let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
                     
-                    data.forEach(row => {
+                    json_data.forEach(row => {
                         const chestNo = (row['Chest No'] || "").toString().trim().toUpperCase();
                         const name = (row['Name'] || "").toString().toUpperCase();
                         if(!chestNo) return;
@@ -605,23 +606,24 @@
                         }
                     });
 
-                    if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND IN CSV!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your CSV and try again."); return; }
-                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); return; }
+                    if(duplicates.length > 0) { 
+                        alert("⚠️ DUPLICATE ENTRIES FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); 
+                        btn.innerHTML = originalText; btn.disabled = false; return; 
+                    }
+                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); btn.innerHTML = originalText; btn.disabled = false; return; }
                     
-                    const btn = event.currentTarget; const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; btn.disabled = true;
-                    try {
-                        let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
-                        if((await res.json()).status === "success") {
-                            alert(`Success: ${rowsDataToSave.length} Students uploaded successfully!`); 
-                            fileInput.value = ""; loadDropdownData();
-                        }
-                    } catch (error) { alert("Error uploading students."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
-                }
-            });
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
+                    if((await res.json()).status === "success") {
+                        alert(`Success: ${rowsDataToSave.length} Students uploaded successfully!`); 
+                        fileInput.value = ""; loadDropdownData();
+                    }
+                } catch (error) { alert("Error reading file. Make sure it's a valid Excel or CSV."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
-        // --- CSV UPLOAD LOGIC FOR EVENTS ---
+        // --- EXCEL UPLOAD LOGIC FOR EVENTS ---
         function downloadEventTemplate() {
             const csvContent = "Event Code,Event Name,Category,Gender\nOP101,OPPANA,SENIOR,GIRLS";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -630,29 +632,35 @@
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        function uploadEventCSV(event) {
-            const fileInput = document.getElementById('eventCsvInput');
-            if(!fileInput.files.length) { alert("Please select a CSV file first."); return; }
+        function uploadEventExcel(event) {
+            const fileInput = document.getElementById('eventExcelInput');
+            if(!fileInput.files.length) { alert("Please select an Excel or CSV file first."); return; }
             
-            Papa.parse(fileInput.files[0], {
-                header: true, skipEmptyLines: true,
-                complete: async function(results) {
-                    const data = results.data;
-                    if(data.length === 0) { alert("File is empty!"); return; }
+            const btn = event.currentTarget; 
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading...'; btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json_data = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                    const actualHeaders = XLSX.utils.sheet_to_json(worksheet, {header: 1})[0] || [];
                     
                     const expectedHeaders = ["Event Code", "Event Name", "Category", "Gender"];
-                    const actualHeaders = results.meta.fields;
                     const isValidHeader = expectedHeaders.every(h => actualHeaders.includes(h));
                     
                     if(!isValidHeader) {
                         alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template and try again.`);
-                        return;
+                        btn.innerHTML = originalText; btn.disabled = false; return;
                     }
 
                     const existingEvents = (globalDbData.Events || []).map(ev => getVal(ev, 0).toString().trim().toUpperCase());
                     let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
                     
-                    data.forEach(row => {
+                    json_data.forEach(row => {
                         const eventCode = (row['Event Code'] || "").toString().trim().toUpperCase();
                         const eventName = (row['Event Name'] || "").toString();
                         if(!eventCode) return;
@@ -669,20 +677,21 @@
                         }
                     });
 
-                    if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND IN CSV!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your CSV and try again."); return; }
-                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); return; }
+                    if(duplicates.length > 0) { 
+                        alert("⚠️ DUPLICATE EVENTS FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); 
+                        btn.innerHTML = originalText; btn.disabled = false; return; 
+                    }
+                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); btn.innerHTML = originalText; btn.disabled = false; return; }
                     
-                    const btn = event.currentTarget; const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; btn.disabled = true;
-                    try {
-                        let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
-                        if((await res.json()).status === "success") {
-                            alert(`Success: ${rowsDataToSave.length} Events uploaded successfully!`); 
-                            fileInput.value = ""; loadDropdownData();
-                        }
-                    } catch (error) { alert("Error uploading events."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
-                }
-            });
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
+                    if((await res.json()).status === "success") {
+                        alert(`Success: ${rowsDataToSave.length} Events uploaded successfully!`); 
+                        fileInput.value = ""; loadDropdownData();
+                    }
+                } catch (error) { alert("Error reading file."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
         // --- MANUAL ENTRY LOGIC ---
