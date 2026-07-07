@@ -296,7 +296,7 @@
         </main>
     </div>
 
-    <script>
+        <script>
         // ==========================================
         // 1. UI LOGIC (SPA Navigation)
         // ==========================================
@@ -331,6 +331,9 @@
         window.addEventListener('scroll', function() {
             if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('active'); }
         });
+
+        // ഗൂഗിൾ ആപ്പ് സ്ക്രിപ്റ്റിലേക്ക് ഒരുമിച്ച് ഡാറ്റ അയക്കുമ്പോൾ ബ്ലോക്ക് ആവാതിരിക്കാനുള്ള Delay Function
+        const delay = ms => new Promise(res => setTimeout(res, ms));
 
         // ==========================================
         // 2. BACKEND API CONNECTION 
@@ -392,7 +395,6 @@
                     updateDashboardStats();
                     renderTable();
                 } else {
-                    // ഷീറ്റ് ഇല്ലാതിരിക്കുകയോ മറ്റെന്തെങ്കിലും എറർ ഉണ്ടെങ്കിലോ ഇനി ബ്ലാങ്ക് ആവാതെ സ്ക്രീനിൽ കാണിക്കും
                     alert("Failed to load data: " + data.message);
                 }
             }).catch(error => {
@@ -466,10 +468,32 @@
 
         document.getElementById('studentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // DUPLICATE VALIDATION - STUDENTS (Case & Type Insensitive)
+            const existingChestNos = (globalDbData.Students || []).map(s => Object.values(s)[0].toString().trim().toUpperCase());
+            let currentBatch = [];
+            let duplicates = [];
+            const rows = document.querySelectorAll('.student-row');
+            
+            rows.forEach(row => {
+                const chestNo = row.querySelector('.st-chest').value.toString().trim().toUpperCase();
+                const name = row.querySelector('.st-name').value;
+                if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) {
+                    duplicates.push(`${chestNo} (${name})`);
+                } else {
+                    currentBatch.push(chestNo);
+                }
+            });
+
+            if(duplicates.length > 0) {
+                alert("⚠️ DUPLICATE ENTRIES FOUND!\n\nThe following Chest Numbers already exist in the database or have been entered multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct them and try saving again.");
+                return; 
+            }
+
             const btn = this.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
-            const rows = document.querySelectorAll('.student-row');
+            
             let successCount = 0;
             try {
                 for (const row of rows) {
@@ -481,21 +505,45 @@
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Students", rowData: rowData }) });
                     let data = await res.json();
                     if(data.status === "success") successCount++;
+                    
+                    await delay(600); // 0.6 second delay to prevent Google Apps Script Crash
                 }
                 alert(`Success: ${successCount} Students saved successfully!`);
                 this.reset();
                 document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
                 loadDropdownData();
-            } catch (error) { alert("Network Error while saving some students."); } 
+            } catch (error) { alert("Network Error while saving some students. Please check connection."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         document.getElementById('eventForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // DUPLICATE VALIDATION - EVENTS
+            const existingEvents = (globalDbData.Events || []).map(ev => Object.values(ev)[0].toString().trim().toUpperCase());
+            let currentBatch = [];
+            let duplicates = [];
+            const rows = document.querySelectorAll('.event-row');
+            
+            rows.forEach(row => {
+                const eventCode = row.querySelector('.ev-code').value.toString().trim().toUpperCase();
+                const eventName = row.querySelector('.ev-name').value;
+                if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) {
+                    duplicates.push(`${eventCode} (${eventName})`);
+                } else {
+                    currentBatch.push(eventCode);
+                }
+            });
+
+            if(duplicates.length > 0) {
+                alert("⚠️ DUPLICATE EVENTS FOUND!\n\nThe following Event Codes already exist in the database or have been entered multiple times:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct the codes and try saving again.");
+                return;
+            }
+
             const btn = this.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
-            const rows = document.querySelectorAll('.event-row');
+            
             let successCount = 0;
             try {
                 for (const row of rows) {
@@ -506,6 +554,8 @@
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Events", rowData: rowData }) });
                     let data = await res.json();
                     if(data.status === "success") successCount++;
+                    
+                    await delay(600); // 0.6 second delay
                 }
                 alert(`Success: ${successCount} Events saved successfully!`);
                 this.reset();
@@ -568,21 +618,41 @@
 
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
-            
             const eventCode = document.getElementById('regEventSelect').value;
+            
+            // DUPLICATE VALIDATION - REGISTRATIONS (String based check)
+            const existingRegs = globalDbData.Registrations || [];
+            let currentBatch = [];
+            let duplicates = [];
             let registrationsToSave = [];
+
             document.querySelectorAll('.reg-student-select').forEach(select => {
-                if(select.value) registrationsToSave.push([eventCode, select.value]);
+                if(select.value) {
+                    const chestNo = select.value.toString().trim().toUpperCase();
+                    const isDbDuplicate = existingRegs.some(reg => Object.values(reg)[0].toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase() && Object.values(reg)[1].toString().trim().toUpperCase() === chestNo);
+                    
+                    if(isDbDuplicate || currentBatch.includes(chestNo)) {
+                        duplicates.push(chestNo);
+                    } else {
+                        currentBatch.push(chestNo);
+                        registrationsToSave.push([eventCode, chestNo]);
+                    }
+                }
             });
+
+            if(duplicates.length > 0) {
+                alert("⚠️ ALREADY REGISTERED!\n\nThe following Chest Numbers are already registered for this event or have been selected multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease remove duplicates and try registering again.");
+                return;
+            }
 
             if(registrationsToSave.length === 0) {
                 alert("Please select at least one student!");
-                btn.innerHTML = originalText; btn.disabled = false;
                 return;
             }
+
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
 
             let successCount = 0;
             try {
@@ -590,6 +660,8 @@
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Registrations", rowData: rowData }) });
                     let data = await res.json();
                     if(data.status === "success") successCount++;
+                    
+                    await delay(600); // 0.6 second delay
                 }
                 alert(`Success: ${successCount} Students registered successfully!`);
                 this.reset();
@@ -637,23 +709,56 @@
 
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const eventCode = document.getElementById('resEventSelect').value;
+            
+            // CHECK IF ALREADY PUBLISHED (Appeal Logic)
+            const existingResults = globalDbData.Results || [];
+            const isAlreadyPublished = existingResults.some(res => Object.values(res)[0].toString().trim().toUpperCase() === eventCode.toString().trim().toUpperCase());
+            
+            if (isAlreadyPublished) {
+                const proceed = confirm("⚠️ ALREADY PUBLISHED!\n\nResults for this event are already in the database. Do you want to OVERWRITE the existing results (e.g., due to an appeal)?\n\nClick 'OK' to Proceed and overwrite, or 'Cancel' to abort.");
+                if (!proceed) {
+                    return; 
+                }
+            }
+            
+            // DUPLICATE VALIDATION - RESULTS
+            let selectedStudents = [];
+            let duplicates = [];
+            let resultsToSave = [];
+            
+            const checkValues = (className, position) => {
+                document.querySelectorAll(className).forEach(select => {
+                    if(select.value) {
+                        const chestNo = select.value.toString().trim().toUpperCase();
+                        if(selectedStudents.includes(chestNo)) {
+                            duplicates.push(chestNo);
+                        } else {
+                            selectedStudents.push(chestNo);
+                            resultsToSave.push([eventCode, chestNo, position]);
+                        }
+                    }
+                });
+            };
+            
+            checkValues('.pos-1', 1); 
+            checkValues('.pos-2', 2); 
+            checkValues('.pos-3', 3);
+            
+            if(duplicates.length > 0) {
+                alert("⚠️ INVALID RESULT ENTRY!\n\nThe following Chest Numbers have been assigned multiple positions in the same event:\n\n• " + duplicates.join("\n• ") + "\n\nA student can only receive one position per event. Please correct and try publishing again.");
+                return; 
+            }
+
             const btn = this.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...'; btn.disabled = true;
             
-            const eventCode = document.getElementById('resEventSelect').value;
-            let resultsToSave = [];
-            
-            const getValues = (className, position) => {
-                document.querySelectorAll(className).forEach(select => {
-                    if(select.value) resultsToSave.push([eventCode, select.value, position]);
-                });
-            };
-            getValues('.pos-1', 1); getValues('.pos-2', 2); getValues('.pos-3', 3);
-            
             try {
                 for (const rowData of resultsToSave) {
                     await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Results", rowData: rowData }) });
+                    
+                    await delay(600); // 0.6 second delay
                 }
                 alert("Success: All results published!");
                 this.reset();
@@ -812,7 +917,7 @@
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        // പേജ് ലോഡ് ആകുമ്പോൾ ഡാഷ്‌ബോർഡ് കണക്ട് ചെയ്യാൻ
+        // Initialize dashboard loading
         window.onload = function() {
             if(targetSheetId) {
                 document.getElementById('loginView').style.display = 'none';
