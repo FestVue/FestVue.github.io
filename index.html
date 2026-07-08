@@ -1,68 +1,128 @@
 <!DOCTYPE html>
-<html lang="ml">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FestVue - The Ultimate Fest Management System</title>
-    
+    <title>FestVue - NextGen Digital Arts Fest Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #046A38;
-            --accent: #D4AF37;
-            --bg: #FDFBF7;
-            --text: #1E293B;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg);
-            font-family: 'Poppins', 'Anek Malayalam', sans-serif;
-            text-align: center;
-            color: var(--text);
-        }
-        h1 {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        h1 span {
-            color: var(--accent);
-        }
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: var(--text);
-            opacity: 0.8;
-        }
-        .login-btn {
-            padding: 12px 24px;
-            background-color: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        .login-btn:hover {
-            background-color: #03522b;
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.6; }
+        
+        /* Navbar */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: var(--white); box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .logo span { color: var(--accent); }
+        .nav-links a { text-decoration: none; color: var(--text); font-weight: 500; padding: 8px 16px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); }
+        
+        /* Hero Section */
+        .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px 5%; background: linear-gradient(135deg, #fdfbf7 0%, #e2e8f0 100%); }
+        .hero h1 { font-size: 3.5rem; color: var(--primary); margin-bottom: 20px; line-height: 1.2; }
+        .hero h1 span { color: var(--accent); }
+        .hero p { font-size: 1.2rem; color: #475569; max-width: 600px; margin-bottom: 40px; }
+        
+        /* Portal Selection Cards */
+        .portal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; width: 100%; max-width: 900px; margin: 0 auto; }
+        .card { background: var(--white); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: left; transition: transform 0.3s ease; border-top: 5px solid var(--primary); }
+        .card:hover { transform: translateY(-5px); }
+        .card.admin-card { border-top-color: #64748b; }
+        
+        .card-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; }
+        .admin-card .card-icon { color: #64748b; }
+        .card h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--text); }
+        .card p { color: #64748b; margin-bottom: 25px; font-size: 0.95rem; }
+        
+        /* Form Elements */
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #475569; }
+        .input-group input { width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; transition: 0.3s; text-transform: uppercase; }
+        .input-group input:focus { outline: none; border-color: var(--primary); background-color: var(--white); }
+        
+        .primary-btn { display: inline-flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 15px; background-color: var(--primary); color: var(--white); border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; }
+        .primary-btn:hover { background-color: #03522b; }
+        
+        .secondary-btn { background-color: #64748b; }
+        .secondary-btn:hover { background-color: #475569; }
+        
+        /* Footer */
+        footer { text-align: center; padding: 30px; color: #64748b; font-size: 0.9rem; border-top: 1px solid #e2e8f0; margin-top: 50px; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            .card { padding: 30px 20px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Fest<span>Vue</span></h1>
-    <p>വിദ്യാഭ്യാസ സ്ഥാപനങ്ങൾക്കായുള്ള സമ്പൂർണ്ണ ഫെസ്റ്റ് മാനേജ്മെന്റ് പോർട്ടൽ<br><br><strong>Coming Soon...</strong></p>
-    
-    <a href="admin.html" class="login-btn">Admin Login</a>
+    <nav>
+        <div class="logo">Fest<span>Vue</span></div>
+        <div class="nav-links">
+            <a href="mailto:resultvue@gmail.com"><i class="fas fa-envelope"></i> Support</a>
+        </div>
+    </nav>
 
+    <section class="hero">
+        <h1>Transform Your <br><span>Arts Festival</span></h1>
+        <p>The ultimate digital platform for seamless event management, live leaderboards, and instant certificate generation.</p>
+        
+        <div class="portal-grid">
+            <div class="card">
+                <i class="fas fa-search card-icon"></i>
+                <h3>Student & Parent Portal</h3>
+                <p>Enter your Institution ID to access live leaderboards, search results, and download certificates.</p>
+                <div class="input-group">
+                    <label>Institution ID</label>
+                    <input type="text" id="instIdInput" placeholder="e.g., FEST101">
+                </div>
+                <button onclick="goToPublicPortal()" class="primary-btn">
+                    View Results <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="card admin-card">
+                <i class="fas fa-user-shield card-icon"></i>
+                <h3>Institution Admin</h3>
+                <p>Manage students, publish results, generate bulk certificates, and oversee your entire festival data.</p>
+                <div style="margin-top: 45px;">
+                    <a href="admin.html" class="primary-btn secondary-btn">
+                        Go to Admin Portal <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 FestVue. Designed for NextGen Festivals.</p>
+    </footer>
+
+    <script>
+        function goToPublicPortal() {
+            const instId = document.getElementById('instIdInput').value.trim().toUpperCase();
+            
+            if(!instId) {
+                alert("Please enter a valid Institution ID to continue.");
+                return;
+            }
+            
+            // ഐഡി സ്റ്റോർ ചെയ്ത ശേഷം public.html ലേക്ക് പോകുന്നു
+            sessionStorage.setItem("publicInstId", instId);
+            window.location.href = "public.html";
+        }
+
+        // എന്റർ കീ അമർത്തിയാലും വർക്ക് ആവാൻ
+        document.getElementById('instIdInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                goToPublicPortal();
+            }
+        });
+    </script>
 </body>
 </html>
