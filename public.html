@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestVue - Student & Public Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&family=Cairo:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #F8FAFC; --text: #1E293B; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+        
+        /* Navbar */
+        nav { background: var(--primary); color: var(--white); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 700; cursor: pointer; }
+        .logo span { color: var(--accent); }
+        .inst-badge { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        
+        /* Hero Section */
+        .hero-section { background: linear-gradient(135deg, var(--primary) 0%, #022c17 100%); color: white; text-align: center; padding: 40px 20px; border-bottom: 4px solid var(--accent); }
+        .hero-section h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+        .hero-section p { font-size: 1.1rem; opacity: 0.9; max-width: 600px; margin: 0 auto 25px auto; }
+        
+        /* Stats Overview Grid */
+        .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 700px; margin: 0 auto; }
+        .overview-card { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(5px); }
+        .overview-card h3 { font-size: 1.8rem; color: var(--accent); font-weight: 700; }
+        .overview-card p { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+        /* Main Container */
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        
+        /* Tab Navigation */
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: var(--white); padding: 8px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 0.95rem; font-weight: 600; color: #64748b; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .tab-btn.active { background: var(--primary); color: var(--white); }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Cards */
+        .card { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f1f5f9; }
+        .card-header { font-size: 1.2rem; font-weight: 700; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Search Box */
+        .search-box { display: flex; gap: 10px; }
+        .search-box input, .search-box select { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; outline: none; transition: 0.3s; background: #f8fafc; }
+        .search-box input:focus, .search-box select:focus { border-color: var(--primary); background: #fff; }
+        .search-box button { padding: 12px 25px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .search-box button:hover { background: #03522b; }
+        
+        /* Result Items */
+        .result-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .result-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+        .result-pos { font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+        .action-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .action-btn { flex: 1; min-width: 130px; padding: 10px; text-align: center; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-cert { background: #e0f2fe; color: #0f172a; border: 1px solid #bae6fd; }
+        .btn-cert:hover { background: #bae6fd; }
+        .btn-poster { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
+        .btn-poster:hover { background: #bbf7d0; }
+
+        /* Podium Winners Style */
+        .podium-box { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .podium-row { display: flex; justify-content: space-between; padding: 12px; border-radius: 8px; font-weight: 600; border: 1px solid #e2e8f0; align-items: center; }
+        .p-1 { background: #fef9c3; border-color: #fde047; color: #713f12; }
+        .p-2 { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+        .p-3 { background: #ffedd5; border-color: #fed7aa; color: #7c2d12; }
+
+        /* Loader */
+        #loader { text-align: center; padding: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #renderContainer { position: absolute; left: -9999px; top: -9999px; }
+        
+        /* Certificate & Poster HTML Template */
+        .cert-template { width: 1122px; height: 793px; background: #fff; padding: 40px; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; }
+        .cert-bg-svg { position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity: 0.06; }
+        .cert-content-box { z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+        .cert-border { position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 3px solid var(--primary); padding: 4px; z-index: 1; pointer-events: none; }
+        .cert-inner-border { border: 1px solid #D4AF37; height: 100%; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%); }
+        .cert-inst { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+        .cert-fest { font-size: 20px; font-weight: 600; color: var(--accent); letter-spacing: 4px; margin-bottom: 30px; text-transform: uppercase; }
+        .cert-title { font-size: 40px; font-weight: 700; color: #1e293b; margin-bottom: 30px; text-transform: uppercase; }
+        .cert-body { font-size: 22px; line-height: 2; color: #334155; max-width: 80%; }
+        .cert-body b { color: var(--primary); font-size: 26px; padding: 0 8px; border-bottom: 2px solid var(--accent); }
+        .cert-footer { display: flex; justify-content: space-between; width: 80%; margin-top: 60px; font-size: 18px; font-weight: 600; color: #475569; }
+
+        .poster-template { width: 1080px; height: 1080px; background: linear-gradient(135deg, #046A38 0%, #022c17 100%); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 60px; box-sizing: border-box; color: white; text-align: center; }
+        .poster-decor { position: absolute; width: 100%; height: 100%; border: 15px solid rgba(212, 175, 55, 0.3); top: 0; left: 0; box-sizing: border-box; pointer-events: none; }
+        .poster-header { font-size: 36px; font-weight: 600; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 40px; z-index: 1; }
+        .poster-photo-frame { width: 350px; height: 350px; border-radius: 50%; border: 10px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; background: #fff; margin-bottom: 40px; z-index: 1; }
+        .poster-congrats { font-size: 60px; font-weight: 700; color: #fff; margin-bottom: 10px; z-index: 1; text-transform: uppercase; }
+        .poster-name { font-size: 45px; font-weight: 700; color: var(--accent); margin-bottom: 20px; z-index: 1; }
+        .poster-desc { font-size: 28px; line-height: 1.6; color: #e2e8f0; z-index: 1; max-width: 900px; }
+        .poster-pos { display: inline-block; background: var(--accent); color: #000; padding: 5px 20px; border-radius: 30px; font-weight: 700; margin-top: 10px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal { background: #fff; padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
+        .modal h3 { margin-bottom: 15px; color: var(--primary); }
+        .modal input[type="file"] { margin-bottom: 20px; width: 100%; }
+
+        @media (max-width: 768px) {
+            .overview-grid { grid-template-columns: 1fr; gap: 10px; }
+            .hero-section h1 { font-size: 1.6rem; }
+            .search-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="window.location.href='index.html'">Fest<span>Vue</span></div>
+        <div class="inst-badge" id="navInstName"><i class="fas fa-school"></i> Loading...</div>
+    </nav>
+
+    <section class="hero-section" id="heroBanner" style="display: none;">
+        <h1 id="topFestName">FESTIVAL NAME</h1>
+        <p id="topFestDesc">Festival short description and details will appear here dynamically from settings configuration.</p>
+        
+        <div class="overview-grid">
+            <div class="overview-card"><h3 id="ovStudents">0</h3><p>Total Students</p></div>
+            <div class="overview-card"><h3 id="ovGroups">0</h3><p>Total Groups</p></div>
+            <div class="overview-card"><h3 id="ovResults">0/0</h3><p style="white-space:nowrap;">Results Published</p></div>
+        </div>
+    </section>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <h3 style="color: #64748b;">Loading Live Data...</h3>
+        <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">Please wait while we fetch the results securely.</p>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('leaderboard')"><i class="fas fa-trophy"></i> Standings</button>
+            <button class="tab-btn" onclick="switchTab('search')"><i class="fas fa-user-graduate"></i> My Results</button>
+            <button class="tab-btn" onclick="switchTab('eventsTab')"><i class="fas fa-list-alt"></i> Event Wise</button>
+        </div>
+
+        <div id="leaderboard" class="tab-content active">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-chart-bar"></i> Group Standings</div>
+                <div id="publicGroupLeaderboard" style="font-size: 1.1rem; line-height: 2;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><i class="fas fa-star"></i> Individual Top Scorers</div>
+                <div id="publicTopScorers"></div>
+            </div>
+        </div>
+
+        <div id="search" class="tab-content">
+            <div class="card">
+                <div class="card-header">Search via Student Chest Number</div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Enter Chest Number (e.g., 102)..." autocomplete="off">
+                    <button onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
+                </div>
+            </div>
+
+            <div id="studentProfile" class="card" style="display: none; background: linear-gradient(135deg, var(--primary) 0%, #022c17 100%); color: white;">
+                <h2 id="stNameDisplay" style="color: var(--accent); margin-bottom: 5px;">Student Name</h2>
+                <div style="font-size: 0.95rem; opacity: 0.9; display: flex; gap: 15px; flex-wrap: wrap;">
+                    <span><i class="fas fa-id-badge"></i> <span id="stChestDisplay">---</span></span>
+                    <span><i class="fas fa-chalkboard-teacher"></i> <span id="stClassDisplay">---</span></span>
+                    <span><i class="fas fa-users"></i> <span id="stGroupDisplay">---</span></span>
+                </div>
+            </div>
+
+            <h3 id="resultHeading" style="margin-bottom: 15px; color: #475569; display: none;">Registered Items & Results Status</h3>
+            <div id="searchResultsContainer"></div>
+        </div>
+
+        <div id="eventsTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">View Results by Event</div>
+                <div class="search-box" style="display: flex; flex-direction: column; gap: 12px;">
+                    <select id="searchEventSelect"><option value="">-- Select Event --</option></select>
+                    <button onclick="searchEventWiseResults()" style="width: 100%;"><i class="fas fa-eye"></i> View Winners Podium</button>
+                </div>
+            </div>
+            <div id="eventWiseContainer"></div>
+        </div>
+
+        <div class="card" id="latestAnnouncementsBox">
+            <div class="card-header" style="color: #b45309;"><i class="fas fa-bullhorn"></i> Recently Announced Results</div>
+            <div id="latestAnnouncementsList" style="font-weight: 500; font-size: 0.95rem;"></div>
+        </div>
+
+    </div>
+
+    <div id="renderContainer">
+        <div id="certRender" class="cert-template">
+            <svg class="cert-bg-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polygon points="0,0 20,0 0,20" fill="#046A38" /><polygon points="100,0 80,0 100,20" fill="#046A38" />
+                <polygon points="0,100 20,100 0,80" fill="#046A38" /><polygon points="100,100 80,100 100,80" fill="#046A38" />
+                <circle cx="50" cy="50" r="25" fill="none" stroke="#046A38" stroke-width="0.5" />
+            </svg>
+            <div class="cert-border"></div>
+            <div class="cert-inner-border">
+                <div class="cert-inst" id="c_inst">INSTITUTION NAME</div>
+                <div class="cert-fest" id="c_fest_title">ARTS FESTIVAL</div>
+                <div class="cert-title">Certificate of Merit</div>
+                <div class="cert-body" id="c_body_content">
+                    This is to certify that <b id="c_name">STUDENT NAME</b> (Chest No: <b id="c_chest">101</b>) of Class <b id="c_class">10A</b> representing Group <b id="c_group">RED</b> has secured <b id="c_pos">FIRST</b> PLACE in the event <b id="c_event">EVENT NAME</b>.
+                </div>
+                <div class="cert-footer">
+                    <div>Date: <span id="c_date"></span></div>
+                    <div id="c_signature_label" style="border-top: 1px solid #475569; padding-top: 5px; min-width: 200px;">Signature</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="posterRender" class="poster-template">
+            <div class="poster-decor"></div>
+            <div class="poster-header" id="p_inst">INSTITUTION NAME</div>
+            <img id="p_photo" class="poster-photo-frame" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Student">
+            <div class="poster-congrats">Congratulations!</div>
+            <div class="poster-name" id="p_name">STUDENT NAME</div>
+            <div class="poster-desc">For securing the <span class="poster-pos" id="p_pos">FIRST PLACE</span><br>in <b id="p_event" style="color: var(--accent);">EVENT NAME</b></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="photoModal">
+        <div class="modal">
+            <h3>Generate WhatsApp Poster</h3>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px;">Upload student's photo to create a personalized celebration poster.</p>
+            <input type="file" id="posterPhotoInput" accept="image/*">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeModal()" class="primary-btn" style="background: #e2e8f0; color: #1e293b;">Cancel</button>
+                <button onclick="processPoster()" class="primary-btn" id="generatePosterBtn"><i class="fas fa-magic"></i> Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        const instId = sessionStorage.getItem("publicInstId");
+        let globalDbData = {};
+        let currentPosterData = null;
+        let configData = { festName: "FESTVUE ARTS FEST", festDesc: "Cultural Talent Championship Portal", authority: "Convener", certTemplate: "" };
+
+        window.onload = function() {
+            if(!instId) {
+                alert("Session Expired or Invalid Access. Redirecting to Home.");
+                window.location.href = "index.html";
+                return;
+            }
+            fetchPublicData();
+        };
+
+        function getVal(row, index) {
+            if (!row) return "";
+            const keys = Object.keys(row).filter(k => k !== 'rowIndex');
+            return keys[index] ? row[keys[index]] : "";
+        }
+
+        async function fetchPublicData() {
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    globalDbData = data.data;
+                    document.getElementById('navInstName').innerHTML = `<i class="fas fa-school"></i> ${data.institutionName}`;
+                    
+                    parseConfigurations(data.institutionName);
+                    calculateLeaderboard();
+                    buildEventDropdowns();
+                    renderOverviewCounters();
+                    renderLatestAnnouncements();
+
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('heroBanner').style.display = 'block';
+                    document.getElementById('mainContent').style.display = 'block';
+                } else {
+                    alert(data.message || "Institution ID not found.");
+                    window.location.href = "index.html";
+                }
+            } catch (error) {
+                alert("Network Error. Please check connection.");
+                window.location.href = "index.html";
+            }
+        }
+
+               function parseConfigurations(defaultInstName) {
+            const settings = globalDbData.Settings || [];
+            settings.forEach(row => {
+                const type = getVal(row, 0).toString().toUpperCase();
+                const key = getVal(row, 1).toString().toUpperCase();
+                const val = getVal(row, 2);
+                
+                if(type === "CONFIG") {
+                    if(key === 'FEST_NAME') configData.festName = val || configData.festName;
+                    if(key === 'FEST_DESC') configData.festDesc = val || configData.festDesc;
+                    if(key === 'AUTHORITY') configData.authority = val || configData.authority;
+                    if(key === 'DATE') configData.date = val || new Date().toLocaleDateString('en-GB');
+                    if(key === 'CERT_TEMPLATE') configData.certTemplate = val || configData.certTemplate;
+                }
+            });
+            document.getElementById('topFestName').innerText = configData.festName;
+            document.getElementById('topFestDesc').innerText = configData.festDesc;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+        }
+
+        function renderOverviewCounters() {
+            const totalStudents = (globalDbData.Students || []).length;
+            const totalEvents = (globalDbData.Events || []).length;
+            const results = globalDbData.Results || [];
+            
+            const publishedUniqueEvents = [...new Set(results.map(r => getVal(r, 0).toString().trim()))].length;
+            
+            // Group count extraction
+            const settings = globalDbData.Settings || [];
+            const groupCount = settings.filter(row => getVal(row,0).toString().toUpperCase() === "GROUP").length;
+
+            document.getElementById('ovStudents').innerText = totalStudents;
+            document.getElementById('ovGroups').innerText = groupCount || "0";
+            document.getElementById('ovResults').innerText = `${publishedUniqueEvents}/${totalEvents}`;
+        }
+
+        function buildEventDropdowns() {
+            const events = globalDbData.Events || [];
+            let options = '<option value="">-- Choose Event --</option>';
+            events.forEach(ev => {
+                options += `<option value="${getVal(ev,0)}">${getVal(ev,0)} - ${getVal(ev,1)} (${getVal(ev,2)})</option>`;
+            });
+            document.getElementById('searchEventSelect').innerHTML = options;
+        }
+
+        function renderLatestAnnouncements() {
+            const results = globalDbData.Results || [];
+            const events = globalDbData.Events || [];
+            const uniqueEventCodes = [...new Set(results.map(r => getVal(r,0).toString().trim()))].reverse().slice(0, 5);
+            
+            let html = "";
+            uniqueEventCodes.forEach(code => {
+                const ev = events.find(e => getVal(e,0) == code);
+                if(ev) {
+                    html += `<div style="padding:10px 0; border-bottom:1px dashed #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                                <span>🎉 Results Published for <b>${getVal(ev,1)}</b> (${getVal(ev,2)})</span>
+                                <button class="primary-btn" style="padding:4px 12px; font-size:0.8rem; margin:0;" onclick="viewDirectEvent('${code}')">View</button>
+                             </div>`;
+                }
+            });
+            document.getElementById('latestAnnouncementsList').innerHTML = html || "No results published recently.";
+        }
+
+        function viewDirectEvent(code) {
+            switchTab('eventsTab');
+            document.getElementById('searchEventSelect').value = code;
+            searchEventWiseResults();
+        }
+
+        // ==========================================
+        // Advanced Chest Search - Shows All items
+        // ==========================================
+        function searchStudent() {
+            const searchQ = document.getElementById('searchInput').value.trim().toUpperCase();
+            if(!searchQ) return;
+
+            const students = globalDbData.Students || [];
+            const results = globalDbData.Results || [];
+            const events = globalDbData.Events || [];
+            const regs = globalDbData.Registrations || [];
+            const container = document.getElementById('searchResultsContainer');
+            
+            container.innerHTML = "";
+            document.getElementById('resultHeading').style.display = "none";
+            document.getElementById('studentProfile').style.display = "none";
+
+            const student = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === searchQ);
+            if(!student) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle" style="font-size:2rem; margin-bottom:10px;"></i><br>Chest Number <b>${searchQ}</b> not found!</div>`;
+                return;
+            }
+
+            document.getElementById('studentProfile').style.display = "block";
+            document.getElementById('stNameDisplay').innerText = getVal(student, 1);
+            document.getElementById('stChestDisplay').innerText = getVal(student, 0);
+            document.getElementById('stClassDisplay').innerText = getVal(student, 3);
+            document.getElementById('stGroupDisplay').innerText = getVal(student, 5) || "N/A";
+
+            // Find all registered items for this student
+            const studentRegs = regs.filter(r => getVal(r, 1).toString().trim().toUpperCase() === searchQ);
+            if(studentRegs.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; background:#f8fafc; border-radius:10px;">This student hasn't registered for any events yet.</div>`;
+                return;
+            }
+
+            document.getElementById('resultHeading').style.display = "block";
+
+            studentRegs.forEach(rg => {
+                const evCode = getVal(rg, 0);
+                const evItem = events.find(e => getVal(e, 0) == evCode);
+                const evName = evItem ? getVal(evItem, 1) : evCode;
+
+                // Check if result has come for this specific event
+                const eventResults = results.filter(r => getVal(r,0) === evCode);
+                const studentWon = eventResults.find(r => getVal(r,1).toString().trim().toUpperCase() === searchQ);
+                
+                let statusHtml = "";
+                let actionBtnHtml = "";
+
+                if (eventResults.length === 0) {
+                    // Result not yet announced
+                    statusHtml = `<div class="result-pos" style="color:#64748b;"><i class="fas fa-clock"></i> Result not announced yet</div>`;
+                } else {
+                    // Result announced
+                    if (studentWon) {
+                        const pos = getVal(studentWon, 2);
+                        let posText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
+                        let medal = pos == 1 ? "🥇" : pos == 2 ? "🥈" : "🥉";
+                        statusHtml = `<div class="result-pos">${medal} ${posText} PLACE</div>`;
+                        
+                        const certData = encodeURIComponent(JSON.stringify({
+                            name: getVal(student,1), chest: getVal(student,0), cls: getVal(student,3),
+                            group: getVal(student,5), event: evName, position: posText
+                        }));
+                        actionBtnHtml = `
+                            <div class="action-btns">
+                                <button onclick="downloadCert('${certData}')" class="action-btn btn-cert"><i class="fas fa-file-download"></i> Certificate</button>
+                                <button onclick="openPosterModal('${certData}')" class="action-btn btn-poster"><i class="fab fa-whatsapp"></i> Share Poster</button>
+                            </div>`;
+                    } else {
+                        statusHtml = `<div class="result-pos" style="color:#ef4444;"><i class="fas fa-times-circle"></i> No Position Secured</div>`;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="result-item">
+                        <div class="result-title">${evName} <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(${evCode})</span></div>
+                        ${statusHtml}
+                        ${actionBtnHtml}
+                    </div>`;
+            });
+        }
+
+        // ==========================================
+        // 3. Event Wise Podium Finder Engine
+        // ==========================================
+        function searchEventWiseResults() {
+            const evCode = document.getElementById('searchEventSelect').value;
+            const container = document.getElementById('eventWiseContainer');
+            container.innerHTML = "";
+
+            if(!evCode) { alert("Please choose an event first."); return; }
+
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            const eventResults = results.filter(r => getVal(r,0) === evCode).sort((a,b) => getVal(a,2) - getVal(b,2));
+
+            if(eventResults.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:#64748b;" class="card">Results for this event have not been declared yet.</div>`;
+                return;
+            }
+
+            let html = `<div class="card"><div class="card-header"><i class="fas fa-medal"></i> Winners Podium Standings</div><div class="podium-box">`;
+            
+            eventResults.forEach(res => {
+                const chest = getVal(res,1);
+                const pos = parseInt(getVal(res,2));
+                const st = students.find(s => getVal(s,0) == chest);
+                
+                const name = st ? getVal(st,1) : "Unknown Student";
+                const cls = st ? getVal(st,3) : "";
+                const group = st ? getVal(st,5) : "";
+                
+                let pClass = pos === 1 ? "p-1" : pos === 2 ? "p-2" : "p-3";
+                let prizeName = pos === 1 ? "🥇 1st Place" : pos === 2 ? "🥈 2nd Place" : "🥉 3rd Place";
+
+                html += `<div class="podium-row ${pClass}">
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:700; opacity:0.8;">${prizeName}</div>
+                                <div style="font-size:1.1rem; font-weight:700; margin:2px 0;">${name}</div>
+                                <div style="font-size:0.85rem; opacity:0.9;">Class: ${cls} | Group: ${group}</div>
+                            </div>
+                            <div style="font-size:1.3rem; font-weight:700;">#${chest}</div>
+                         </div>`;
+            });
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // Leaderboard Tab Systems 
+        // ==========================================
+        function calculateLeaderboard() {
+            const results = globalDbData.Results || []; const students = globalDbData.Students || [];
+            let groupPoints = {}; let studentPoints = {};
+
+            results.forEach(res => {
+                const chestNo = getVal(res, 1); const position = parseInt(getVal(res, 2));
+                let points = position === 1 ? 5 : position === 2 ? 3 : position === 3 ? 1 : 0;
+                if(!chestNo || points === 0) return;
+
+                const st = students.find(s => getVal(s, 0) == chestNo);
+                if(st) {
+                    const group = getVal(st, 5); const rawGender = getVal(st, 2).toString().trim().toLowerCase(); 
+                    let genderCat = "other";
+                    if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
+                    if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
+                    const name = getVal(st, 1);
+                    if(group) groupPoints[group] = (groupPoints[group] || 0) + points;
+                    if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0, class: getVal(st,3) };
+                    studentPoints[chestNo].points += points;
+                }
+            });
+
+            let groupHTML = "";
+            Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]).forEach((g, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
+                groupHTML += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #e2e8f0;"><span>${medal} <b style="color:#334155;">${g[0]}</b></span><span style="font-weight:bold; color:var(--primary); background:#e0f2fe; padding:2px 12px; border-radius:20px;">${g[1]} Pts</span></div>`;
+            });
+            document.getElementById('publicGroupLeaderboard').innerHTML = groupHTML || "<p style='color:#64748b;'>Results not published yet.</p>";
+
+            let maxBoyPoints = 0; let maxGirlPoints = 0; let topBoys = []; let topGirls = [];
+            Object.values(studentPoints).forEach(data => {
+                if (data.gender === "boys") {
+                    if (data.points > maxBoyPoints) { maxBoyPoints = data.points; topBoys = [data]; } 
+                    else if (data.points === maxBoyPoints && maxBoyPoints > 0) { topBoys.push(data); }
+                } else if (data.gender === "girls") {
+                    if (data.points > maxGirlPoints) { maxGirlPoints = data.points; topGirls = [data]; } 
+                    else if (data.points === maxGirlPoints && maxGirlPoints > 0) { topGirls.push(data); }
+                }
+            });
+
+            let topHTML = "";
+            if (topBoys.length > 0) {
+                topHTML += `<div style="padding:15px; background:#f0fdf4; border-radius:10px; margin-bottom:15px; border-left: 4px solid #166534;"><span style="font-size: 0.9rem; color: #166534; font-weight: 700; text-transform:uppercase;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
+                topBoys.forEach(boy => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${boy.name}</b> <span style="font-size: 0.9rem; color:#475569;">${boy.class}</span></div>`; });
+                topHTML += `</div>`;
+            }
+            if (topGirls.length > 0) {
+                topHTML += `<div style="padding:15px; background:#fffbeb; border-radius:10px; border-left: 4px solid #b45309;"><span style="font-size: 0.9rem; color: #b45309; font-weight: 700; text-transform:uppercase;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
+                topGirls.forEach(girl => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${girl.name}</b> <span style="font-size: 0.9rem; color:#475569;">${girl.class}</span></div>`; });
+                topHTML += `</div>`;
+            }
+            document.getElementById('publicTopScorers').innerHTML = topHTML || "<p style='color:#64748b;'>No winners declared yet.</p>";
+        }
+
+               // ==========================================
+        // Image Processing Certificate Engines
+        // ==========================================
+        async function downloadCert(encodedData) {
+            // --- കോഡിന്റെ മുകളിലുള്ള ഭാഗം (ഡാറ്റ എടുക്കുന്നു) ---
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
+            
+            document.getElementById('c_inst').innerText = instNameTxt;
+            
+            // --- നിങ്ങൾ ചോദിച്ച പ്രധാന കോഡ് (ഡൈനാമിക് ആയി വാചകങ്ങൾ മാറ്റുന്നു) ---
+            document.getElementById('c_fest_title').innerText = configData.festName;
+            document.getElementById('c_signature_label').innerText = configData.authority;
+            document.getElementById('c_date').innerText = configData.date;
+
+            let dynamicText = configData.certTemplate
+                .replace(/\[NAME\]/g, `<b>${data.name}</b>`)
+                .replace(/\[CHEST\]/g, `<b>${data.chest}</b>`)
+                .replace(/\[CLASS\]/g, `<b>${data.cls}</b>`)
+                .replace(/\[GROUP\]/g, `<b>${data.group || "N/A"}</b>`)
+                .replace(/\[EVENT\]/g, `<b>${data.event}</b>`)
+                .replace(/\[POSITION\]/g, `<b>${data.position}</b>`);
+            
+            document.getElementById('c_body_content').innerHTML = dynamicText;
+
+            // --- കോഡിന്റെ താഴെയുള്ള ഭാഗം (ഇമേജ് ജനറേറ്റ് ചെയ്ത് ഡൗൺലോഡ് ചെയ്യുന്നു) ---
+            const btn = event.currentTarget; 
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...'; 
+            btn.disabled = true;
+            
+            try {
+                const element = document.getElementById('certRender');
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+                const link = document.createElement('a');
+                link.download = `${data.chest}_Certificate.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            } catch (err) { 
+                alert("Error generating certificate. Please try from a different browser."); 
+            } finally { 
+                btn.innerHTML = originalContent; 
+                btn.disabled = false; 
+            }
+        }
+
+        function openPosterModal(encodedData) {
+            currentPosterData = JSON.parse(decodeURIComponent(encodedData));
+            document.getElementById('posterPhotoInput').value = "";
+            document.getElementById('photoModal').style.display = "flex";
+        }
+
+        function closeModal() { document.getElementById('photoModal').style.display = "none"; currentPosterData = null; }
+
+        async function processPoster() {
+            const fileInput = document.getElementById('posterPhotoInput');
+            if(!fileInput.files.length) { alert("Please select a photo first!"); return; }
+
+            const btn = document.getElementById('generatePosterBtn'); const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
+
+            try {
+                const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
+                               // ... പഴയ കോഡിന് പകരം ...
+                document.getElementById('p_inst').innerText = instNameTxt;
+                document.getElementById('p_name').innerText = currentPosterData.name;
+                document.getElementById('p_event').innerText = currentPosterData.event;
+                document.getElementById('p_pos').innerText = currentPosterData.position + " PLACE";
+
+                const photoUrl = URL.createObjectURL(fileInput.files[0]);
+                const imgElement = document.getElementById('p_photo');
+                imgElement.src = photoUrl;
+
+                await new Promise((resolve) => { imgElement.onload = resolve; });
+
+                const element = document.getElementById('posterRender');
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+                
+                const link = document.createElement('a');
+                link.download = `${currentPosterData.name}_Poster.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                closeModal();
+            } catch (err) { alert("Error generating poster."); } finally { btn.innerHTML = originalBtnText; btn.disabled = false; }
+        }
+    </script>
+</body>
+</html>
