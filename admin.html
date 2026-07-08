@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FestVue - Admin Portal</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700&family=Cairo:wght@300;400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root { --primary: #046A38; --accent: #D4AF37; --bg: #FDFBF7; --text: #1E293B; --white: #FFFFFF; --sidebar-width: 260px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
         
         #loginView { display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -24,8 +25,8 @@
         
         .input-group { margin-bottom: 20px; width: 100%; }
         .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #475569; }
-        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background-color: #f8fafc; transition: 0.3s; }
-        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 106, 56, 0.1); background-color: var(--white); }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background-color: #f8fafc; transition: 0.3s; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 106, 56, 0.1); background-color: var(--white); }
         
         .primary-btn { padding: 12px 24px; background-color: var(--primary); color: var(--white); border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .primary-btn:hover { background-color: #03522b; }
@@ -102,6 +103,7 @@
                 <li><a href="#" class="nav-link" onclick="switchTab('events')"><i class="fas fa-list-alt"></i> Manage Events</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('registration')"><i class="fas fa-clipboard-check"></i> Event Registration</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('results')"><i class="fas fa-trophy"></i> Publish Results</a></li>
+                <li><a href="#" class="nav-link" onclick="switchTab('printCenter')"><i class="fas fa-print"></i> Print Center</a></li>
                 <li><a href="#" class="nav-link" onclick="switchTab('settingsPage')"><i class="fas fa-cog"></i> Master Settings</a></li>
                 <li><a href="#" style="margin-top: 40px; color: #ff5a5f;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
@@ -262,6 +264,46 @@
                     </div>
                 </section>
 
+                <section id="printCenter" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h3><i class="fas fa-cog"></i> Print Management & Configuration</h3></div>
+                        <div class="form-grid">
+                            <div class="input-group"><label>Institution Name</label><input type="text" id="printInstName"></div>
+                            <div class="input-group"><label>Fest Name</label><input type="text" id="printFestName" placeholder="e.g., ARTS FEST 2026"></div>
+                            <div class="input-group"><label>Signature Authority Label</label><input type="text" id="printAuthority" placeholder="e.g., Principal / Convener"></div>
+                            <div class="input-group"><label>Date of Issue</label><input type="text" id="printDate"></div>
+                        </div>
+                        
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Certificate Text Content Template</label>
+                            <textarea id="printCertTemplate" rows="3" style="resize: vertical; font-family:inherit;"></textarea>
+                            <p style="font-size: 0.8rem; color:#64748b; margin-top:5px; line-height: 1.4;">
+                                <i class="fas fa-lightbulb"></i> Use placeholders: <b>[NAME]</b>, <b>[CHEST]</b>, <b>[CLASS]</b>, <b>[GROUP]</b>, <b>[EVENT]</b>, <b>[POSITION]</b>. System will replace them automatically for each student.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="card">
+                            <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;"><i class="fas fa-trophy"></i> Certificate Print Center</h3>
+                            <div class="input-group">
+                                <label>Select Event to Generate</label>
+                                <select id="printCertEventSelect"><option value="all">-- All Published Results --</option></select>
+                            </div>
+                            <button type="button" onclick="generateCertificates()" class="primary-btn" style="width: 100%; background-color: #b45309;"><i class="fas fa-print"></i> Generate & Print Certificates</button>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;"><i class="fas fa-id-card"></i> Chest Number Card Printing (6 Per Page)</h3>
+                            <div class="input-group">
+                                <label>Select Class</label>
+                                <select id="printChestClassSelect"><option value="all">-- All Registered Classes --</option></select>
+                            </div>
+                            <button type="button" onclick="generateChestCards()" class="primary-btn" style="width: 100%;"><i class="fas fa-print"></i> Generate & Print Chest Cards</button>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="settingsPage" class="page-section">
                     <div class="settings-grid">
                         <div class="card">
@@ -320,6 +362,12 @@
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('loginView').style.display = 'flex';
             document.getElementById('loginForm').reset();
+            
+            // ലോഗിൻ ബട്ടണും മെസ്സേജും പഴയതുപോലെ ആക്കാനുള്ള കോഡ്
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = 'Login';
+            btn.disabled = false;
+            document.getElementById('loginMessage').innerText = '';
         }
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
@@ -390,6 +438,10 @@
                     updateDashboardStats();
                     renderTable();
                     renderSettingsLists();
+                    
+                    document.getElementById('printInstName').value = sessionStorage.getItem("instName") || "";
+                    document.getElementById('printDate').value = new Date().toLocaleDateString('en-GB');
+                    document.getElementById('printCertTemplate').value = "This is to certify that [NAME] (Chest No: [CHEST]) of Class [CLASS] representing Group [GROUP] has secured [POSITION] PLACE in the event [EVENT] conducted in the cultural festival.";
                 } else { alert("Failed to load data: " + data.message); }
             }).catch(error => { console.log(error); alert("Network error while loading data."); });
         }
@@ -410,6 +462,9 @@
             rawClassOptionsHTML = '<option value="">-- Select Class --</option>'; 
             classCategoryMap = {};
 
+            let printClassOptions = '<option value="all">-- All Registered Classes --</option>';
+            let printEventOptions = '<option value="all">-- All Published Results --</option>';
+
             settings.forEach(row => {
                 const type = getVal(row, 0).toString().toUpperCase();
                 const val1 = getVal(row, 1);
@@ -420,6 +475,7 @@
                 if(type === 'CLASS_NAME' && val1) rawClassOptionsHTML += `<option value="${val1}">${val1}</option>`;
                 if(type === 'CLASS' && val1) {
                     classOptionsHTML += `<option value="${val1}">${val1}</option>`;
+                    printClassOptions += `<option value="${val1}">${val1}</option>`;
                     classCategoryMap[val1] = val2; 
                 }
             });
@@ -428,14 +484,19 @@
             document.querySelectorAll('.st-group').forEach(sel => { sel.innerHTML = groupOptionsHTML; });
             document.querySelectorAll('.st-class').forEach(sel => { sel.innerHTML = classOptionsHTML; });
             document.getElementById('mapClassSelect').innerHTML = rawClassOptionsHTML; 
+            document.getElementById('printChestClassSelect').innerHTML = printClassOptions;
 
             let eventOptions = '<option value="">-- Choose Event --</option>';
             events.forEach(ev => {
                 const evCode = getVal(ev, 0); const evName = getVal(ev, 1);
-                if(evCode) eventOptions += `<option value="${evCode}">${evCode} - ${evName}</option>`;
+                if(evCode) {
+                    eventOptions += `<option value="${evCode}">${evCode} - ${evName}</option>`;
+                    printEventOptions += `<option value="${evCode}">${evCode} - ${evName}</option>`;
+                }
             });
             document.getElementById('regEventSelect').innerHTML = eventOptions;
             document.getElementById('resEventSelect').innerHTML = eventOptions;
+            document.getElementById('printCertEventSelect').innerHTML = printEventOptions;
 
             document.querySelectorAll('.reg-student-select').forEach(sel => sel.innerHTML = '<option value="">-- Select Event First --</option>');
             document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = '<option value="">-- Select Event First --</option>');
@@ -547,10 +608,7 @@
         // ==========================================
         // 4. BULK ENTRY FORMS (Manual & Excel Upload)
         // ==========================================
-        
-        // --- EXCEL UPLOAD LOGIC FOR STUDENTS ---
         function downloadStudentTemplate() {
-            // Download as CSV to keep it simple, but script accepts .xlsx to upload!
             const csvContent = "Chest No,Name,Gender,Class,Category,Group\n101,JOHN DOE,MALE,10A,SENIOR,RED";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
@@ -562,8 +620,7 @@
             const fileInput = document.getElementById('studentExcelInput');
             if(!fileInput.files.length) { alert("Please select an Excel or CSV file first."); return; }
             
-            const btn = event.currentTarget; 
-            const originalText = btn.innerHTML;
+            const btn = event.currentTarget; const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading...'; btn.disabled = true;
 
             const reader = new FileReader();
@@ -580,8 +637,7 @@
                     
                     if(!isValidHeader) {
                         alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template and try again.`);
-                        btn.innerHTML = originalText; btn.disabled = false;
-                        return;
+                        btn.innerHTML = originalText; btn.disabled = false; return;
                     }
 
                     const existingChestNos = (globalDbData.Students || []).map(s => getVal(s, 0).toString().trim().toUpperCase());
@@ -592,38 +648,24 @@
                         const name = (row['Name'] || "").toString().toUpperCase();
                         if(!chestNo) return;
                         
-                        if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) { 
-                            duplicates.push(`${chestNo} (${name})`); 
-                        } else { 
+                        if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) { duplicates.push(`${chestNo} (${name})`); } 
+                        else { 
                             currentBatch.push(chestNo); 
-                            rowsDataToSave.push([
-                                chestNo, name, 
-                                (row['Gender'] || "").toString(), 
-                                (row['Class'] || "").toString().toUpperCase(), 
-                                (row['Category'] || "").toString().toUpperCase(), 
-                                (row['Group'] || "").toString().toUpperCase()
-                            ]); 
+                            rowsDataToSave.push([chestNo, name, (row['Gender'] || "").toString(), (row['Class'] || "").toString().toUpperCase(), (row['Category'] || "").toString().toUpperCase(), (row['Group'] || "").toString().toUpperCase()]); 
                         }
                     });
 
-                    if(duplicates.length > 0) { 
-                        alert("⚠️ DUPLICATE ENTRIES FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); 
-                        btn.innerHTML = originalText; btn.disabled = false; return; 
-                    }
-                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); btn.innerHTML = originalText; btn.disabled = false; return; }
+                    if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); btn.innerHTML = originalText; btn.disabled = false; return; }
+                    if(rowsDataToSave.length === 0) { alert("No valid data found."); btn.innerHTML = originalText; btn.disabled = false; return; }
                     
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
-                    if((await res.json()).status === "success") {
-                        alert(`Success: ${rowsDataToSave.length} Students uploaded successfully!`); 
-                        fileInput.value = ""; loadDropdownData();
-                    }
-                } catch (error) { alert("Error reading file. Make sure it's a valid Excel or CSV."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+                    if((await res.json()).status === "success") { alert(`Success: ${rowsDataToSave.length} Students uploaded!`); fileInput.value = ""; loadDropdownData(); }
+                } catch (error) { alert("Error reading file."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
-        // --- EXCEL UPLOAD LOGIC FOR EVENTS ---
         function downloadEventTemplate() {
             const csvContent = "Event Code,Event Name,Category,Gender\nOP101,OPPANA,SENIOR,GIRLS";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -636,8 +678,7 @@
             const fileInput = document.getElementById('eventExcelInput');
             if(!fileInput.files.length) { alert("Please select an Excel or CSV file first."); return; }
             
-            const btn = event.currentTarget; 
-            const originalText = btn.innerHTML;
+            const btn = event.currentTarget; const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading...'; btn.disabled = true;
 
             const reader = new FileReader();
@@ -652,10 +693,7 @@
                     const expectedHeaders = ["Event Code", "Event Name", "Category", "Gender"];
                     const isValidHeader = expectedHeaders.every(h => actualHeaders.includes(h));
                     
-                    if(!isValidHeader) {
-                        alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template and try again.`);
-                        btn.innerHTML = originalText; btn.disabled = false; return;
-                    }
+                    if(!isValidHeader) { alert(`⚠️ INVALID FILE FORMAT!\n\nExpected Headers: ${expectedHeaders.join(", ")}\nFound: ${actualHeaders.join(", ")}\n\nPlease download the template and try again.`); btn.innerHTML = originalText; btn.disabled = false; return; }
 
                     const existingEvents = (globalDbData.Events || []).map(ev => getVal(ev, 0).toString().trim().toUpperCase());
                     let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
@@ -665,36 +703,21 @@
                         const eventName = (row['Event Name'] || "").toString();
                         if(!eventCode) return;
                         
-                        if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) { 
-                            duplicates.push(`${eventCode} (${eventName})`); 
-                        } else { 
-                            currentBatch.push(eventCode); 
-                            rowsDataToSave.push([
-                                eventCode, eventName, 
-                                (row['Category'] || "").toString().toUpperCase(), 
-                                (row['Gender'] || "").toString()
-                            ]); 
-                        }
+                        if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) { duplicates.push(`${eventCode} (${eventName})`); } 
+                        else { currentBatch.push(eventCode); rowsDataToSave.push([eventCode, eventName, (row['Category'] || "").toString().toUpperCase(), (row['Gender'] || "").toString()]); }
                     });
 
-                    if(duplicates.length > 0) { 
-                        alert("⚠️ DUPLICATE EVENTS FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); 
-                        btn.innerHTML = originalText; btn.disabled = false; return; 
-                    }
-                    if(rowsDataToSave.length === 0) { alert("No valid data found to upload."); btn.innerHTML = originalText; btn.disabled = false; return; }
+                    if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND IN FILE!\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct your file and try again."); btn.innerHTML = originalText; btn.disabled = false; return; }
+                    if(rowsDataToSave.length === 0) { alert("No valid data found."); btn.innerHTML = originalText; btn.disabled = false; return; }
                     
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
-                    if((await res.json()).status === "success") {
-                        alert(`Success: ${rowsDataToSave.length} Events uploaded successfully!`); 
-                        fileInput.value = ""; loadDropdownData();
-                    }
+                    if((await res.json()).status === "success") { alert(`Success: ${rowsDataToSave.length} Events uploaded!`); fileInput.value = ""; loadDropdownData(); }
                 } catch (error) { alert("Error reading file."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
-        // --- MANUAL ENTRY LOGIC ---
         function addStudentRow() {
             const container = document.getElementById('studentRowsContainer');
             const div = document.createElement('div'); div.className = 'form-grid student-row';
@@ -721,28 +744,27 @@
             container.appendChild(div);
         }
 
+        // തിരികെ കൊണ്ടുവന്നത്: വിന്നർ ഫീൽഡ് ചേർക്കാനുള്ള ഗ്ലോബൽ ഫംഗ്ഷൻ
+        function addWinnerField(containerId) {
+            const container = document.getElementById(containerId);
+            const firstSelect = container.querySelector('select');
+            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
+            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
+            div.appendChild(newSelect);
+            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
+        }
+
         document.getElementById('studentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             if(editingRowData.sheet === "Students" && editingRowData.index) {
                 const row = document.querySelector('.student-row');
-                const rowData = [
-                    row.querySelector('.st-chest').value.toUpperCase(), row.querySelector('.st-name').value.toUpperCase(),
-                    row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(),
-                    row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()
-                ];
-                const btn = this.querySelector('button[type="submit"]');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
+                const rowData = [row.querySelector('.st-chest').value.toUpperCase(), row.querySelector('.st-name').value.toUpperCase(), row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(), row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()];
+                const btn = this.querySelector('button[type="submit"]'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
                 try {
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "updateData", targetSheetId: targetSheetId, sheetName: "Students", rowIndex: editingRowData.index, rowData: rowData }) });
-                    if((await res.json()).status === "success") {
-                        alert("Student updated successfully!"); this.reset();
-                        btn.innerHTML = '<i class="fas fa-save"></i> Save All Students';
-                        editingRowData = { index: null, sheet: null };
-                        loadDropdownData(); switchTab('dashboard');
-                    }
-                } catch(err) { alert("Error updating."); } finally { btn.disabled = false; }
-                return;
+                    if((await res.json()).status === "success") { alert("Student updated!"); this.reset(); btn.innerHTML = '<i class="fas fa-save"></i> Save All Students'; editingRowData = { index: null, sheet: null }; loadDropdownData(); switchTab('dashboard'); }
+                } catch(err) { alert("Error."); } finally { btn.disabled = false; } return;
             }
 
             const existingChestNos = (globalDbData.Students || []).map(s => getVal(s, 0).toString().trim().toUpperCase());
@@ -753,41 +775,26 @@
                 if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) { duplicates.push(`${chestNo} (${name})`); } 
                 else { currentBatch.push(chestNo); rowsDataToSave.push([chestNo, name, row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(), row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()]); }
             });
-            if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND!\n\nThe following Chest Numbers already exist or are typed multiple times:\n• " + duplicates.join("\n• ")); return; }
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND!\n\nThe following Chest Numbers already exist in the database or have been entered multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct them and try saving again."); return; }
             
             const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
-                if((await res.json()).status === "success") {
-                    alert("Students saved successfully!"); this.reset();
-                    document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
-                    loadDropdownData();
-                }
-            } catch (error) { alert("Error saving students."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+                if((await res.json()).status === "success") { alert("Students saved!"); this.reset(); document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); }); loadDropdownData(); }
+           } catch (error) { alert("Error saving students."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         document.getElementById('eventForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             if(editingRowData.sheet === "Events" && editingRowData.index) {
                 const row = document.querySelector('.event-row');
-                const rowData = [
-                    row.querySelector('.ev-code').value.toUpperCase(), row.querySelector('.ev-name').value,
-                    row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value
-                ];
-                const btn = this.querySelector('button[type="submit"]');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
+                const rowData = [row.querySelector('.ev-code').value.toUpperCase(), row.querySelector('.ev-name').value, row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value];
+                const btn = this.querySelector('button[type="submit"]'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; btn.disabled = true;
                 try {
                     let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "updateData", targetSheetId: targetSheetId, sheetName: "Events", rowIndex: editingRowData.index, rowData: rowData }) });
-                    if((await res.json()).status === "success") {
-                        alert("Event updated successfully!"); this.reset();
-                        btn.innerHTML = '<i class="fas fa-save"></i> Save All Events';
-                        editingRowData = { index: null, sheet: null };
-                        loadDropdownData(); switchTab('dashboard');
-                    }
-                } catch(err) { alert("Error updating."); } finally { btn.disabled = false; }
-                return; 
+                    if((await res.json()).status === "success") { alert("Event updated!"); this.reset(); btn.innerHTML = '<i class="fas fa-save"></i> Save All Events'; editingRowData = { index: null, sheet: null }; loadDropdownData(); switchTab('dashboard'); }
+                } catch(err) { alert("Error updating."); } finally { btn.disabled = false; } return;
             }
 
             const existingEvents = (globalDbData.Events || []).map(ev => getVal(ev, 0).toString().trim().toUpperCase());
@@ -798,22 +805,18 @@
                 if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) { duplicates.push(`${eventCode} (${eventName})`); } 
                 else { currentBatch.push(eventCode); rowsDataToSave.push([eventCode, eventName, row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value]); }
             });
-            if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND!\n\nThe following Event Codes already exist:\n• " + duplicates.join("\n• ")); return; }
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND!\n\nThe following Event Codes already exist in the database or have been entered multiple times:\n\n• " + duplicates.join("\n• ") + "\n\nPlease correct the codes and try saving again."); return; }
             
             const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...'; btn.disabled = true;
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
-                if((await res.json()).status === "success") {
-                    alert("Events saved successfully!"); this.reset();
-                    document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); });
-                    loadDropdownData();
-                }
+                if((await res.json()).status === "success") { alert("Events saved!"); this.reset(); document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); }); loadDropdownData(); }
             } catch (error) { alert("Error saving events."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
         // ==========================================
-        // 5. EVENT REGISTRATION 
+        // 5. EVENT REGISTRATION & RESULTS
         // ==========================================
         function addRegistrationField() {
             const container = document.getElementById('registrationStudentsContainer');
@@ -864,25 +867,17 @@
                 }
             });
 
-            if(duplicates.length > 0) { alert("⚠️ ALREADY REGISTERED!\n\nThe following Chest Numbers are already registered for this event:\n• " + duplicates.join("\n• ")); return; }
+            if(duplicates.length > 0) { alert("⚠️ ALREADY REGISTERED!\n\nThe following Chest Numbers are already registered for this event or have been selected multiple times in this form:\n\n• " + duplicates.join("\n• ") + "\n\nPlease remove duplicates and try registering again."); return; }
             if(registrationsToSave.length === 0) { alert("Please select at least one student!"); return; }
             
             const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
-
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Registrations", rowsData: registrationsToSave }) });
-                if((await res.json()).status === "success") {
-                    alert("Students registered successfully!"); this.reset();
-                    document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove());
-                    loadDropdownData();
-                }
+                if((await res.json()).status === "success") { alert("Registered!"); this.reset(); document.querySelectorAll('#registrationStudentsContainer div').forEach(el => el.remove()); loadDropdownData(); }
             } catch (error) { alert("Error saving registrations."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
-        // ==========================================
-        // 6. RESULTS LOGIC & TIES
-        // ==========================================
         document.getElementById('resEventSelect').addEventListener('change', function() {
             const selectedEventCode = this.value;
             const registrations = globalDbData.Registrations || []; const students = globalDbData.Students || [];
@@ -900,16 +895,6 @@
             });
             document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = options);
         });
-
-        function addWinnerField(containerId) {
-            const container = document.getElementById(containerId);
-            const firstSelect = container.querySelector('select');
-            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
-            div.appendChild(newSelect);
-            div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-            container.appendChild(div);
-        }
 
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -931,20 +916,14 @@
                     }
                 });
             };
-            
             checkValues('.pos-1', 1); checkValues('.pos-2', 2); checkValues('.pos-3', 3);
-            
-            if(duplicates.length > 0) { alert("⚠️ INVALID RESULT ENTRY!\n\nA student can only receive one position per event. Please correct and try publishing again."); return; }
+            if(duplicates.length > 0) { alert("⚠️ INVALID RESULT ENTRY!\n\nThe following Chest Numbers have been assigned multiple positions in the same event:\n\n• " + duplicates.join("\n• ") + "\n\nA student can only receive one position per event. Please correct and try publishing again."); return; }
 
             const btn = this.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...'; btn.disabled = true;
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveResults", targetSheetId: targetSheetId, eventCode: eventCode, rowsData: resultsToSave }) });
-                if((await res.json()).status === "success") {
-                    alert("Results published successfully!"); this.reset();
-                    document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
-                    loadDropdownData();
-                }
+                if((await res.json()).status === "success") { alert("Published!"); this.reset(); document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove()); loadDropdownData(); }
             } catch (error) { alert("Error publishing results."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         });
 
@@ -959,28 +938,22 @@
         }
 
         function calculateLeaderboard() {
-            const results = globalDbData.Results || []; 
-            const students = globalDbData.Students || [];
-            let groupPoints = {}; 
-            let studentPoints = {};
+            const results = globalDbData.Results || []; const students = globalDbData.Students || [];
+            let groupPoints = {}; let studentPoints = {};
 
             results.forEach(res => {
-                const chestNo = getVal(res, 1);
-                const position = parseInt(getVal(res, 2));
+                const chestNo = getVal(res, 1); const position = parseInt(getVal(res, 2));
                 let points = position === 1 ? 5 : position === 2 ? 3 : position === 3 ? 1 : 0;
                 if(!chestNo || points === 0) return;
 
                 const st = students.find(s => getVal(s, 0) == chestNo);
                 if(st) {
-                    const group = getVal(st, 5); 
-                    const rawGender = getVal(st, 2).toString().trim().toLowerCase(); 
+                    const group = getVal(st, 5); const rawGender = getVal(st, 2).toString().trim().toLowerCase(); 
                     let genderCat = "other";
                     if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
                     if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
-                    
                     const name = getVal(st, 1);
                     if(group) groupPoints[group] = (groupPoints[group] || 0) + points;
-                    
                     if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0 };
                     studentPoints[chestNo].points += points;
                 }
@@ -993,45 +966,228 @@
             });
             document.getElementById('groupLeaderboard').innerHTML = groupHTML || "<p>No results yet.</p>";
 
-            let maxBoyPoints = 0; let maxGirlPoints = 0;
-            let topBoys = []; let topGirls = [];
-
+            let maxBoyPoints = 0; let maxGirlPoints = 0; let topBoys = []; let topGirls = [];
             Object.values(studentPoints).forEach(data => {
                 if (data.gender === "boys") {
-                    if (data.points > maxBoyPoints) {
-                        maxBoyPoints = data.points;
-                        topBoys = [data]; 
-                    } else if (data.points === maxBoyPoints && maxBoyPoints > 0) {
-                        topBoys.push(data); 
-                    }
+                    if (data.points > maxBoyPoints) { maxBoyPoints = data.points; topBoys = [data]; } 
+                    else if (data.points === maxBoyPoints && maxBoyPoints > 0) { topBoys.push(data); }
                 } else if (data.gender === "girls") {
-                    if (data.points > maxGirlPoints) {
-                        maxGirlPoints = data.points;
-                        topGirls = [data]; 
-                    } else if (data.points === maxGirlPoints && maxGirlPoints > 0) {
-                        topGirls.push(data); 
-                    }
+                    if (data.points > maxGirlPoints) { maxGirlPoints = data.points; topGirls = [data]; } 
+                    else if (data.points === maxGirlPoints && maxGirlPoints > 0) { topGirls.push(data); }
                 }
             });
 
             let topHTML = "";
             if (topBoys.length > 0) {
-                topHTML += `<div style="padding:10px; background:#f0fdf4; border-radius:6px; margin-bottom:10px; border: 1px solid #bbf7d0;">
-                            <span style="font-size: 0.8rem; color: #166534; font-weight: bold; display:block; margin-bottom:5px;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
+                topHTML += `<div style="padding:10px; background:#f0fdf4; border-radius:6px; margin-bottom:10px; border: 1px solid #bbf7d0;"><span style="font-size: 0.8rem; color: #166534; font-weight: bold; display:block; margin-bottom:5px;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
                 topBoys.forEach(boy => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 5px;"><b>${boy.name}</b> <span style="font-size: 0.85rem; color:#475569;">(${boy.group || "No Group"})</span></div>`; });
                 topHTML += `</div>`;
             } else { topHTML += `<div style="padding:10px; border:1px dashed #ccc; border-radius:6px; margin-bottom:10px; color:#64748b; font-size:0.85rem;">No boy scores yet.</div>`; }
 
             if (topGirls.length > 0) {
-                topHTML += `<div style="padding:10px; background:#fffbeb; border-radius:6px; border: 1px solid #fde68a;">
-                            <span style="font-size: 0.8rem; color: #b45309; font-weight: bold; display:block; margin-bottom:5px;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
+                topHTML += `<div style="padding:10px; background:#fffbeb; border-radius:6px; border: 1px solid #fde68a;"><span style="font-size: 0.8rem; color: #b45309; font-weight: bold; display:block; margin-bottom:5px;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
                 topGirls.forEach(girl => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 5px;"><b>${girl.name}</b> <span style="font-size: 0.85rem; color:#475569;">(${girl.group || "No Group"})</span></div>`; });
                 topHTML += `</div>`;
             } else { topHTML += `<div style="padding:10px; border:1px dashed #ccc; border-radius:6px; color:#64748b; font-size:0.85rem;">No girl scores yet.</div>`; }
-
             document.getElementById('individualScorers').innerHTML = topHTML;
         }
 
+        // ==========================================
+        // NEW: ADVANCED PRINT CENTER LOGIC
+        // ==========================================
+        function generateCertificates() {
+            const selectedEvent = document.getElementById('printCertEventSelect').value;
+            const instName = document.getElementById('printInstName').value || "";
+            const festName = document.getElementById('printFestName').value || "";
+            const authority = document.getElementById('printAuthority').value || "";
+            const dateStr = document.getElementById('printDate').value || "";
+            const customTemplate = document.getElementById('printCertTemplate').value;
+
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            const events = globalDbData.Events || [];
+
+            let filteredResults = results;
+            if (selectedEvent !== "all") {
+                filteredResults = results.filter(res => getVal(res, 0) === selectedEvent);
+            }
+
+            if (filteredResults.length === 0) {
+                alert("No published results found for printing certificates!");
+                return;
+            }
+
+            let printWindow = window.open('', '_blank');
+            let htmlContent = `
+                <html>
+                <head>
+                    <title>Print Certificates</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&family=Cairo:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap');
+                        @page { size: A4 landscape; margin: 0; }
+                        body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; -webkit-print-color-adjust: exact; }
+                        .cert-page { width: 297mm; height: 210mm; box-sizing: border-box; padding: 22mm; position: relative; page-break-after: always; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; background-color: #fdfdfd; }
+                        
+                        .cert-bg-svg { position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity: 0.06; }
+                        .cert-content-box { z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+                        
+                        .cert-border { position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 3px solid #046A38; padding: 4px; z-index: 1; pointer-events: none;}
+                        .cert-inner-border { border: 1px solid #D4AF37; height: 100%; width: 100%; }
+                        
+                        .header-inst { font-size: 2.3rem; font-weight: 700; color: #046A38; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+                        .header-fest { font-size: 1.4rem; color: #D4AF37; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+                        .cert-title { font-size: 1.8rem; font-weight: 600; color: #1e293b; letter-spacing: 4px; text-transform: uppercase; margin: 15px 0; font-family: 'Poppins', sans-serif; }
+                        
+                        .main-text { font-size: 1.3rem; line-height: 2; color: #334155; max-width: 85%; margin: 0 auto; text-align: center; font-weight: 400; }
+                        .main-text b { color: #046A38; font-weight: 700; font-size: 1.4rem; border-bottom: 2px solid #D4AF37; padding: 0 4px; mx: 2px; }
+                        
+                        .footer-row { display: flex; justify-content: space-between; width: 85%; margin: 0 auto; align-items: end; padding-bottom: 5mm; }
+                        .sig-line { text-align: center; width: 220px; }
+                        .sig-line p { border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 1rem; font-weight: 600; color: #334155; margin: 0; }
+                    </style>
+                </head>
+                <body>
+            `;
+
+            filteredResults.forEach(res => {
+                const evCode = getVal(res, 0);
+                const chestNo = getVal(res, 1);
+                const pos = getVal(res, 2);
+
+                const student = students.find(s => getVal(s, 0) == chestNo);
+                const eventItem = events.find(e => getVal(e, 0) == evCode);
+
+                const stName = student ? getVal(student, 1) : "Unknown Student";
+                // തിരികെ കൊണ്ടുവന്നത്: st എന്നതിന് പകരം student ഉപയോഗിച്ച് തിരുത്തിയ കോഡ്
+                const stCls = student ? getVal(student, 3) : "N/A";
+                const stGroup = student ? getVal(student, 5) : "No Group";
+                const evName = eventItem ? getVal(eventItem, 1) : evCode;
+                let posText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
+
+                let dynamicText = customTemplate
+                    .replace(/\[NAME\]/g, `<b>${stName}</b>`)
+                    .replace(/\[CHEST\]/g, `<b>${chestNo}</b>`)
+                    .replace(/\[CLASS\]/g, `<b>${stCls}</b>`)
+                    .replace(/\[GROUP\]/g, `<b>${stGroup}</b>`)
+                    .replace(/\[EVENT\]/g, `<b>${evName}</b>`)
+                    .replace(/\[POSITION\]/g, `<b>${posText}</b>`);
+
+                htmlContent += `
+                    <div class="cert-page">
+                        <svg class="cert-bg-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <polygon points="0,0 20,0 0,20" fill="#046A38" />
+                            <polygon points="100,0 80,0 100,20" fill="#046A38" />
+                            <polygon points="0,100 20,100 0,80" fill="#046A38" />
+                            <polygon points="100,100 80,100 100,80" fill="#046A38" />
+                            <circle cx="50" cy="50" r="25" fill="none" stroke="#046A38" stroke-width="0.5" />
+                        </svg>
+                        
+                        <div class="cert-border"><div class="cert-inner-border"></div></div>
+                        
+                        <div class="cert-content-box">
+                            <div>
+                                <div class="header-inst">${instName}</div>
+                                <div class="header-fest">${festName}</div>
+                                <div class="cert-title">Certificate of Merit</div>
+                            </div>
+                            
+                            <div class="main-text">${dynamicText}</div>
+                            
+                            <div class="footer-row">
+                                <div class="sig-line" style="text-align: left;"><p>Date: ${dateStr}</p></div>
+                                <div class="sig-line"><p>${authority}</p></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlContent += `</body></html>`;
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            
+            printWindow.setTimeout(function() { printWindow.print(); }, 600);
+        }
+
+        function generateChestCards() {
+            const selectedClass = document.getElementById('printChestClassSelect').value;
+            const instName = document.getElementById('printInstName').value || "";
+            const festName = document.getElementById('printFestName').value || "";
+
+            const students = globalDbData.Students || [];
+            let filteredStudents = students;
+            if (selectedClass !== "all") {
+                filteredStudents = students.filter(st => getVal(st, 3).toString().trim().toUpperCase() === selectedClass.toString().trim().toUpperCase());
+            }
+
+            if (filteredStudents.length === 0) {
+                alert("No registered students found for printing chest cards!");
+                return;
+            }
+
+            let printWindow = window.open('', '_blank');
+            let htmlContent = `
+                <html>
+                <head>
+                    <title>Print Chest Numbers</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@700&family=Cairo:wght@700&family=Poppins:wght@700&display=swap');
+                        @page { size: A4 portrait; margin: 10mm 10mm 10mm 10mm; }
+                        body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; -webkit-print-color-adjust: exact; }
+                        
+                        /* തിരുത്തിയത്: A4 സൈസിൽ കൃത്യം 6 കാർഡുകൾ മാത്രം ഫിറ്റ് ചെയ്യാനുള്ള പുതിയ ഗ്രിഡ് അളവുകൾ */
+                        .page-grid { display: grid; grid-template-columns: repeat(2, 92mm); grid-template-rows: repeat(3, 85mm); gap: 6mm; page-break-after: always; justify-content: center; }
+                        
+                        .chest-card { border: 4px dashed #046A38; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; text-align: center; background: #fff; box-sizing: border-box; }
+                        
+                        /* തിരുത്തിയത്: പിൻ കുത്താൻ പാകത്തിൽ ഹെഡർ കൂടുതൽ താഴേക്ക് മാറ്റി */
+                        .card-header { font-size: 1.1rem; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; padding-top: 35px; text-transform: uppercase; line-height: 1.4; }
+                        
+                        /* തിരുത്തിയത്: നമ്പറുകളുടെ ഫോണ്ട് സൈസ് അല്പം കൂടി വലുതാക്കി */
+                        .chest-no { font-size: 7rem; font-weight: 700; color: #046A38; line-height: 1; margin: 10px 0; letter-spacing: -2px; }
+                        .student-name { font-size: 1.3rem; font-weight: 700; color: #1e293b; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+                        .card-footer { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; }
+                    </style>
+                </head>
+                <body>
+            `;
+
+            for (let i = 0; i < filteredStudents.length; i += 6) {
+                htmlContent += `<div class="page-grid">`;
+                for (let j = i; j < i + 6 && j < filteredStudents.length; j++) {
+                    const st = filteredStudents[j];
+                    const chestNo = getVal(st, 0);
+                    const name = getVal(st, 1);
+                    const cls = getVal(st, 3);
+                    const group = getVal(st, 5) || "N/A";
+
+                    htmlContent += `
+                        <div class="chest-card">
+                            <div class="card-header">${instName}<br><span style="color:#D4AF37; font-size:0.95rem;">${festName}</span></div>
+                            <div class="chest-no">${chestNo}</div>
+                            <div>
+                                <div class="student-name">${name}</div>
+                                <div class="card-footer">
+                                    <span>Class: ${cls}</span>
+                                    <span style="color:#b45309;">Group: ${group}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                htmlContent += `</div>`;
+            }
+
+            htmlContent += `</body></html>`;
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            
+            printWindow.setTimeout(function() { printWindow.print(); }, 600);
+        }
+
+        // ==========================================
+        // Mapped Data & Table Rendering Logics
+        // ==========================================
         function getMappedData(dataType) {
             const rawData = globalDbData[dataType] || [];
             const students = globalDbData.Students || []; const events = globalDbData.Events || [];
@@ -1071,7 +1227,6 @@
                 
                 const rowDataJson = encodeURIComponent(JSON.stringify(row));
                 tableHTML += `<td style="padding:10px; text-align:center;">`;
-                
                 if(dataType === "Students" || dataType === "Events") {
                     tableHTML += `<button onclick="editRow('${dataType}', ${row.rowIndex}, '${rowDataJson}')" class="primary-btn btn-small" style="background:#64748b; margin-right:5px; padding:5px 10px;"><i class="fas fa-edit"></i></button>`;
                 }
