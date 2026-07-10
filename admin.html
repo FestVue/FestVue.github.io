@@ -453,10 +453,10 @@
                     populateDropdowns();
                     updateDashboardStats();
                     renderTable();
+                    document.getElementById('confCertTemplate').value = "This is to certify that [NAME] (Chest No: [CHEST]) of Class [CLASS] representing Group [GROUP] has secured [POSITION] PLACE in the event [EVENT] conducted in the cultural festival.";
                     renderSettingsLists();
                     
-                    // Fixed incorrect IDs causing the 'null' errors
-                    document.getElementById('confCertTemplate').value = "This is to certify that [NAME] (Chest No: [CHEST]) of Class [CLASS] representing Group [GROUP] has secured [POSITION] PLACE in the event [EVENT] conducted in the cultural festival.";
+
                 } else {
                     alert("Failed to load data: " + data.message);
                 }
