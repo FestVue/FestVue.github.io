@@ -47,7 +47,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Cards */
-        .card { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f1f5f9; }
+        .card { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f1f5f9; width: 100%; }
         .card-header { font-size: 1.2rem; font-weight: 700; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         
         /* Search Box */
@@ -249,7 +249,7 @@
         const instId = sessionStorage.getItem("publicInstId");
         let globalDbData = {};
         let currentPosterData = null;
-        let configData = { festName: "FESTVUE ARTS FEST", festDesc: "Cultural Talent Championship Portal", authority: "Convener", certTemplate: "" };
+        let configData = { festName: "FESTVUE ARTS FEST", festDesc: "Cultural Talent Championship Portal", authority: "Convener", date: "", certTemplate: "" };
 
         window.onload = function() {
             if(!instId) {
@@ -259,6 +259,14 @@
             }
             fetchPublicData();
         };
+        
+document.getElementById("searchInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        searchStudent();
+    }
+});
+
 
         function getVal(row, index) {
             if (!row) return "";
@@ -267,6 +275,31 @@
         }
 
         async function fetchPublicData() {
+            // --- അഡ്വാൻസ്ഡ് സ്പീഡ് ബൂസ്റ്റർ (Stale-While-Revalidate Caching) ---
+            const cachedData = localStorage.getItem("festvue_cache_" + instId);
+            const cachedName = localStorage.getItem("festvue_name_" + instId);
+            const cachedConfig = localStorage.getItem("festvue_config_" + instId);
+            
+            if (cachedData && cachedName) {
+                globalDbData = JSON.parse(cachedData);
+                if (cachedConfig) configData = JSON.parse(cachedConfig);
+                
+                document.getElementById('navInstName').innerHTML = `<i class="fas fa-school"></i> ${cachedName}`;
+                document.getElementById('topFestName').innerText = configData.festName;
+                document.getElementById('topFestDesc').innerText = configData.festDesc;
+                
+                // റീഫ്രഷ് അടിച്ച ഉടനെ ഡാറ്റ കാണിക്കുന്നു
+                calculateLeaderboard();
+                buildEventDropdowns();
+                renderOverviewCounters();
+                renderLatestAnnouncements();
+                
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('heroBanner').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'block';
+            }
+            
+            // --- ബാക്കെൻഡിൽ നിന്നും ലൈവ് അപ്ഡേഷൻ നിശബ്ദമായി നടക്കുന്നു ---
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
                 let data = await res.json();
@@ -280,21 +313,31 @@
                     buildEventDropdowns();
                     renderOverviewCounters();
                     renderLatestAnnouncements();
-
+                    
+                    // മെമ്മറി വീണ്ടും തത്സമയം അപ്ഡേറ്റ് ചെയ്യുന്നു
+                    localStorage.setItem("festvue_cache_" + instId, JSON.stringify(globalDbData));
+                    localStorage.setItem("festvue_name_" + instId, data.institutionName);
+                    localStorage.setItem("festvue_config_" + instId, JSON.stringify(configData));
+                    
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('heroBanner').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'block';
                 } else {
-                    alert(data.message || "Institution ID not found.");
-                    window.location.href = "index.html";
+                    if (!cachedData) {
+                        alert(data.message || "Institution ID not found.");
+                        window.location.href = "index.html";
+                    }
                 }
             } catch (error) {
-                alert("Network Error. Please check connection.");
-                window.location.href = "index.html";
+                console.log("Background Sync Idle.");
+                if (!cachedData) {
+                    alert("Network Error. Please check connection.");
+                    window.location.href = "index.html";
+                }
             }
         }
 
-               function parseConfigurations(defaultInstName) {
+        function parseConfigurations(defaultInstName) {
             const settings = globalDbData.Settings || [];
             settings.forEach(row => {
                 const type = getVal(row, 0).toString().toUpperCase();
@@ -320,14 +363,13 @@
             if(event) event.currentTarget.classList.add('active');
         }
 
+
         function renderOverviewCounters() {
             const totalStudents = (globalDbData.Students || []).length;
             const totalEvents = (globalDbData.Events || []).length;
             const results = globalDbData.Results || [];
-            
             const publishedUniqueEvents = [...new Set(results.map(r => getVal(r, 0).toString().trim()))].length;
             
-            // Group count extraction
             const settings = globalDbData.Settings || [];
             const groupCount = settings.filter(row => getVal(row,0).toString().toUpperCase() === "GROUP").length;
 
@@ -369,9 +411,6 @@
             searchEventWiseResults();
         }
 
-        // ==========================================
-        // Advanced Chest Search - Shows All items
-        // ==========================================
         function searchStudent() {
             const searchQ = document.getElementById('searchInput').value.trim().toUpperCase();
             if(!searchQ) return;
@@ -398,7 +437,6 @@
             document.getElementById('stClassDisplay').innerText = getVal(student, 3);
             document.getElementById('stGroupDisplay').innerText = getVal(student, 5) || "N/A";
 
-            // Find all registered items for this student
             const studentRegs = regs.filter(r => getVal(r, 1).toString().trim().toUpperCase() === searchQ);
             if(studentRegs.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; background:#f8fafc; border-radius:10px;">This student hasn't registered for any events yet.</div>`;
@@ -411,8 +449,6 @@
                 const evCode = getVal(rg, 0);
                 const evItem = events.find(e => getVal(e, 0) == evCode);
                 const evName = evItem ? getVal(evItem, 1) : evCode;
-
-                // Check if result has come for this specific event
                 const eventResults = results.filter(r => getVal(r,0) === evCode);
                 const studentWon = eventResults.find(r => getVal(r,1).toString().trim().toUpperCase() === searchQ);
                 
@@ -420,10 +456,8 @@
                 let actionBtnHtml = "";
 
                 if (eventResults.length === 0) {
-                    // Result not yet announced
                     statusHtml = `<div class="result-pos" style="color:#64748b;"><i class="fas fa-clock"></i> Result not announced yet</div>`;
                 } else {
-                    // Result announced
                     if (studentWon) {
                         const pos = getVal(studentWon, 2);
                         let posText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
@@ -453,9 +487,6 @@
             });
         }
 
-        // ==========================================
-        // 3. Event Wise Podium Finder Engine
-        // ==========================================
         function searchEventWiseResults() {
             const evCode = document.getElementById('searchEventSelect').value;
             const container = document.getElementById('eventWiseContainer');
@@ -473,12 +504,10 @@
             }
 
             let html = `<div class="card"><div class="card-header"><i class="fas fa-medal"></i> Winners Podium Standings</div><div class="podium-box">`;
-            
             eventResults.forEach(res => {
                 const chest = getVal(res,1);
                 const pos = parseInt(getVal(res,2));
                 const st = students.find(s => getVal(s,0) == chest);
-                
                 const name = st ? getVal(st,1) : "Unknown Student";
                 const cls = st ? getVal(st,3) : "";
                 const group = st ? getVal(st,5) : "";
@@ -499,9 +528,6 @@
             container.innerHTML = html;
         }
 
-        // ==========================================
-        // Leaderboard Tab Systems 
-        // ==========================================
         function calculateLeaderboard() {
             const results = globalDbData.Results || []; const students = globalDbData.Students || [];
             let groupPoints = {}; let studentPoints = {};
@@ -544,29 +570,23 @@
 
             let topHTML = "";
             if (topBoys.length > 0) {
-                topHTML += `<div style="padding:15px; background:#f0fdf4; border-radius:10px; margin-bottom:15px; border-left: 4px solid #166534;"><span style="font-size: 0.9rem; color: #166534; font-weight: 700; text-transform:uppercase;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
+                topHTML += `<div style="padding:15px; background:#f0fdf4; border-radius:10px; margin-bottom:15px; border-left: 4px solid #166534;"><span style="font-size: 0.8rem; color: #166534; font-weight: 700; text-transform:uppercase;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
                 topBoys.forEach(boy => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${boy.name}</b> <span style="font-size: 0.9rem; color:#475569;">${boy.class}</span></div>`; });
                 topHTML += `</div>`;
             }
             if (topGirls.length > 0) {
-                topHTML += `<div style="padding:15px; background:#fffbeb; border-radius:10px; border-left: 4px solid #b45309;"><span style="font-size: 0.9rem; color: #b45309; font-weight: 700; text-transform:uppercase;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
+                topHTML += `<div style="padding:15px; background:#fffbeb; border-radius:10px; border-left: 4px solid #b45309;"><span style="font-size: 0.8rem; color: #b45309; font-weight: 700; text-transform:uppercase;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
                 topGirls.forEach(girl => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${girl.name}</b> <span style="font-size: 0.9rem; color:#475569;">${girl.class}</span></div>`; });
                 topHTML += `</div>`;
             }
             document.getElementById('publicTopScorers').innerHTML = topHTML || "<p style='color:#64748b;'>No winners declared yet.</p>";
         }
 
-               // ==========================================
-        // Image Processing Certificate Engines
-        // ==========================================
         async function downloadCert(encodedData) {
-            // --- കോഡിന്റെ മുകളിലുള്ള ഭാഗം (ഡാറ്റ എടുക്കുന്നു) ---
             const data = JSON.parse(decodeURIComponent(encodedData));
             const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
             
             document.getElementById('c_inst').innerText = instNameTxt;
-            
-            // --- നിങ്ങൾ ചോദിച്ച പ്രധാന കോഡ് (ഡൈനാമിക് ആയി വാചകങ്ങൾ മാറ്റുന്നു) ---
             document.getElementById('c_fest_title').innerText = configData.festName;
             document.getElementById('c_signature_label').innerText = configData.authority;
             document.getElementById('c_date').innerText = configData.date;
@@ -581,11 +601,8 @@
             
             document.getElementById('c_body_content').innerHTML = dynamicText;
 
-            // --- കോഡിന്റെ താഴെയുള്ള ഭാഗം (ഇമേജ് ജനറേറ്റ് ചെയ്ത് ഡൗൺലോഡ് ചെയ്യുന്നു) ---
-            const btn = event.currentTarget; 
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...'; 
-            btn.disabled = true;
+            const btn = event.currentTarget; const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...'; btn.disabled = true;
             
             try {
                 const element = document.getElementById('certRender');
@@ -594,12 +611,7 @@
                 link.download = `${data.chest}_Certificate.jpg`;
                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
-            } catch (err) { 
-                alert("Error generating certificate. Please try from a different browser."); 
-            } finally { 
-                btn.innerHTML = originalContent; 
-                btn.disabled = false; 
-            }
+            } catch (err) { alert("Error generating certificate. Please try from a different browser."); } finally { btn.innerHTML = originalContent; btn.disabled = false; }
         }
 
         function openPosterModal(encodedData) {
@@ -619,7 +631,6 @@
 
             try {
                 const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
-                               // ... പഴയ കോഡിന് പകരം ...
                 document.getElementById('p_inst').innerText = instNameTxt;
                 document.getElementById('p_name').innerText = currentPosterData.name;
                 document.getElementById('p_event').innerText = currentPosterData.event;
