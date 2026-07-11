@@ -336,8 +336,15 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+                const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        
+        // ലിങ്കിൽ (QR Code) നിന്ന് വരുന്ന ഡാറ്റകൾ എടുക്കുന്നു
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('inst')) sessionStorage.setItem("publicInstId", urlParams.get('inst'));
+        
         const instId = sessionStorage.getItem("publicInstId");
+        const qrChestNo = urlParams.get('chest'); // QR കോഡ് വഴി വരുന്ന ചെസ്റ്റ് നമ്പർ
+
         let globalDbData = {};
         let currentPosterData = null;
         let configData = { festName: "FESTVUE ARTS FEST", festDesc: "Cultural Talent Championship Portal", authority: "Convener", date: "", certTemplate: "" };
@@ -389,6 +396,15 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                 document.getElementById('heroBanner').style.display = 'block';
                 document.getElementById('mainContent').style.display = 'block';
             }
+                    // ക്യുആർ കോഡ് സ്കാൻ ചെയ്താണ് വന്നതെങ്കിൽ തനിയെ സെർച്ച് ആവാൻ
+                    if (qrChestNo) {
+                        setTimeout(() => {
+                            switchTab('search');
+                            document.getElementById('searchInput').value = qrChestNo;
+                            searchStudent();
+                        }, 500);
+                    }
+
             
             // --- ബാക്കെൻഡിൽ നിന്നും ലൈവ് അപ്ഡേഷൻ നിശബ്ദമായി നടക്കുന്നു ---
             try {
@@ -413,6 +429,15 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('heroBanner').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'block';
+                    // ക്യുആർ കോഡ് സ്കാൻ ചെയ്താണ് വന്നതെങ്കിൽ തനിയെ സെർച്ച് ആവാൻ
+                    if (qrChestNo) {
+                        setTimeout(() => {
+                            switchTab('search');
+                            document.getElementById('searchInput').value = qrChestNo;
+                            searchStudent();
+                        }, 500);
+                    }
+
                 } else {
                     if (!cachedData) {
                         alert(data.message || "Institution ID not found.");
@@ -567,14 +592,20 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                         let medal = pos == 1 ? "🥇" : pos == 2 ? "🥈" : "🥉";
                         statusHtml = `<div class="result-pos">${medal} ${posText} PLACE</div>`;
                         
-                        const certData = encodeURIComponent(JSON.stringify({
+                                                const certData = encodeURIComponent(JSON.stringify({
                             name: getVal(student,1), chest: getVal(student,0), cls: getVal(student,3),
                             group: getVal(student,5), event: evName, position: posText
                         }));
+                        
+                        // വാട്സാപ്പിൽ അയക്കാനുള്ള മെസ്സേജ്
+                        const shareText = `🏆 *Proud Moment!* 🏆\n\n*${getVal(student, 1)}* has secured *${posText} PLACE* in *${evName}* at the ${configData.festName}!\n\nView live results & download certificate here:\nhttps://festvue.github.io/public.html?inst=${instId}&chest=${searchQ}`;
+                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
                         actionBtnHtml = `
                             <div class="action-btns">
-                                <button onclick="downloadCert('${certData}')" class="action-btn btn-cert"><i class="fas fa-file-download"></i> Certificate</button>
-                                <button onclick="openPosterModal('${certData}')" class="action-btn btn-poster"><i class="fab fa-whatsapp"></i> Share Poster</button>
+                                <button onclick="downloadCert('${certData}')" class="action-btn btn-cert"><i class="fas fa-file-download"></i> Cert</button>
+                                <button onclick="openPosterModal('${certData}')" class="action-btn btn-poster"><i class="fas fa-image"></i> Poster</button>
+                                <a href="${whatsappUrl}" target="_blank" class="action-btn" style="background:#25D366; color:white; text-decoration:none;"><i class="fab fa-whatsapp"></i> Share</a>
                             </div>`;
                     } else {
                         statusHtml = `<div class="result-pos" style="color:#ef4444;"><i class="fas fa-times-circle"></i> No Position Secured</div>`;
