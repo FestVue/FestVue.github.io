@@ -278,7 +278,7 @@
                                 <div class="input-group"><label>Fest Name</label><input type="text" id="confFestName" placeholder="e.g., ARTS FEST 2026" required></div>
                                 <div class="input-group"><label>Fest Description</label><input type="text" id="confFestDesc" placeholder="e.g., Cultural Talent Championship Portal" required></div>
                                 <div class="input-group"><label>Signature Authority Label</label><input type="text" id="confAuthority" placeholder="e.g., Principal / General Convener" required></div>
-                                <div class="input-group"><label>Date of Issue</label><input type="text" id="confDate" placeholder="e.g., 08-07-2026" required></div>
+                                <div class="input-group"><label>Date of Issue</label><input type="date" id="confDate" placeholder="e.g., 08-07-2026" required></div>
                             </div>
                             <div class="input-group" style="margin-top: 15px;">
                                 <label>Certificate Text Content Template</label>
@@ -602,7 +602,20 @@
                     if(key === 'FEST_NAME') document.getElementById('confFestName').value = val2;
                     if(key === 'FEST_DESC') document.getElementById('confFestDesc').value = val2;
                     if(key === 'AUTHORITY') document.getElementById('confAuthority').value = val2;
-                    if(key === 'DATE') document.getElementById('confDate').value = val2;
+                    if (key === 'DATE') {
+                    if (val2) {
+                     let d = new Date(val2);
+                    if (!isNaN(d)) {
+                                let yyyy = d.getFullYear();
+                                let mm = String(d.getMonth() + 1).padStart(2, '0');
+                                let dd = String(d.getDate()).padStart(2, '0');
+                                document.getElementById('confDate').value = `${yyyy}-${mm}-${dd}`;
+                            } else {
+                                document.getElementById('confDate').value = val2;
+                            }
+                        }
+                    }
+
                     if(key === 'CERT_TEMPLATE') document.getElementById('confCertTemplate').value = val2;
                 }
             });
@@ -1342,8 +1355,15 @@
             const festName = document.getElementById('confFestName').value || "";
             const authority = document.getElementById('confAuthority').value || "";
             // Use config date or today's date if empty
-            const dateStr = document.getElementById('confDate').value || new Date().toLocaleDateString('en-GB'); 
-            // Fixed Template ID fetching
+            let rawDate = document.getElementById('confDate').value;
+            let dateStr = "";
+            if (rawDate) {
+                let d = new Date(rawDate);
+                dateStr = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+            } else {
+                let d = new Date();
+                dateStr = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+            }
             const customTemplate = document.getElementById('confCertTemplate').value;
 
             const results = globalDbData.Results || [];
