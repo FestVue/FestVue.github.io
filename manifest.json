@@ -1,0 +1,17 @@
+{
+  "name": "FestVue",
+  "short_name": "FestVue",
+  "description": "Digital Arts Fest Platform",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#046A38",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
