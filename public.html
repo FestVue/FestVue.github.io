@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FestVue - Student & Public Portal</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#046A38">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -788,5 +791,15 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
             } catch (err) { alert("Error generating poster."); } finally { btn.innerHTML = originalBtnText; btn.disabled = false; }
         }
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker Registered!', reg))
+                    .catch(err => console.log('Service Worker Registration Failed!', err));
+            });
+        }
+    </script>
+
 </body>
 </html>
