@@ -409,8 +409,9 @@
                 })
             }).then(response => response.json()).then(data => {
                 if(data.status === "success") {
-                    sessionStorage.setItem("targetSheetId", data.targetSheetId);
+                                        sessionStorage.setItem("targetSheetId", data.targetSheetId);
                     sessionStorage.setItem("instName", data.institutionName);
+                    sessionStorage.setItem("instId", data.instId); // ഇത് പുതിയതായി ചേർത്തത്
                     targetSheetId = data.targetSheetId;
                     msg.style.color = "green";
                     msg.innerText = "Login Successful!";
@@ -1500,7 +1501,7 @@
                 <body>
             `;
 
-            for (let i = 0; i < filteredStudents.length; i += 6) {
+                        for (let i = 0; i < filteredStudents.length; i += 6) {
                 htmlContent += `<div class="page-grid">`;
                 for (let j = i; j < i + 6 && j < filteredStudents.length; j++) {
                     const st = filteredStudents[j];
@@ -1509,10 +1510,19 @@
                     const cls = getVal(st, 3);
                     const group = getVal(st, 5) || "N/A";
                     
+                    // കൊട്ടേഷനുകൾ (Quotes) കൃത്യമായി നൽകിയ വരികൾ:
+                    const instId = sessionStorage.getItem("instId") || "";
+                    const qrLink = encodeURIComponent("https://festvue.github.io/public.html?inst=" + instId + "&chest=" + chestNo);
+                    
                     htmlContent += `
                         <div class="chest-card">
                             <div class="card-header">${instName}<br><span style="color:#D4AF37; font-size:0.95rem;">${festName}</span></div>
-                            <div class="chest-no">${chestNo}</div>
+                            
+                            <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin: 10px 0;">
+                                <div class="chest-no" style="margin:0;">${chestNo}</div>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrLink}" alt="QR" style="width: 75px; height: 75px; border-radius: 8px; border: 2px solid #046A38; padding: 2px;">
+                            </div>
+                            
                             <div>
                                 <div class="student-name">${name}</div>
                                 <div class="card-footer">
@@ -1525,6 +1535,7 @@
                 }
                 htmlContent += `</div>`;
             }
+
             htmlContent += `</body></html>`;
             printWindow.document.write(htmlContent);
             printWindow.document.close();
