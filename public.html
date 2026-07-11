@@ -439,7 +439,19 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                     if(key === 'FEST_NAME') configData.festName = val || configData.festName;
                     if(key === 'FEST_DESC') configData.festDesc = val || configData.festDesc;
                     if(key === 'AUTHORITY') configData.authority = val || configData.authority;
-                    if(key === 'DATE') configData.date = val || new Date().toLocaleDateString('en-GB');
+                if (key === 'DATE') {
+                    if (val) {
+                        let d = new Date(val);
+                        if (!isNaN(d)) {
+                            configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+                        } else {
+                            configData.date = val;
+                        }
+                    } else {
+                        let d = new Date();
+                        configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+                    }
+                }
                     if(key === 'CERT_TEMPLATE') configData.certTemplate = val || configData.certTemplate;
                 }
             });
