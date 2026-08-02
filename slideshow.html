@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestVue - Live Results Display</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Header */
+        header { background: #046A38; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; border-bottom: 4px solid #D4AF37; }
+        .fest-title { font-size: 2.5rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .inst-title { font-size: 1.5rem; font-weight: 600; color: #D4AF37; }
+
+        /* Main Content Grid */
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; height: calc(100vh - 100px); }
+        
+        /* Left: Rotating Results */
+        .results-panel { padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .event-name { font-size: 3.5rem; font-weight: 800; color: #D4AF37; margin-bottom: 30px; line-height: 1.2; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        .winner-row { display: flex; align-items: center; background: #1e293b; padding: 20px 30px; border-radius: 15px; margin-bottom: 20px; border-left: 8px solid; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: slideIn 0.8s ease-out forwards; opacity: 0; transform: translateX(-50px); }
+        .winner-row:nth-child(1) { border-color: #fbbf24; animation-delay: 0.2s; }
+        .winner-row:nth-child(2) { border-color: #cbd5e1; animation-delay: 0.4s; }
+        .winner-row:nth-child(3) { border-color: #b45309; animation-delay: 0.6s; }
+        
+        .medal { font-size: 3rem; margin-right: 25px; min-width: 60px; text-align: center; }
+        .winner-details h2 { font-size: 2.2rem; margin-bottom: 5px; }
+        .winner-details p { font-size: 1.2rem; color: #94a3b8; }
+
+        /* Right: Persistent Standings */
+        .standings-panel { background: #1e293b; padding: 40px; border-left: 1px solid #334155; display: flex; flex-direction: column; }
+        .panel-title { font-size: 1.8rem; color: #D4AF37; border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom: 25px; text-transform: uppercase; }
+        
+        .group-score { display: flex; justify-content: space-between; font-size: 1.8rem; font-weight: 600; margin-bottom: 15px; padding: 15px; background: #0f172a; border-radius: 10px; }
+        .group-score span.pts { color: #10b981; }
+
+        /* Animations */
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        .fade-out { animation: fadeOut 0.5s forwards; }
+        @keyframes fadeOut { to { opacity: 0; transform: scale(0.95); } }
+
+        /* Loader */
+        #loader { position: absolute; inset: 0; background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50; }
+        .spinner { border: 5px solid #334155; border-top: 5px solid #D4AF37; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <h2 style="margin-top: 20px; color: #D4AF37;">Connecting to FestVue...</h2>
+    </div>
+
+    <header>
+        <div class="fest-title" id="festTitle">ARTS FESTIVAL 2026</div>
+        <div class="inst-title" id="instTitle">Loading Institution...</div>
+    </header>
+
+    <div class="main-grid">
+        <div class="results-panel" id="resultsContainer">
+            <!-- Dynamic Results injected here -->
+        </div>
+
+        <div class="standings-panel">
+            <div class="panel-title">🏆 Current Standings</div>
+            <div id="groupStandings">
+                <!-- Dynamic Group Scores -->
+            </div>
+            
+            <div class="panel-title" style="margin-top: 40px;">🌟 Top Scorers</div>
+            <div id="topScorers" style="font-size: 1.2rem; color: #e2e8f0; line-height: 1.8;">
+                <!-- Dynamic Top Scorers -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        const urlParams = new URLSearchParams(window.location.search);
+        const instId = urlParams.get('inst') || sessionStorage.getItem("publicInstId");
+        
+        let globalDbData = {};
+        let publishedEvents = [];
+        let currentSlideIndex = 0;
+
+        // Fetch data initially and every 30 seconds to keep standings updated
+        async function fetchLiveResults() {
+            if(!instId) { alert("Invalid Access. Missing Institution ID."); return; }
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
+                let data = await res.json();
+                if(data.status === "success") {
+                    globalDbData = data.data;
+                    document.getElementById('instTitle').innerText = data.institutionName;
+                    
+                    // Extract Fest Name from settings
+                    const settings = globalDbData.Settings || [];
+                    const festNameSetting = settings.find(s => s[0] === 'CONFIG' && s[1] === 'FEST_NAME');
+                    if(festNameSetting) document.getElementById('festTitle').innerText = festNameSetting[2];
+
+                    processData();
+                    document.getElementById('loader').style.display = 'none';
+                }
+            } catch(e) { console.error("Sync Error", e); }
+        }
+
+        function processData() {
+            const results = globalDbData.Results || [];
+            // Group results by Event Code
+            const grouped = {};
+            results.forEach(r => {
+                if(!grouped[r[0]]) grouped[r[0]] = [];
+                grouped[r[0]].push(r);
+            });
+            publishedEvents = Object.keys(grouped).map(evCode => ({
+                code: evCode,
+                winners: grouped[evCode].sort((a,b) => a[2] - b[2])
+            }));
+
+            updateStandingsPanel();
+        }
+
+        function updateStandingsPanel() {
+            // Basic Group Points calculation (simplified for display)
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            let groupPts = {};
+            
+            results.forEach(r => {
+                const st = students.find(s => s[0] == r[1]);
+                if(st && st[5]) {
+                    const pts = r[2] == 1 ? 5 : r[2] == 2 ? 3 : 1; // Assuming default 5,3,1 for now
+                    groupPts[st[5]] = (groupPts[st[5]] || 0) + pts;
+                }
+            });
+
+            let html = "";
+            Object.entries(groupPts).sort((a,b) => b[1]-a[1]).forEach(g => {
+                html += `<div class="group-score"><span>${g[0]}</span> <span class="pts">${g[1]}</span></div>`;
+            });
+            document.getElementById('groupStandings').innerHTML = html || "<p style='color:#94a3b8;'>No points yet.</p>";
+        }
+
+        function showNextSlide() {
+            if(publishedEvents.length === 0) {
+                document.getElementById('resultsContainer').innerHTML = `<h2 style="color:#64748b; font-size:3rem; text-align:center;">Waiting for first results...</h2>`;
+                return;
+            }
+            
+            const container = document.getElementById('resultsContainer');
+            // Fade out current
+            Array.from(container.children).forEach(child => child.classList.add('fade-out'));
+            
+            setTimeout(() => {
+                const eventData = publishedEvents[currentSlideIndex];
+                const eventDetails = (globalDbData.Events || []).find(e => e[0] === eventData.code);
+                const evName = eventDetails ? eventDetails[1] : eventData.code;
+                const evCat = eventDetails ? eventDetails[2] : "";
+
+                let slideHtml = `<div class="event-name">${evName} <span style="font-size:1.5rem; color:#94a3b8; display:block;">${evCat} Category</span></div>`;
+                
+                eventData.winners.forEach((w, idx) => {
+                    if(idx > 2) return; // Only show top 3
+                    const st = (globalDbData.Students || []).find(s => s[0] == w[1]);
+                    const stName = st ? st[1] : "Unknown";
+                    const stGroup = st ? st[5] : "";
+                    const medal = w[2] == 1 ? "🥇" : w[2] == 2 ? "🥈" : "🥉";
+                    
+                    slideHtml += `
+                    <div class="winner-row">
+                        <div class="medal">${medal}</div>
+                        <div class="winner-details">
+                            <h2>${stName}</h2>
+                            <p>Chest No: ${w[1]} | Group: ${stGroup}</p>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = slideHtml;
+                currentSlideIndex = (currentSlideIndex + 1) % publishedEvents.length;
+            }, 500); // Wait for fade out
+        }
+
+        // Initialize
+        fetchLiveResults();
+        setInterval(fetchLiveResults, 30000); // Background sync every 30s
+        setInterval(showNextSlide, 10000);    // Rotate slide every 10s
+    </script>
+</body>
+</html>
