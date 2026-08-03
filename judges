@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestVue - Judge Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Navbar */
+        nav { background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .logo span { color: var(--accent); }
+        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; display: none; }
+        
+        /* Container */
+        .container { flex-grow: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 450px; border-top: 5px solid var(--primary); animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h2 { text-align: center; margin-bottom: 5px; color: var(--primary); font-weight: 700; }
+        p.subtitle { text-align: center; color: #64748b; font-size: 0.95rem; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .input-group input, .input-group select { width: 100%; padding: 14px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; color: var(--text); transition: 0.3s; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 106, 56, 0.1); background: #fff; }
+        .input-group input { text-transform: uppercase; }
+        .input-group input[type="password"] { text-transform: none; }
+        
+        .primary-btn { width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .primary-btn:hover { background: #03522b; box-shadow: 0 5px 15px rgba(4, 106, 56, 0.3); }
+        .primary-btn:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        
+        /* Rank Rows */
+        .rank-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+        .rank-medal { font-size: 2rem; width: 40px; text-align: center; }
+        
+        /* Toast Notification */
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        #toast.error { background: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Fest<span>Vue</span></div>
+        <button class="nav-btn" id="logoutBtn" onclick="judgeLogout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </nav>
+
+    <div class="container">
+        <!-- LOGIN VIEW -->
+        <div class="card" id="loginBox">
+            <h2>Judge Portal</h2>
+            <p class="subtitle">Secure Anonymous Result Entry</p>
+            
+            <form id="judgeLoginForm">
+                <div class="input-group" id="instIdGroup">
+                    <label>Institution ID</label>
+                    <input type="text" id="jInstId" placeholder="Provided by Admin" required>
+                </div>
+                <div class="input-group">
+                    <label>Judge Username</label>
+                    <input type="text" id="jUser" required>
+                </div>
+                <div class="input-group">
+                    <label>Access Password</label>
+                    <input type="password" id="jPass" required>
+                </div>
+                <button type="submit" class="primary-btn" id="loginSubmitBtn">Secure Login <i class="fas fa-lock"></i></button>
+            </form>
+        </div>
+
+        <!-- ENTRY VIEW -->
+        <div class="card" id="entryBox" style="display: none; max-width: 500px;">
+            <h2>Enter Results</h2>
+            <p class="subtitle">Assign placements using Code Letters</p>
+            
+            <form id="resultForm">
+                <div class="input-group">
+                    <label>Select Event</label>
+                    <select id="jEventCode" required>
+                        <option value="">-- Choose Assigned Event --</option>
+                    </select>
+                </div>
+                
+                <div class="rank-box">
+                    <div class="rank-medal">🥇</div>
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">1st Place Code Letter</label>
+                        <input type="text" id="pos1" placeholder="e.g., A" required style="padding: 10px;">
+                    </div>
+                </div>
+                <div class="rank-box">
+                    <div class="rank-medal">🥈</div>
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">2nd Place Code Letter</label>
+                        <input type="text" id="pos2" placeholder="e.g., B" style="padding: 10px;">
+                    </div>
+                </div>
+                <div class="rank-box">
+                    <div class="rank-medal">🥉</div>
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">3rd Place Code Letter</label>
+                        <input type="text" id="pos3" placeholder="e.g., C" style="padding: 10px;">
+                    </div>
+                </div>
+                
+                <button type="submit" class="primary-btn" id="submitBtn">Submit for Approval <i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast">Message goes here</div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        let targetSheetId = null;
+
+        // Auto-fill Institution ID if provided in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('inst')) {
+            document.getElementById('jInstId').value = urlParams.get('inst');
+            document.getElementById('instIdGroup').style.display = 'none'; // Hide it since it's auto-filled
+        }
+
+        // Custom Toast Notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            if(isError) toast.classList.add('error'); else toast.classList.remove('error');
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
+
+        // Handle Login
+        document.getElementById('judgeLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginSubmitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...'; btn.disabled = true;
+            
+            const req = {
+                action: "judgeLogin",
+                instId: document.getElementById('jInstId').value.trim(),
+                username: document.getElementById('jUser').value.trim(),
+                password: document.getElementById('jPass').value.trim()
+            };
+
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    targetSheetId = data.targetSheetId;
+                    
+                    // Populate Assigned Events Dropdown
+                    const evDropdown = document.getElementById('jEventCode');
+                    evDropdown.innerHTML = '<option value="">-- Choose Assigned Event --</option>';
+                    if(data.assignedEvents) {
+                        // Assuming admin enters events separated by commas (e.g. OP101, OP102)
+                        data.assignedEvents.split(',').forEach(ev => {
+                            let cleanEv = ev.trim().toUpperCase();
+                            if(cleanEv) evDropdown.innerHTML += `<option value="${cleanEv}">${cleanEv}</option>`;
+                        });
+                    } else {
+                        // Fallback if no specific events assigned - make it a text input
+                        evDropdown.outerHTML = '<input type="text" id="jEventCode" placeholder="Enter Event Code" required>';
+                    }
+
+                    document.getElementById('loginBox').style.display = 'none';
+                    document.getElementById('entryBox').style.display = 'block';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    showToast("Login Successful!");
+                } else {
+                    showToast(data.message, true);
+                }
+            } catch(error) {
+                showToast("Network Error. Please try again.", true);
+            }
+            btn.innerHTML = 'Secure Login <i class="fas fa-lock"></i>'; btn.disabled = false;
+        });
+
+        // Handle Submit
+        document.getElementById('resultForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const evCode = document.getElementById('jEventCode').value.trim();
+            const p1 = document.getElementById('pos1').value.trim().toUpperCase();
+            const p2 = document.getElementById('pos2').value.trim().toUpperCase();
+            const p3 = document.getElementById('pos3').value.trim().toUpperCase();
+
+            if(!evCode || !p1) { showToast("Event Code and 1st Place are mandatory!", true); return; }
+
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
+
+            let resData = [];
+            if(p1) resData.push({position: 1, codeLetter: p1});
+            if(p2) resData.push({position: 2, codeLetter: p2});
+            if(p3) resData.push({position: 3, codeLetter: p3});
+
+            const req = { 
+                action: "saveJudgeResults", 
+                targetSheetId: targetSheetId, 
+                eventCode: evCode, 
+                results: resData 
+            };
+
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    showToast("Results submitted for Admin Approval! 🏆");
+                    document.getElementById('resultForm').reset();
+                } else {
+                    showToast(data.message, true);
+                }
+            } catch(error) {
+                showToast("Failed to submit data.", true);
+            }
+            btn.innerHTML = 'Submit for Approval <i class="fas fa-paper-plane"></i>'; btn.disabled = false;
+        });
+
+        // Handle Logout
+        function judgeLogout() {
+            targetSheetId = null;
+            document.getElementById('judgeLoginForm').reset();
+            document.getElementById('resultForm').reset();
+            document.getElementById('entryBox').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+            showToast("Logged out securely.");
+        }
+    </script>
+</body>
+</html>
