@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FestVue - Student & Public Portal</title>
+    <!-- PWA & Icons -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#046A38">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -103,7 +104,6 @@
         .poster-template { 
             width: 1080px; 
             height: 1080px; 
-            /* Premium Emerald & Gold Gradient Background */
             background: linear-gradient(135deg, #022c17 0%, #064e3b 50%, #022c17 100%); 
             position: relative; 
             overflow: hidden; 
@@ -116,7 +116,6 @@
             text-align: center; 
         }
         
-        /* Golden Decorative Border */
         .poster-decor { 
             position: absolute; 
             width: calc(100% - 60px); 
@@ -129,7 +128,6 @@
             z-index: 1;
         }
 
-        /* Inner Subtle Border */
         .poster-decor::before {
             content: '';
             position: absolute;
@@ -137,7 +135,6 @@
             border: 1px dashed rgba(212, 175, 55, 0.5);
         }
 
-        /* SVG Background Patterns (Mandala/Arts Theme) */
         .poster-bg-pattern {
             position: absolute;
             top: -150px; left: -150px;
@@ -148,16 +145,11 @@
             border-radius: 50%;
             pointer-events: none;
         }
-        .poster-bg-pattern.bottom-right {
-            top: auto; left: auto;
-            bottom: -150px; right: -150px;
-        }
+        .poster-bg-pattern.bottom-right { top: auto; left: auto; bottom: -150px; right: -150px; }
 
-        /* Text Elements */
         .poster-header { font-size: 32px; font-weight: 600; color: #fff; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 5px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .poster-sub-header { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 40px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        /* 3D Glowing Photo Frame */
         .poster-photo-frame { 
             width: 380px; 
             height: 380px; 
@@ -170,12 +162,10 @@
             z-index: 2; 
         }
         
-        /* Winner Details */
         .poster-congrats { font-size: 65px; font-weight: 700; color: var(--accent); margin-bottom: 5px; z-index: 2; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.6); }
         .poster-name { font-size: 55px; font-weight: 700; color: #fff; margin-bottom: 25px; z-index: 2; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .poster-desc { font-size: 30px; line-height: 1.6; color: #e2e8f0; z-index: 2; max-width: 900px; }
         
-        /* Ribbon Style Position Badge */
         .poster-pos { 
             display: inline-block; 
             background: linear-gradient(90deg, #b45309, #d4af37, #b45309); 
@@ -326,6 +316,7 @@
                 <div style="margin-top: 15px;">in <b id="p_event" style="color: var(--accent); font-size: 35px;">EVENT NAME</b></div>
             </div>
         </div>
+    </div>
 
     <div class="modal-overlay" id="photoModal">
         <div class="modal">
@@ -340,14 +331,14 @@
     </div>
 
     <script>
-                const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
         
-        // ലിങ്കിൽ (QR Code) നിന്ന് വരുന്ന ഡാറ്റകൾ എടുക്കുന്നു
+        // QR Code URL Params Logic
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('inst')) sessionStorage.setItem("publicInstId", urlParams.get('inst'));
         
         const instId = sessionStorage.getItem("publicInstId");
-        const qrChestNo = urlParams.get('chest'); // QR കോഡ് വഴി വരുന്ന ചെസ്റ്റ് നമ്പർ
+        const qrChestNo = urlParams.get('chest'); 
 
         let globalDbData = {};
         let currentPosterData = null;
@@ -362,13 +353,12 @@
             fetchPublicData();
         };
         
-document.getElementById("searchInput").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        searchStudent();
-    }
-});
-
+        document.getElementById("searchInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                searchStudent();
+            }
+        });
 
         function getVal(row, index) {
             if (!row) return "";
@@ -377,7 +367,6 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
         }
 
         async function fetchPublicData() {
-            // --- അഡ്വാൻസ്ഡ് സ്പീഡ് ബൂസ്റ്റർ (Stale-While-Revalidate Caching) ---
             const cachedData = localStorage.getItem("festvue_cache_" + instId);
             const cachedName = localStorage.getItem("festvue_name_" + instId);
             const cachedConfig = localStorage.getItem("festvue_config_" + instId);
@@ -390,7 +379,6 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                 document.getElementById('topFestName').innerText = configData.festName;
                 document.getElementById('topFestDesc').innerText = configData.festDesc;
                 
-                // റീഫ്രഷ് അടിച്ച ഉടനെ ഡാറ്റ കാണിക്കുന്നു
                 calculateLeaderboard();
                 buildEventDropdowns();
                 renderOverviewCounters();
@@ -399,18 +387,16 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('heroBanner').style.display = 'block';
                 document.getElementById('mainContent').style.display = 'block';
-            }
-                    // ക്യുആർ കോഡ് സ്കാൻ ചെയ്താണ് വന്നതെങ്കിൽ തനിയെ സെർച്ച് ആവാൻ
-                    if (qrChestNo) {
-                        setTimeout(() => {
-                            switchTab('search');
-                            document.getElementById('searchInput').value = qrChestNo;
-                            searchStudent();
-                        }, 500);
-                    }
 
+                if (qrChestNo) {
+                    setTimeout(() => {
+                        switchTab('search');
+                        document.getElementById('searchInput').value = qrChestNo;
+                        searchStudent();
+                    }, 500);
+                }
+            }
             
-            // --- ബാക്കെൻഡിൽ നിന്നും ലൈവ് അപ്ഡേഷൻ നിശബ്ദമായി നടക്കുന്നു ---
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
                 let data = await res.json();
@@ -425,7 +411,6 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                     renderOverviewCounters();
                     renderLatestAnnouncements();
                     
-                    // മെമ്മറി വീണ്ടും തത്സമയം അപ്ഡേറ്റ് ചെയ്യുന്നു
                     localStorage.setItem("festvue_cache_" + instId, JSON.stringify(globalDbData));
                     localStorage.setItem("festvue_name_" + instId, data.institutionName);
                     localStorage.setItem("festvue_config_" + instId, JSON.stringify(configData));
@@ -433,8 +418,8 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('heroBanner').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'block';
-                    // ക്യുആർ കോഡ് സ്കാൻ ചെയ്താണ് വന്നതെങ്കിൽ തനിയെ സെർച്ച് ആവാൻ
-                    if (qrChestNo) {
+
+                    if (qrChestNo && !cachedData) {
                         setTimeout(() => {
                             switchTab('search');
                             document.getElementById('searchInput').value = qrChestNo;
@@ -468,19 +453,19 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                     if(key === 'FEST_NAME') configData.festName = val || configData.festName;
                     if(key === 'FEST_DESC') configData.festDesc = val || configData.festDesc;
                     if(key === 'AUTHORITY') configData.authority = val || configData.authority;
-                if (key === 'DATE') {
-                    if (val) {
-                        let d = new Date(val);
-                        if (!isNaN(d)) {
-                            configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+                    if (key === 'DATE') {
+                        if (val) {
+                            let d = new Date(val);
+                            if (!isNaN(d)) {
+                                configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
+                            } else {
+                                configData.date = val;
+                            }
                         } else {
-                            configData.date = val;
+                            let d = new Date();
+                            configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
                         }
-                    } else {
-                        let d = new Date();
-                        configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
                     }
-                }
                     if(key === 'CERT_TEMPLATE') configData.certTemplate = val || configData.certTemplate;
                 }
             });
@@ -494,7 +479,6 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if(event) event.currentTarget.classList.add('active');
         }
-
 
         function renderOverviewCounters() {
             const totalStudents = (globalDbData.Students || []).length;
@@ -596,7 +580,6 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                         let medal = pos == 1 ? "🥇" : pos == 2 ? "🥈" : "🥉";
                         statusHtml = `<div class="result-pos">${medal} ${posText} PLACE</div>`;
                         
-                                                                        // എക്സ്ട്രാ സ്പേസുകൾ ഒഴിവാക്കാൻ trim() ഉപയോഗിക്കുന്നു
                         const cleanName = getVal(student, 1).toString().trim();
                         const cleanEvName = evName.toString().trim();
                         const cleanPosText = posText.toString().trim();
@@ -606,10 +589,7 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
                             group: getVal(student,5), event: cleanEvName, position: cleanPosText
                         }));
                         
-                        // 🏆 ഇമോജിക്ക് പകരം അതിന്റെ യൂണികോഡ് ഉപയോഗിക്കുന്നു ( എറർ ഒഴിവാക്കാൻ)
                         const trophy = '\uD83C\uDFC6';
-                        
-                        // വാട്സാപ്പിൽ അയക്കാനുള്ള മെസ്സേജ്
                         const shareText = `${trophy} *Proud Moment!* ${trophy}\n\n*${cleanName}* has secured *${cleanPosText} PLACE* in *${cleanEvName}* at the ${configData.festName}!\n\nView live results & download certificate here:\nhttps://festvue.github.io/public.html?inst=${instId}&chest=${searchQ}`;
                         
                         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -677,24 +657,84 @@ document.getElementById("searchInput").addEventListener("keypress", function(eve
         }
 
         function calculateLeaderboard() {
-            const results = globalDbData.Results || []; const students = globalDbData.Students || [];
-            let groupPoints = {}; let studentPoints = {};
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            const events = globalDbData.Events || [];
+            const settings = globalDbData.Settings || [];
+            
+            // ഡിഫോൾട്ട് പോയിന്റുകൾ
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 };
+            let customPoints = {};
+            
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const evCode = getVal(row, 1).toString().toUpperCase();
+                    const rawVal = getVal(row, 2).toString();
+                    
+                    // 1st, 2nd, 3rd പോയിന്റുകൾ കോമ (,) വെച്ച് കൃത്യമായി പിരിച്ചെടുക്കുന്നു
+                    const pts = rawVal ? rawVal.split(',') : [];
+                    const p1 = parseInt(pts[0]) || 0;
+                    const p2 = parseInt(pts[1]) || 0;
+                    const p3 = parseInt(pts[2]) || 0;
+                    
+                    if (evCode === "DEFAULT") {
+                        defaultPoints = { 1: p1, 2: p2, 3: p3 };
+                    } else {
+                        customPoints[evCode] = { 1: p1, 2: p2, 3: p3 };
+                    }
+                }
+            });
 
+            let groupPoints = {}; 
+            let studentPoints = {};
+            let processedGroupEvents = {}; 
+            
             results.forEach(res => {
-                const chestNo = getVal(res, 1); const position = parseInt(getVal(res, 2));
-                let points = position === 1 ? 5 : position === 2 ? 3 : position === 3 ? 1 : 0;
+                const evCode = getVal(res, 0).toString().toUpperCase();
+                const chestNo = getVal(res, 1);
+                const position = parseInt(getVal(res, 2)); // 1, 2 അല്ലെങ്കിൽ 3
+                
+                // ആ ഇവന്റിനുള്ള പോയിന്റ് മാപ്പ് എടുക്കുന്നു (ഇപ്പോൾ 1, 2, 3 മൂന്നും ഇതിലുണ്ട്)
+                const ptsMap = customPoints[evCode] || defaultPoints;
+                const points = ptsMap[position] || 0;
+                
                 if(!chestNo || points === 0) return;
-
+                
                 const st = students.find(s => getVal(s, 0) == chestNo);
+                const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
+                
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+                
+                const skipIndividualPoints = isGroupEvent || isGeneralCat;
+
                 if(st) {
-                    const group = getVal(st, 5); const rawGender = getVal(st, 2).toString().trim().toLowerCase(); 
+                    const group = getVal(st, 5);
+                    const rawGender = getVal(st, 2).toString().trim().toLowerCase();
                     let genderCat = "other";
                     if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
                     if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
                     const name = getVal(st, 1);
-                    if(group) groupPoints[group] = (groupPoints[group] || 0) + points;
-                    if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0, class: getVal(st,3) };
-                    studentPoints[chestNo].points += points;
+
+                                        if(group) {
+                        if (skipIndividualPoints) {
+                            // (FIXED) ചെസ്റ്റ് നമ്പർ ഒഴിവാക്കി, ഇവന്റ് + സ്ഥാനം + ഹൗസ് എന്നിവ മാത്രം വച്ച് ടീമിനെ തിരിച്ചറിയുന്നു
+                            const uniqueKey = `${evCode}_${position}_${group}`; 
+                            
+                            if (!processedGroupEvents[uniqueKey]) {
+                                groupPoints[group] = (groupPoints[group] || 0) + points;
+                                processedGroupEvents[uniqueKey] = true;
+                            }
+                        } else {
+                            groupPoints[group] = (groupPoints[group] || 0) + points;
+                        }
+                    }
+
+                    if (!skipIndividualPoints) {
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0, class: getVal(st,3) };
+                        studentPoints[chestNo].points += points;
+                    }
                 }
             });
 
