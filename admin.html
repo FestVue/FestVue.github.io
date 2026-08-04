@@ -1291,27 +1291,82 @@
         function calculateLeaderboard() {
             const results = globalDbData.Results || [];
             const students = globalDbData.Students || [];
-            let groupPoints = {}; let studentPoints = {};
+            const events = globalDbData.Events || [];
+            const settings = globalDbData.Settings || [];
+            
+            // ഡിഫോൾട്ട് പോയിന്റുകൾ
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 };
+            let customPoints = {};
+            
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const evCode = getVal(row, 1).toString().toUpperCase();
+                    const rawVal = getVal(row, 2).toString();
+                    
+                    // 1st, 2nd, 3rd പോയിന്റുകൾ കോമ (,) വെച്ച് കൃത്യമായി പിരിച്ചെടുക്കുന്നു
+                    const pts = rawVal ? rawVal.split(',') : [];
+                    const p1 = parseInt(pts[0]) || 0;
+                    const p2 = parseInt(pts[1]) || 0;
+                    const p3 = parseInt(pts[2]) || 0;
+                    
+                    if (evCode === "DEFAULT") {
+                        defaultPoints = { 1: p1, 2: p2, 3: p3 };
+                    } else {
+                        customPoints[evCode] = { 1: p1, 2: p2, 3: p3 };
+                    }
+                }
+            });
+
+            let groupPoints = {}; 
+            let studentPoints = {};
+            let processedGroupEvents = {}; 
             
             results.forEach(res => {
+                const evCode = getVal(res, 0).toString().toUpperCase();
                 const chestNo = getVal(res, 1);
-                const position = parseInt(getVal(res, 2));
-                let points = position === 1 ? 5 : position === 2 ? 3 : position === 3 ? 1 : 0;
+                const position = parseInt(getVal(res, 2)); // 1, 2 അല്ലെങ്കിൽ 3
+                
+                // ആ ഇവന്റിനുള്ള പോയിന്റ് മാപ്പ് എടുക്കുന്നു (ഇപ്പോൾ 1, 2, 3 മൂന്നും ഇതിലുണ്ട്)
+                const ptsMap = customPoints[evCode] || defaultPoints;
+                const points = ptsMap[position] || 0;
                 
                 if(!chestNo || points === 0) return;
                 
                 const st = students.find(s => getVal(s, 0) == chestNo);
+                const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
+                
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+                
+                const skipIndividualPoints = isGroupEvent || isGeneralCat;
+
                 if(st) {
                     const group = getVal(st, 5);
                     const rawGender = getVal(st, 2).toString().trim().toLowerCase();
                     let genderCat = "other";
                     if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
                     if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
-                    
                     const name = getVal(st, 1);
-                    if(group) groupPoints[group] = (groupPoints[group] || 0) + points;
-                    if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0 };
-                    studentPoints[chestNo].points += points;
+
+                                        if(group) {
+                        if (skipIndividualPoints) {
+                            // (FIXED) ചെസ്റ്റ് നമ്പർ ഒഴിവാക്കി, ഇവന്റ് + സ്ഥാനം + ഹൗസ് എന്നിവ മാത്രം വച്ച് ടീമിനെ തിരിച്ചറിയുന്നു
+                            const uniqueKey = `${evCode}_${position}_${group}`; 
+                            
+                            if (!processedGroupEvents[uniqueKey]) {
+                                groupPoints[group] = (groupPoints[group] || 0) + points;
+                                processedGroupEvents[uniqueKey] = true;
+                            }
+                        } else {
+                            groupPoints[group] = (groupPoints[group] || 0) + points;
+                        }
+                    }
+
+                    if (!skipIndividualPoints) {
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0, class: getVal(st,3) };
+                        studentPoints[chestNo].points += points;
+                    }
                 }
             });
 
