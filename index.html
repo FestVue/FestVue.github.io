@@ -116,9 +116,11 @@
                 return;
             }
             
-            // ഐഡി സ്റ്റോർ ചെയ്ത ശേഷം public.html ലേക്ക് പോകുന്നു
-            sessionStorage.setItem("publicInstId", instId);
-            window.location.href = "public.html";
+            // Local Storage-ൽ ഐഡി സേവ് ചെയ്യുന്നു
+            localStorage.setItem("festvue_public_instId", instId);
+            
+            // public.html ന് പെട്ടെന്ന് മനസ്സിലാകാൻ URL വഴി ID പാസ്സ് ചെയ്യുന്നു
+            window.location.href = "public.html?inst=" + encodeURIComponent(instId);
         }
 
         // എന്റർ കീ അമർത്തിയാലും വർക്ക് ആവാൻ
