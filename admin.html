@@ -68,12 +68,20 @@
         th { padding: 12px; background: var(--primary); color: white; border: 1px solid var(--border); }
         td { padding: 10px; border: 1px solid var(--border); }
 
+        /* Hub Links */
+        .hub-link-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .hub-info h4 { font-size: 1.1rem; color: var(--primary); margin-bottom: 5px; }
+        .hub-info p { font-size: 0.85rem; color: var(--muted); }
+        .hub-actions { display: flex; gap: 10px; }
+
         @media (max-width: 768px) {
             .sidebar { left: calc(-1 * var(--sidebar-width)); }
             .sidebar.active { left: 0; }
             .main-content { margin-left: 0; width: 100%; }
             .content-area { padding: 15px; }
             .form-grid, .stats-grid, .leaderboard-grid { grid-template-columns: 1fr; gap: 15px; }
+            .hub-link-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .hub-actions { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -97,16 +105,17 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><h2>Fest<span>Vue</span></h2></div>
             <ul class="sidebar-menu">
-                <li><a href="#" class="nav-link active" onclick="switchTab('dashboard', event)"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('students', event)"><i class="fas fa-user-graduate"></i> Manage Students</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('events', event)"><i class="fas fa-list-alt"></i> Manage Events</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('registration', event)"><i class="fas fa-clipboard-check"></i> Event Registration</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('judgesSetup', event)"><i class="fas fa-user-secret"></i> Judges & Codes</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('manageResults', event)"><i class="fas fa-trophy"></i> Manage Results</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('printCenter', event)"><i class="fas fa-print"></i> Print Center</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('settingsGeneral', event)"><i class="fas fa-cog"></i> Settings: General</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('settingsPoints', event)"><i class="fas fa-star"></i> Settings: Points</a></li>
-                <li><a href="#" class="nav-link" onclick="switchTab('settingsClass', event)"><i class="fas fa-sitemap"></i> Settings: Class & Category</a></li>
+                <li><a href="#" class="nav-link active" data-tab="dashboard" onclick="switchTab('dashboard', event)"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-tab="students" onclick="switchTab('students', event)"><i class="fas fa-user-graduate"></i> Manage Students</a></li>
+                <li><a href="#" class="nav-link" data-tab="events" onclick="switchTab('events', event)"><i class="fas fa-list-alt"></i> Manage Events</a></li>
+                <li><a href="#" class="nav-link" data-tab="registration" onclick="switchTab('registration', event)"><i class="fas fa-clipboard-check"></i> Event Registration</a></li>
+                <li><a href="#" class="nav-link" data-tab="judgesSetup" onclick="switchTab('judgesSetup', event)"><i class="fas fa-user-secret"></i> Judges & Codes</a></li>
+                <li><a href="#" class="nav-link" data-tab="manageResults" onclick="switchTab('manageResults', event)"><i class="fas fa-trophy"></i> Manage Results</a></li>
+                <li><a href="#" class="nav-link" data-tab="printCenter" onclick="switchTab('printCenter', event)"><i class="fas fa-print"></i> Print Center</a></li>
+                <li><a href="#" class="nav-link" data-tab="accessHub" onclick="switchTab('accessHub', event)" style="color: var(--accent);"><i class="fas fa-share-alt"></i> Share & Access Hub</a></li>
+                <li><a href="#" class="nav-link" data-tab="settingsGeneral" onclick="switchTab('settingsGeneral', event)"><i class="fas fa-cog"></i> Settings: General</a></li>
+                <li><a href="#" class="nav-link" data-tab="settingsPoints" onclick="switchTab('settingsPoints', event)"><i class="fas fa-star"></i> Settings: Points</a></li>
+                <li><a href="#" class="nav-link" data-tab="settingsClass" onclick="switchTab('settingsClass', event)"><i class="fas fa-sitemap"></i> Settings: Class & Category</a></li>
                 <li><a href="#" style="margin-top: 20px; color: #ff5a5f;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
@@ -351,6 +360,52 @@
                     </div>
                 </section>
 
+                <!-- NEW: 7.5. ACCESS HUB -->
+                <section id="accessHub" class="page-section">
+                    <div class="card" style="border-left: 5px solid var(--accent);">
+                        <div class="card-header">
+                            <h3><i class="fas fa-share-alt"></i> Share & Access Hub</h3>
+                        </div>
+                        <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 25px;">Directly open or share the links to the Public Portal, Live TV, and Judges Panel configured with your Institution ID.</p>
+                        
+                        <!-- Public Portal -->
+                        <div class="hub-link-card">
+                            <div class="hub-info">
+                                <h4><i class="fas fa-globe"></i> Public Results Portal</h4>
+                                <p>Students and parents can view live standings, search results, and generate posters.</p>
+                            </div>
+                            <div class="hub-actions">
+                                <button onclick="openHubLink('public')" class="primary-btn" style="padding: 8px 15px; font-size: 0.9rem;"><i class="fas fa-external-link-alt"></i> Open</button>
+                                <button onclick="shareHubLink('public')" class="primary-btn" style="background:#25D366; padding: 8px 15px; font-size: 0.9rem;"><i class="fab fa-whatsapp"></i> Share</button>
+                            </div>
+                        </div>
+
+                        <!-- Live TV Screen -->
+                        <div class="hub-link-card">
+                            <div class="hub-info">
+                                <h4><i class="fas fa-tv"></i> Live TV / Projector Screen</h4>
+                                <p>A 16:9 auto-refreshing dark mode screen to display the live dashboard on the stage.</p>
+                            </div>
+                            <div class="hub-actions">
+                                <button onclick="openHubLink('tv')" class="primary-btn" style="background:#b45309; padding: 8px 15px; font-size: 0.9rem;"><i class="fas fa-desktop"></i> Launch TV Mode</button>
+                            </div>
+                        </div>
+
+                        <!-- Judges Portal -->
+                        <div class="hub-link-card">
+                            <div class="hub-info">
+                                <h4><i class="fas fa-gavel"></i> Judges Panel</h4>
+                                <p>The secure login area for judges to submit their live event results.</p>
+                            </div>
+                            <div class="hub-actions">
+                                <button onclick="openHubLink('judges')" class="primary-btn" style="background:#64748b; padding: 8px 15px; font-size: 0.9rem;"><i class="fas fa-external-link-alt"></i> Open</button>
+                                <button onclick="shareHubLink('judges')" class="primary-btn" style="background:#25D366; padding: 8px 15px; font-size: 0.9rem;"><i class="fab fa-whatsapp"></i> Share</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
                 <!-- 8. SETTINGS: GENERAL -->
                 <section id="settingsGeneral" class="page-section">
                     <div class="card">
@@ -474,7 +529,7 @@
 
     <script>
         // ==========================================
-        // 1. THEME & UI LOGIC
+        // 1. THEME & UI LOGIC (UPDATED WITH STATE PRESERVATION)
         // ==========================================
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
@@ -489,9 +544,25 @@
         function switchTab(tabId, e) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
+            
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            if(e) e.currentTarget.classList.add('active');
+            if(e && e.currentTarget) {
+                e.currentTarget.classList.add('active');
+            } else {
+                const link = document.querySelector(`.nav-link[data-tab="${tabId}"]`);
+                if(link) link.classList.add('active');
+            }
+            
+            sessionStorage.setItem('fv_admin_current_tab', tabId);
+            
             if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
+        }
+
+        function restoreTab() {
+            const savedTab = sessionStorage.getItem('fv_admin_current_tab');
+            if(savedTab && document.getElementById(savedTab)) {
+                switchTab(savedTab, null);
+            }
         }
 
         document.addEventListener('click', function(event) {
@@ -513,6 +584,7 @@
             const btn = document.getElementById('loginBtn');
             btn.innerHTML = 'Login'; btn.disabled = false;
         }
+        
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
         let targetSheetId = sessionStorage.getItem("targetSheetId");
         let globalDbData = {};
@@ -537,10 +609,47 @@
                         document.getElementById('dashboardView').style.display = 'flex';
                         document.getElementById('instNameDisplay').innerText = data.institutionName;
                         loadDropdownData();
+                        restoreTab();
                     }, 1000);
                 } else { msg.style.color = "red"; msg.innerText = data.message; btn.innerHTML = originalText; btn.disabled = false; }
             }).catch(error => { msg.style.color = "red"; msg.innerText = "Network Error."; btn.innerHTML = originalText; btn.disabled = false; });
         });
+
+        // ==========================================
+        // 1.5 HUB LOGIC (NEW)
+        // ==========================================
+        function getBaseUrl() {
+            return window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+        }
+
+        function openHubLink(type) {
+            const instId = sessionStorage.getItem("instId");
+            if(!instId) { alert("Institution ID missing. Please login again."); return; }
+            const baseUrl = getBaseUrl();
+            
+            if(type === 'public') window.open(`${baseUrl}/public.html?inst=${instId}`, '_blank');
+            if(type === 'tv') window.open(`${baseUrl}/tv.html?inst=${instId}`, '_blank');
+            if(type === 'judges') window.open(`${baseUrl}/judges.html`, '_blank');
+        }
+
+        function shareHubLink(type) {
+            const instId = sessionStorage.getItem("instId");
+            if(!instId) { alert("Institution ID missing. Please login again."); return; }
+            const baseUrl = getBaseUrl();
+            
+            let text = "";
+            if(type === 'public') {
+                const festName = document.getElementById('confFestName').value || "Our Kalotsavam";
+                text = `*${festName} - Live Results Portal*\n\nFollow live standings, search results, and download certificates here:\n\n🔗 ${baseUrl}/public.html?inst=${instId}`;
+            }
+            if(type === 'judges') {
+                text = `*FestVue - Judges Portal*\n\nPlease log in here to evaluate your events:\n\n🔗 ${baseUrl}/judges.html\n\nInstitution ID: *${instId}*`;
+            }
+
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if(isMobile) { window.location.href = `whatsapp://send?text=${encodeURIComponent(text)}`; } 
+            else { window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank"); }
+        }
 
         // ==========================================
         // 2. DATA LOADING & POPULATION
@@ -928,7 +1037,59 @@
             }
         });
 
-        // REGISTRATION DUPLICATION & LIMIT CHECK (Now Supports 3 Columns for Teams)
+        // ==========================================
+        // BULK SAVES
+        // ==========================================
+        function addStudentRow() {
+            const container = document.getElementById('studentRowsContainer'); const div = document.createElement('div');
+            div.className = 'form-grid student-row'; div.style.marginBottom = '20px'; div.style.borderBottom = '1px solid var(--border)'; div.style.paddingBottom = '20px'; div.style.position = 'relative';
+            div.innerHTML = `<div class="input-group"><label>Chest No.</label><input type="text" class="st-chest" required style="text-transform: uppercase;"></div><div class="input-group"><label>Full Name</label><input type="text" class="st-name" required style="text-transform: uppercase;"></div><div class="input-group"><label>Gender</label><select class="st-gender" onchange="autoSelectCategory(this)" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div><div class="input-group"><label>Class</label><select class="st-class" onchange="autoSelectCategory(this)" required>${classOptionsHTML}</select></div><div class="input-group"><label>Category</label><select class="st-category" required>${categoryOptionsHTML}</select></div><div class="input-group"><label>Group</label><select class="st-group">${groupOptionsHTML}</select></div><button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>`;
+            container.appendChild(div);
+        }
+
+        function addEventRow() {
+            const container = document.getElementById('eventRowsContainer'); const div = document.createElement('div');
+            div.className = 'form-grid event-row'; div.style.marginBottom = '20px'; div.style.borderBottom = '1px solid var(--border)'; div.style.paddingBottom = '20px'; div.style.position = 'relative';
+            div.innerHTML = `<div class="input-group"><label>Event Code</label><input type="text" class="ev-code" required style="text-transform: uppercase;"></div><div class="input-group"><label>Event Name</label><input type="text" class="ev-name" required></div><div class="input-group"><label>Category</label><select class="ev-category" required>${categoryOptionsHTML}</select></div><div class="input-group"><label>Gender</label><select class="ev-gender" required><option value="Boys">Boys</option><option value="Girls">Girls</option><option value="Common">Common</option></select></div><div class="input-group"><label>Event Type</label><select class="ev-type" required><option value="Individual">Individual</option><option value="Group">Group</option></select></div><div class="input-group"><label>Mode</label><select class="ev-mode" required><option value="Stage">Stage</option><option value="Off-Stage">Off-Stage</option></select></div><button type="button" onclick="this.parentElement.remove()" style="background: #ff5a5f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; position: absolute; right: 0; top: 0;"><i class="fas fa-trash"></i></button>`;
+            container.appendChild(div);
+        }
+
+        if(document.getElementById('studentForm')) document.getElementById('studentForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            const existingChestNos = (globalDbData.Students || []).map(s => getVal(s, 0).toString().trim().toUpperCase());
+            let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
+            
+            document.querySelectorAll('.student-row').forEach(row => { 
+                const chestNo = row.querySelector('.st-chest').value.trim().toUpperCase(); const name = row.querySelector('.st-name').value.toUpperCase();
+                if(existingChestNos.includes(chestNo) || currentBatch.includes(chestNo)) { duplicates.push(`${chestNo} (${name})`); } else { currentBatch.push(chestNo); rowsDataToSave.push([chestNo, name, row.querySelector('.st-gender').value, row.querySelector('.st-class').value.toUpperCase(), row.querySelector('.st-category').value, row.querySelector('.st-group').value.toUpperCase()]); }
+            });
+            
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE ENTRIES FOUND!\n\n• " + duplicates.join("\n• ")); return; }
+
+            const btn = this.querySelector('button[type="submit"]'); const oText = btn.innerHTML; btn.innerHTML = 'Saving...'; btn.disabled = true;
+            try { let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Students", rowsData: rowsDataToSave }) });
+                if((await res.json()).status === "success") { alert("Students saved!"); this.reset(); document.querySelectorAll('#studentRowsContainer .student-row').forEach((el, idx) => { if(idx > 0) el.remove(); }); loadDropdownData(); }
+            } catch (error) {} finally { btn.innerHTML = oText; btn.disabled = false; }
+        });
+
+        if(document.getElementById('eventForm')) document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            const existingEvents = (globalDbData.Events || []).map(ev => getVal(ev, 0).toString().trim().toUpperCase());
+            let currentBatch = []; let duplicates = []; let rowsDataToSave = [];
+            
+            document.querySelectorAll('.event-row').forEach(row => { 
+                const eventCode = row.querySelector('.ev-code').value.trim().toUpperCase(); const eventName = row.querySelector('.ev-name').value;
+                if(existingEvents.includes(eventCode) || currentBatch.includes(eventCode)) { duplicates.push(`${eventCode} (${eventName})`); } else { currentBatch.push(eventCode); rowsDataToSave.push([eventCode, eventName, row.querySelector('.ev-category').value, row.querySelector('.ev-gender').value, row.querySelector('.ev-type').value, row.querySelector('.ev-mode').value]); }
+            });
+
+            if(duplicates.length > 0) { alert("⚠️ DUPLICATE EVENTS FOUND!\n\n• " + duplicates.join("\n• ")); return; }
+
+            const btn = this.querySelector('button[type="submit"]'); const oText = btn.innerHTML; btn.innerHTML = 'Saving...'; btn.disabled = true;
+            try { let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "Events", rowsData: rowsDataToSave }) });
+                if((await res.json()).status === "success") { alert("Events saved!"); this.reset(); document.querySelectorAll('#eventRowsContainer .event-row').forEach((el, idx) => { if(idx > 0) el.remove(); }); loadDropdownData(); }
+            } catch (error) {} finally { btn.innerHTML = oText; btn.disabled = false; }
+        });
+
         if(document.getElementById('registrationForm')) document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const evCode = document.getElementById('regEventSelect').value; 
@@ -959,7 +1120,6 @@
                 const isDup = existingRegs.some(reg => getVal(reg, 0).toString().trim().toUpperCase() === evCode.toUpperCase() && getVal(reg, 1).toString().trim().toUpperCase() === captain);
                 if(isDup) { alert(`Team with Captain ${captain} is already registered!`); return; }
                 
-                // Group events ignore limits as requested
                 registrationsToSave.push([evCode, captain, members.join(",")]);
                 
             } else {
@@ -1389,7 +1549,7 @@
                 const isGroup = eventItem && getVal(eventItem, 4).toString().trim().toLowerCase() === 'group';
                 let posText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
                 
-                let studentsToPrint = [chestNo]; // ക്യാപ്റ്റൻ
+                let studentsToPrint = [chestNo]; 
                 
                 if(isGroup) {
                     const regRow = (globalDbData.Registrations || []).find(r => 
@@ -1399,8 +1559,6 @@
                     
                     if(regRow) {
                         let membersStr = "";
-                        // ഇൻഡക്സ് ഉപയോഗിക്കുന്നതിന് പകരം ഹെഡ്ഡിങ് പേര് വെച്ച് മാത്രം തപ്പിയെടുക്കുന്നു. 
-                        // ചെറിയ അക്ഷരപ്പിശകുകൾ മറികടക്കാൻ "team" എന്ന വാക്ക് ഹെഡ്ഡിങ്ങിൽ ഉണ്ടോ എന്നാണ് നോക്കുന്നത്.
                         const keys = Object.keys(regRow);
                         const teamHeader = keys.find(k => k.toLowerCase().includes("team member"));
                         
@@ -1413,7 +1571,7 @@
                             memberArr.forEach(m => {
                                 let cleanM = m.trim().toUpperCase();
                                 if(cleanM && !studentsToPrint.includes(cleanM)) {
-                                    studentsToPrint.push(cleanM); // മെമ്പേഴ്സിനെ ലിസ്റ്റിലേക്ക് ചേർക്കുന്നു
+                                    studentsToPrint.push(cleanM); 
                                 }
                             });
                         }
@@ -1466,6 +1624,7 @@
                 document.getElementById('dashboardView').style.display = 'flex';
                 document.getElementById('instNameDisplay').innerText = sessionStorage.getItem("instName") || "Dashboard";
                 loadDropdownData();
+                restoreTab();
             }
         };
     </script>
