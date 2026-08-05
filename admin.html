@@ -1523,12 +1523,14 @@
         }
 
         // ==========================================
-        // PRINT CENTER
+        // PRINT CENTER - FULLY REDESIGNED PRINT ENGINE
         // ==========================================
         function generateCertificates() {
             if(!globalDbData) return;
             const selectedEvent = document.getElementById('printCertEventSelect').value;
-            const instName = sessionStorage.getItem("instName") || ""; const festName = document.getElementById('confFestName').value || ""; const authority = document.getElementById('confAuthority').value || "";
+            const instName = sessionStorage.getItem("instName") || ""; 
+            const festName = document.getElementById('confFestName').value || ""; 
+            const authority = document.getElementById('confAuthority').value || "Authorized Signatory";
             
             let rawDate = document.getElementById('confDate').value; let dateStr = "";
             if (rawDate) { let d = new Date(rawDate); dateStr = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear(); } 
@@ -1541,7 +1543,70 @@
             if (filteredResults.length === 0) { alert("No approved results found for printing certificates!"); return; }
 
             let printWindow = window.open('', '_blank');
-            let htmlContent = `<html><head><title>Print Certificates</title><style>@import url('https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&family=Cairo:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap'); @page { size: A4 landscape; margin: 0; } body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; -webkit-print-color-adjust: exact; } .cert-page { width: 297mm; height: 210mm; box-sizing: border-box; padding: 22mm; position: relative; page-break-after: always; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; background-color: #fdfdfd; } .cert-bg-svg { position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity: 0.06; } .cert-content-box { z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; } .cert-border { position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 3px solid #046A38; padding: 4px; z-index: 1; pointer-events: none;} .cert-inner-border { border: 1px solid #D4AF37; height: 100%; width: 100%; } .header-inst { font-size: 2.3rem; font-weight: 700; color: #046A38; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; } .header-fest { font-size: 1.4rem; color: #D4AF37; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; } .cert-title { font-size: 1.8rem; font-weight: 600; color: #1e293b; letter-spacing: 4px; text-transform: uppercase; margin: 15px 0; font-family: 'Poppins', sans-serif; } .main-text { font-size: 1.3rem; line-height: 2; color: #334155; max-width: 85%; margin: 0 auto; text-align: center; font-weight: 400; } .main-text b { color: #046A38; font-weight: 700; font-size: 1.4rem; border-bottom: 2px solid #D4AF37; padding: 0 4px; margin: 0 2px; } .footer-row { display: flex; justify-content: space-between; width: 85%; margin: 0 auto; align-items: end; padding-bottom: 5mm; } .sig-line { text-align: center; width: 220px; } .sig-line p { border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 1rem; font-weight: 600; color: #334155; margin: 0; }</style></head><body>`;
+            
+            let htmlContent = `<html><head><title>Print Certificates</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+                
+                @page { size: A4 landscape; margin: 0; }
+                body { margin: 0; background: #fff; -webkit-print-color-adjust: exact; }
+                
+                .cert-page {
+                    width: 297mm; height: 210mm; position: relative; page-break-after: always;
+                    background-color: #fcfbf9; overflow: hidden; box-sizing: border-box;
+                }
+                
+                .cert-bg {
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+                }
+                
+                .cert-content {
+                    position: relative; z-index: 1; padding: 22mm 28mm; width: 100%;
+                    display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box;
+                }
+                
+                .text-wrapper {
+                    width: 62%; /* Constrains text so it doesn't enter the blue shape */
+                }
+                
+                .header-inst {
+                    font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: #D4AF37;
+                    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;
+                }
+
+                .header-fest {
+                    font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: #0b132b;
+                    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
+                }
+                
+                .cert-title {
+                    font-family: 'Playfair Display', serif; font-size: 3.4rem; font-weight: 700; color: #0b132b;
+                    line-height: 1.1; letter-spacing: 1px; margin: 10px 0 15px 0;
+                }
+                
+                .student-name {
+                    font-family: 'Bebas Neue', sans-serif; font-size: 4.8rem; color: #C5A059; line-height: 1.1;
+                    margin: 10px 0 15px 0; white-space: normal; word-break: keep-all; overflow-wrap: break-word;
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.03); letter-spacing: 2px;
+                }
+                
+                .main-text {
+                    font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.8; color: #475569; max-width: 95%; font-weight: 500;
+                }
+                
+                .main-text b { color: #0b132b; font-weight: 700; }
+                
+                .footer-row {
+                    display: flex; justify-content: space-between; width: 75%; margin-top: 45px;
+                }
+                
+                .sig-box { text-align: left; }
+                .sig-name {
+                    font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; color: #0b132b;
+                    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
+                }
+                .sig-line { border-top: 1.5px solid #C5A059; width: 220px; }
+            </style></head><body>`;
 
             filteredResults.forEach(res => {
                 const evCode = getVal(res, 0); const chestNo = getVal(res, 1); const pos = getVal(res, 2);
@@ -1556,23 +1621,16 @@
                         getVal(r,0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase() && 
                         getVal(r,1).toString().trim().toUpperCase() === chestNo.toString().trim().toUpperCase()
                     );
-                    
                     if(regRow) {
                         let membersStr = "";
                         const keys = Object.keys(regRow);
                         const teamHeader = keys.find(k => k.toLowerCase().includes("team member"));
-                        
-                        if(teamHeader && regRow[teamHeader]) {
-                            membersStr = String(regRow[teamHeader]);
-                        }
-
+                        if(teamHeader && regRow[teamHeader]) membersStr = String(regRow[teamHeader]);
                         if(membersStr) {
                             let memberArr = membersStr.split(',');
                             memberArr.forEach(m => {
                                 let cleanM = m.trim().toUpperCase();
-                                if(cleanM && !studentsToPrint.includes(cleanM)) {
-                                    studentsToPrint.push(cleanM); 
-                                }
+                                if(cleanM && !studentsToPrint.includes(cleanM)) studentsToPrint.push(cleanM); 
                             });
                         }
                     }
@@ -1585,13 +1643,76 @@
                     
                     if(student) {
                         const stName = getVal(student, 1); const stCls = getVal(student, 3); const stGroup = getVal(student, 5) || "No Group"; const evName = eventItem ? getVal(eventItem, 1) : evCode;
-                        let dynamicText = customTemplate.replace(/\[NAME\]/g, `<b>${stName}</b>`).replace(/\[CHEST\]/g, `<b>${safeCNo}</b>`).replace(/\[CLASS\]/g, `<b>${stCls}</b>`).replace(/\[GROUP\]/g, `<b>${stGroup}</b>`).replace(/\[EVENT\]/g, `<b>${evName}</b>`).replace(/\[POSITION\]/g, `<b>${posText}</b>`);
                         
-                        htmlContent += `<div class="cert-page"><svg class="cert-bg-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,0 20,0 0,20" fill="#046A38" /><polygon points="100,0 80,0 100,20" fill="#046A38" /><polygon points="0,100 20,100 0,80" fill="#046A38" /><polygon points="100,100 80,100 100,80" fill="#046A38" /><circle cx="50" cy="50" r="25" fill="none" stroke="#046A38" stroke-width="0.5" /></svg><div class="cert-border"><div class="cert-inner-border"></div></div><div class="cert-content-box"><div><div class="header-inst">${instName}</div><div class="header-fest">${festName}</div><div class="cert-title">Certificate of Merit</div></div><div class="main-text">${dynamicText}</div><div class="footer-row"><div class="sig-line" style="text-align: left;"><p>Date: ${dateStr}</p></div><div class="sig-line"><p>${authority}</p></div></div></div></div>`;
+                        // Parse user template to render properly
+                        let dynamicText = customTemplate
+                            .replace(/\n/g, '<br>')
+                            .replace(/\[NAME\]/g, `<div class="student-name">${stName}</div>`)
+                            .replace(/\[CHEST\]/g, `<b>${safeCNo}</b>`)
+                            .replace(/\[CLASS\]/g, `<b>${stCls}</b>`)
+                            .replace(/\[GROUP\]/g, `<b>${stGroup}</b>`)
+                            .replace(/\[EVENT\]/g, `<b>${evName}</b>`)
+                            .replace(/\[POSITION\]/g, `<b>${posText}</b>`);
+                        
+                        htmlContent += `<div class="cert-page">
+                            <svg class="cert-bg" viewBox="0 0 1122 793" preserveAspectRatio="none">
+                                <rect width="1122" height="793" fill="#fcfbf9" />
+                                
+                                <!-- Outer & Inner Gold Borders -->
+                                <polyline points="684,35 35,35 35,758 866,758" fill="none" stroke="#D4AF37" stroke-width="3" />
+                                <polyline points="686,45 45,45 45,748 863,748" fill="none" stroke="#D4AF37" stroke-width="1.2" />
+                                
+                                <!-- Dark Navy Angles -->
+                                <polygon points="700,0 1122,0 1122,793 900,793" fill="#0b132b" />
+                                
+                                <!-- Thick Gold Diagonal Line -->
+                                <polygon points="675,0 700,0 900,793 875,793" fill="#D4AF37" />
+                                
+                                <!-- Detailed Vector Gold Laurel Wreath Seal (Perfectly centered on the blue background) -->
+                                <g transform="translate(865, 80) scale(1.15)">
+                                     <!-- Underlying Ribbons -->
+                                     <polygon points="35,80 20,130 50,110 80,130 65,80" fill="#C5A059" />
+                                     <polygon points="35,80 20,130 50,110" fill="#b38a42" opacity="0.4" />
+                                     
+                                     <!-- Multi-layered Seal -->
+                                     <circle cx="50" cy="50" r="38" fill="#D4AF37" />
+                                     <circle cx="50" cy="50" r="32" fill="#0b132b" />
+                                     <circle cx="50" cy="50" r="28" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="3 3" />
+                                     
+                                     <!-- Center Star/Leaf design -->
+                                     <path d="M50,25 L55,40 L70,40 L58,49 L62,64 L50,55 L38,64 L42,49 L30,40 L45,40 Z" fill="#D4AF37"/>
+                                </g>
+                            </svg>
+                            
+                            <div class="cert-content">
+                                <div class="text-wrapper">
+                                    <div class="header-inst">${instName}</div>
+                                    <div class="header-fest">${festName}</div>
+                                    <div class="cert-title">CERTIFICATE OF<br>MERIT</div>
+                                    
+                                    <div class="main-text">${dynamicText}</div>
+                                </div>
+                                
+                                <div class="footer-row">
+                                    <div class="sig-box">
+                                        <div class="sig-name">${authority}</div>
+                                        <div class="sig-line"></div>
+                                    </div>
+                                    <div class="sig-box">
+                                        <div class="sig-name">${dateStr}</div>
+                                        <div class="sig-line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
                     }
                 });
             });
-            htmlContent += `</body></html>`; printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.setTimeout(function() { printWindow.print(); }, 600);
+            htmlContent += `</body></html>`; 
+            printWindow.document.write(htmlContent); 
+            printWindow.document.close(); 
+            // Give time for external fonts to load completely before executing print action
+            printWindow.setTimeout(function() { printWindow.print(); }, 800);
         }
 
         function generateChestCards() {
