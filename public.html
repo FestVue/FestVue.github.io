@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700;800&family=Cairo:wght@300;400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=Pacifico&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Cropper.js for Image Cropping -->
@@ -23,14 +23,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; transition: 0.3s; padding-bottom: 70px; }
         
-        /* Auth Screen */
-        #authScreen { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .auth-card { background: var(--card-bg); padding: 40px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; border-top: 5px solid var(--primary); }
-        .logo-main { font-size: 2.8rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
-        .logo-main span { color: var(--accent); }
-        .auth-input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-top: 20px; background: transparent; color: var(--text); outline: none; transition: 0.3s; text-align: center; text-transform: uppercase;}
-        .auth-input:focus { border-color: var(--primary); }
+        /* Auth Buttons (Reused for other actions) */
         .auth-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; margin-top: 15px; cursor: pointer; transition: 0.3s; }
+        .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         
         /* Main App Header & Ticker */
         #appScreen { display: none; }
@@ -39,18 +34,15 @@
         .fest-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
         .fest-sub { font-size: 0.8rem; color: var(--muted); }
         .header-actions { display: flex; gap: 15px; align-items: center; }
-        .icon-btn { background: none; border: none; font-size: 1.2rem; color: var(--text); cursor: pointer; padding: 5px; }
+        .icon-btn { background: none; border: none; font-size: 1.2rem; color: var(--text); cursor: pointer; padding: 5px; transition: 0.3s;}
         
-        /* Scrolling Notification Ticker */
         .ticker-wrap { width: 100%; background-color: var(--accent); overflow: hidden; height: 30px; display: flex; align-items: center; padding-left: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; }
         .ticker:hover { animation-play-state: paused; }
         .ticker-item { display: inline-block; padding: 0 2rem; font-size: 0.85rem; font-weight: 600; color: #1e293b; }
         .ticker-item a { color: #b45309; text-decoration: none; cursor: pointer; }
-        .ticker-item a:hover { text-decoration: underline; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-        /* Overview Stats */
         .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .overview-box { background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
         .overview-box h4 { font-size: 1.2rem; color: var(--primary); margin: 0; }
@@ -73,7 +65,6 @@
         .scorer-card { border-left: 5px solid var(--accent); padding: 15px; border-radius: 8px; background: rgba(212, 175, 55, 0.05); margin-bottom: 12px; border: 1px solid var(--border); }
         .scorer-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
 
-        /* Feed & Filters */
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .filter-row select, .search-feed { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 0.9rem; outline: none; }
         .search-feed { margin-bottom: 15px; border: 2px solid var(--primary); }
@@ -85,64 +76,45 @@
         .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-weight: 600; text-transform: uppercase; background: var(--bg); color: var(--muted); }
         .feed-res { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
         
-        /* Medals */
         .medal-1 { color: #b45309; background: #fef9c3; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #fde047; }
         .medal-2 { color: #475569; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #cbd5e1; }
         .medal-3 { color: #9a3412; background: #ffedd5; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #fed7aa; }
         
-        /* Search Tab - Updated Design */
         .search-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .search-box input { width: 100%; padding: 14px; border-radius: 8px; border: 2px solid var(--primary); font-size: 1.1rem; background: var(--card-bg); color: var(--text); outline: none; text-transform: uppercase; text-align: center; font-weight: 600; }
         .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2); }
         .search-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; }
-        .search-box button:hover { opacity: 0.9; }
-
+        
         .profile-head { text-align: center; padding-bottom: 15px; border-bottom: 2px dashed var(--border); margin-bottom: 15px; }
         .profile-name { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
         .profile-tags { display: flex; justify-content: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
         .profile-actions { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
         .tag { font-size: 0.8rem; padding: 3px 8px; background: var(--bg); border-radius: 4px; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
         
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid var(--border); z-index: 100; }
         .nav-item { flex-grow: 1; text-align: center; color: var(--muted); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: 0.3s; background: none; border: none; }
         .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
 
-        /* Modal for Poster */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
         .modal-content { background-color: var(--card-bg); margin: auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; position: relative; }
         .close-modal { position: absolute; right: 15px; top: 15px; color: #ff5a5f; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
         .crop-container { width: 100%; max-height: 300px; margin: 15px 0; background: #eee; }
         #canvasPreview { width: 100%; max-width: 350px; border-radius: 8px; display: none; margin: 15px auto; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-
         .loader { text-align: center; padding: 40px; color: var(--muted); }
     </style>
 </head>
 <body>
 
-    <!-- AUTH SCREEN -->
-    <div id="authScreen">
-        <div class="auth-card">
-            <div class="logo-main">Fest<span>Vue</span></div>
-            <p style="color: var(--muted); font-size: 0.95rem;">Public Result Portal</p>
-            <form id="publicAuthForm">
-                <input type="text" id="instIdInput" class="auth-input" placeholder="Enter Institution ID" required autocomplete="off">
-                <button type="submit" class="auth-btn" id="authBtn">Access Results</button>
-            </form>
-            <div id="authMsg" style="margin-top: 15px; color: #ef4444; font-size: 0.9rem; font-weight: 500;"></div>
-        </div>
-    </div>
-
-    <!-- MAIN APP SCREEN -->
+    <!-- MAIN APP SCREEN (Login Screen & Toast Notifications Completely Removed) -->
     <div id="appScreen">
         <header class="app-header">
             <div class="fest-info">
                 <div class="fest-title" id="dispFestName">Loading...</div>
-                <div class="fest-sub" id="dispInstName">Institution Name</div>
+                <div class="fest-sub" id="dispInstName">Fetching data...</div>
             </div>
             <div class="header-actions">
-                <button class="icon-btn" onclick="fetchData(true)" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+                <button class="icon-btn" id="refreshBtn" onclick="fetchData(true)" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
                 <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><i class="fas fa-moon" id="themeIcon"></i></button>
             </div>
         </header>
@@ -212,9 +184,8 @@
             <div id="tab-search" class="tab-content">
                 <h3 class="section-title"><i class="fas fa-search" style="color: #3b82f6;"></i> Find Participant</h3>
                 
-                <!-- Fixed Search Box Design -->
                 <form class="search-box" id="searchForm">
-                    <input type="text" id="searchInput" placeholder="ENTER CHEST NO." required>
+                    <input type="text" id="searchInput" placeholder="ENTER CHEST NO." required autocomplete="off">
                     <button type="submit"><i class="fas fa-search"></i> SEARCH RESULT</button>
                 </form>
                 
@@ -252,11 +223,12 @@
             </div>
             
             <img id="canvasPreview" src="">
-            <a id="btnDownload" class="auth-btn" style="display:none; background:#10b981; text-decoration:none;" download="Winner_Poster.png"><i class="fas fa-download"></i> Download Poster</a>
+            <a id="btnDownload" class="auth-btn" style="display:none; background:#10b981; text-decoration:none; margin-top: 15px;" download="Winner_Poster.png"><i class="fas fa-download"></i> Download Poster</a>
         </div>
     </div>
     
-    <canvas id="posterCanvas" width="1080" height="1080" style="display:none;"></canvas>
+    <!-- 3:4 Portrait Canvas -->
+    <canvas id="posterCanvas" width="1080" height="1440" style="display:none;"></canvas>
 
     <script>
         // ==========================================
@@ -264,7 +236,7 @@
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         let globalDbData = {};
-        let currentInstId = sessionStorage.getItem("publicInstId") || null;
+        let currentInstId = null;
         let festConfig = { name: "Kalotsavam Results", desc: "", inst: "", defaultPts: {1:5, 2:3, 3:1}, customPts: {}, titles: [] };
         let currentSearchStudent = null;
         let currentSearchWins = [];
@@ -293,31 +265,49 @@
             const urlInst = urlParams.get('inst');
             const urlChest = urlParams.get('chest');
             
-            if(urlInst) currentInstId = urlInst.toUpperCase();
-
-            if (currentInstId) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
-                fetchData(false, urlChest);
+            const savedInstId = localStorage.getItem("festvue_public_instId");
+            
+            if (urlInst) {
+                currentInstId = urlInst.trim().toUpperCase();
+            } else if (savedInstId) {
+                currentInstId = savedInstId;
             }
+
+            if (!currentInstId) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            document.getElementById('appScreen').style.display = 'block';
+
+            const cachedData = localStorage.getItem('festvue_data_' + currentInstId);
+            
+            if (cachedData && (!urlInst || urlInst.trim().toUpperCase() === savedInstId)) {
+                globalDbData = JSON.parse(cachedData);
+                festConfig.inst = localStorage.getItem('festvue_inst_' + currentInstId) || "Institution Name";
+                document.getElementById('dispInstName').innerText = festConfig.inst;
+                processData();
+                populateFilterDropdowns();
+            } else {
+                document.getElementById('dispInstName').innerText = "Fetching data...";
+                document.getElementById('dispFestName').innerText = "Loading...";
+            }
+            
+            fetchData(false, urlChest);
         };
 
         // ==========================================
-        // 2. AUTHENTICATION & DATA FETCHING
+        // 2. BACKGROUND FETCHING
         // ==========================================
-        document.getElementById('publicAuthForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const instId = document.getElementById('instIdInput').value.trim().toUpperCase();
-            const btn = document.getElementById('authBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...'; btn.disabled = true;
-            
-            currentInstId = instId;
-            fetchData(false, null, btn);
-        });
-
-        function fetchData(isRefresh = false, autoSearchChest = null, authBtn = null) {
+        function fetchData(isRefresh = false, autoSearchChest = null) {
             if(!currentInstId) return;
-            const msgBox = document.getElementById('authMsg');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            if(isRefresh && refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin" style="color:var(--primary);"></i>';
+                refreshBtn.style.opacity = '0.5';
+            }
             
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -326,12 +316,12 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === "success") {
-                    sessionStorage.setItem("publicInstId", currentInstId);
+                    localStorage.setItem("festvue_public_instId", currentInstId);
+                    localStorage.setItem("festvue_data_" + currentInstId, JSON.stringify(data.data));
+                    localStorage.setItem("festvue_inst_" + currentInstId, data.institutionName);
+                    
                     globalDbData = data.data || {};
                     festConfig.inst = data.institutionName;
-                    
-                    document.getElementById('authScreen').style.display = 'none';
-                    document.getElementById('appScreen').style.display = 'block';
                     document.getElementById('dispInstName').innerText = data.institutionName;
                     
                     processData();
@@ -342,17 +332,21 @@
                         document.querySelectorAll('.nav-item')[2].click(); 
                         document.getElementById('searchForm').dispatchEvent(new Event('submit'));
                     }
-                    if(isRefresh) alert("Data refreshed!");
                 } else {
-                    if(authBtn) {
-                        msgBox.innerText = data.message;
-                        authBtn.innerHTML = 'Access Results'; authBtn.disabled = false;
-                        currentInstId = null;
-                    } else { alert(data.message); }
+                    alert(data.message || "Invalid Institution ID.");
+                    localStorage.removeItem("festvue_public_instId");
+                    window.location.href = "index.html";
                 }
             })
             .catch(err => {
-                if(authBtn) { msgBox.innerText = "Network Error!"; authBtn.innerHTML = 'Access Results'; authBtn.disabled = false; }
+                console.log("Network error:", err);
+            })
+            .finally(() => {
+                if(refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    refreshBtn.style.opacity = '1';
+                }
             });
         }
 
@@ -362,6 +356,7 @@
         function processData() {
             const settings = globalDbData.Settings || [];
             festConfig.titles = [];
+            festConfig.desc = "";
             
             settings.forEach(row => {
                 const type = getVal(row, 0).toString().toUpperCase();
@@ -629,7 +624,7 @@
         }
 
         // ==========================================
-        // 6. SEARCH & WHATSAPP SHARE (Fixed Logic)
+        // 6. SEARCH & WHATSAPP SHARE
         // ==========================================
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -674,6 +669,9 @@
                 }
             });
 
+            // WHATSAPP SHARE TEXT CONFIG
+            let currentUrl = window.location.href.split('?')[0];
+            let directLink = `${currentUrl}?inst=${currentInstId}&chest=${q}`;
             let shareText = `*${festConfig.name} - Participant Info*\n\n👤 Name: ${name}\n🔢 Chest No: ${q}\n🏠 Group: ${grp}\n\n*Events & Results:*\n`;
 
             if(stEvents.length === 0) {
@@ -689,7 +687,6 @@
                     
                     let medalBadge = ""; let posText = "";
                     
-                    // റിസൾട്ട് വന്നിട്ടുണ്ടോ എന്ന് പരിശോധിക്കുന്നു
                     const evResults = results.filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,3) !== "Pending");
                     
                     if(evResults.length === 0) {
@@ -702,9 +699,9 @@
                             if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
                                 won = true;
                                 const pos = getVal(resRow,2);
-                                if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "First"}); }
-                                else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "Second"}); }
-                                else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "Third"}); }
+                                if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
+                                else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "2nd"}); }
+                                else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "3rd"}); }
                             }
                         });
                         if(!won) {
@@ -721,14 +718,15 @@
                              </div>`;
                     shareText += `🔸 ${evName} - ${posText}\n`;
                 });
+                
+                shareText += `\n🔗 *View Full Result & Poster:*\n${directLink}`;
                 html += `</div>`;
                 
-                // Add Share and Poster Buttons
                 html += `<div class="profile-actions">
-                            <button onclick="shareWhatsApp('${encodeURIComponent(shareText)}')" class="auth-btn" style="background:#25D366; margin:0;"><i class="fab fa-whatsapp"></i> Share</button>`;
+                            <button onclick="shareWhatsApp('${encodeURIComponent(shareText)}')" class="auth-btn" style="background:#25D366; margin:0; width:auto; padding: 10px 20px;"><i class="fab fa-whatsapp"></i> Share</button>`;
                 
                 if(currentSearchWins.length > 0) {
-                    html += `<button onclick="openPosterModal()" class="auth-btn" style="background:var(--accent); margin:0; color:#1e293b;"><i class="fas fa-image"></i> Poster</button>`;
+                    html += `<button onclick="openPosterModal()" class="auth-btn" style="background:var(--accent); margin:0; color:#1e293b; width:auto; padding: 10px 20px;"><i class="fas fa-image"></i> Poster</button>`;
                 }
                 html += `</div></div>`;
             }
@@ -749,12 +747,18 @@
             return false;
         }
 
+        // WhatsApp Share Fix (Handles Mobile App and Desktop Web Fallback)
         function shareWhatsApp(text) {
-            window.open(`https://wa.me/?text=${text}`, "_blank");
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if(isMobile) {
+                window.location.href = `whatsapp://send?text=${text}`;
+            } else {
+                window.open(`https://web.whatsapp.com/send?text=${text}`, "_blank");
+            }
         }
 
         // ==========================================
-        // 7. POSTER GENERATION (Google Fonts Supported)
+        // 7. POSTER GENERATION (Dynamic Vertical Alignment)
         // ==========================================
         let cropper;
 
@@ -766,21 +770,21 @@
             document.getElementById('imageUpload').value = "";
             document.getElementById('cropContainer').style.display = 'none';
             document.getElementById('btnGenerate').style.display = 'none';
-            if(cropper) cropper.destroy();
+            if (cropper) cropper.destroy();
         }
 
         function closePosterModal() {
             document.getElementById('posterModal').style.display = 'none';
         }
 
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
+        document.getElementById('imageUpload').addEventListener('change', function (e) {
             if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     document.getElementById('cropContainer').style.display = 'block';
                     const img = document.getElementById('imageToCrop');
                     img.src = event.target.result;
-                    if(cropper) cropper.destroy();
+                    if (cropper) cropper.destroy();
                     cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
                     document.getElementById('btnGenerate').style.display = 'block';
                 }
@@ -788,93 +792,253 @@
             }
         });
 
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function triangle(ctx, x, y, size, rotation) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.beginPath();
+            ctx.moveTo(0, -size);
+            ctx.lineTo(size * 0.87, size * 0.5);
+            ctx.lineTo(-size * 0.87, size * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function ring(ctx, x, y, r, width, color, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawConfetti(ctx, W, H) {
+            const gold = "#FFC94A", coral = "#FF6B6B", mint = "#4ADEDE", violet = "#B39CFF";
+            const pieces = [
+                { type: 'dot', x: 110, y: 140, r: 7, c: gold },
+                { type: 'dot', x: 950, y: 190, r: 5, c: coral },
+                { type: 'tri', x: 130, y: 320, s: 14, rot: 0.4, c: mint },
+                { type: 'tri', x: 970, y: 440, s: 16, rot: -0.6, c: gold },
+                { type: 'ring', x: 90, y: 580, r: 12, c: coral },
+                { type: 'ring', x: 990, y: 700, r: 10, c: violet },
+                { type: 'dot', x: 140, y: 820, r: 6, c: violet },
+                { type: 'dot', x: 950, y: 950, r: 8, c: mint },
+                { type: 'tri', x: 100, y: 1100, s: 13, rot: 1.1, c: coral },
+                { type: 'tri', x: 980, y: 1250, s: 15, rot: -0.3, c: gold },
+                { type: 'dot', x: 160, y: 1340, r: 5, c: gold },
+                { type: 'ring', x: 930, y: 1360, r: 9, c: mint },
+            ];
+            pieces.forEach(p => {
+                ctx.fillStyle = p.c;
+                if (p.type === 'dot') { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); }
+                else if (p.type === 'tri') triangle(ctx, p.x, p.y, p.s, p.rot);
+                else if (p.type === 'ring') ring(ctx, p.x, p.y, p.r, 3, p.c, 1);
+            });
+        }
+
         function drawAndShowPoster() {
-            if(!cropper) return;
+            if (!cropper) return;
             const btn = document.getElementById('btnGenerate');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...'; btn.disabled = true;
-            
-            const croppedCanvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-            
+
+            const croppedCanvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
             const canvas = document.getElementById('posterCanvas');
             const ctx = canvas.getContext('2d');
             
-            const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-            gradient.addColorStop(0, "#022c17");
-            gradient.addColorStop(1, "#046A38");
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 1080, 1080);
+            const W = 1080, H = 1440, CX = 540;
 
-            ctx.strokeStyle = "#D4AF37";
-            ctx.lineWidth = 15;
-            ctx.strokeRect(30, 30, 1020, 1020);
-            ctx.lineWidth = 3;
-            ctx.strokeRect(45, 45, 990, 990);
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, "#1B1035");
+            bg.addColorStop(0.55, "#2C1657");
+            bg.addColorStop(1, "#4A1F7A");
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            const blob1 = ctx.createRadialGradient(160, 120, 20, 160, 120, 320);
+            blob1.addColorStop(0, "rgba(255,201,74,0.18)");
+            blob1.addColorStop(1, "rgba(255,201,74,0)");
+            ctx.fillStyle = blob1; ctx.fillRect(0, 0, W, H);
+
+            const blob2 = ctx.createRadialGradient(940, 1200, 20, 940, 1200, 340);
+            blob2.addColorStop(0, "rgba(74,222,222,0.15)");
+            blob2.addColorStop(1, "rgba(74,222,222,0)");
+            ctx.fillStyle = blob2; ctx.fillRect(0, 0, W, H);
+
+            drawConfetti(ctx, W, H);
+
+            ctx.strokeStyle = "rgba(255,255,255,0.25)";
+            ctx.lineWidth = 2;
+            roundRect(ctx, 26, 26, W - 52, H - 52, 28);
+            ctx.stroke();
+
+            ctx.save();
+            ctx.fillStyle = "#FFC94A";
+            roundRect(ctx, 70, 62, 46, 46, 12);
+            ctx.fill();
+            ctx.fillStyle = "#1B1035";
+            ctx.font = "800 22px 'Poppins', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("🎓", 93, 92);
+            ctx.restore();
+
+            ctx.textAlign = "left";
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "700 22px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+            ctx.fillText(festConfig.inst, 132, 92, 400);
+
+            ctx.textAlign = "right";
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "500 18px 'Poppins', sans-serif";
+            ctx.fillText("Achievement Certificate", W - 70, 92);
 
             ctx.textAlign = "center";
-            
-            // Modern Fonts injected here
-            ctx.fillStyle = "#D4AF37";
-            ctx.font = "bold 55px 'Poppins', 'Anek Malayalam', sans-serif";
-            ctx.fillText(festConfig.name.toUpperCase(), 540, 130);
-            
-            ctx.fillStyle = "#e2e8f0";
-            ctx.font = "600 35px 'Poppins', 'Anek Malayalam', sans-serif";
-            ctx.fillText(festConfig.inst, 540, 190);
+            ctx.fillStyle = "#FFC94A";
+            ctx.font = "50px 'Pacifico', cursive";
+            ctx.fillText("Congratulations", CX, 200);
 
-            ctx.fillStyle = "#D4AF37";
-            ctx.fillRect(240, 250, 600, 75);
-            ctx.fillStyle = "#022c17";
-            ctx.font = "bold 45px 'Poppins', sans-serif";
-            ctx.fillText("CONGRATULATIONS", 540, 302);
+            const headGrad = ctx.createLinearGradient(CX - 380, 0, CX + 380, 0);
+            headGrad.addColorStop(0, "#FFC94A");
+            headGrad.addColorStop(0.5, "#FF9F5A");
+            headGrad.addColorStop(1, "#FF6B6B");
+            ctx.fillStyle = headGrad;
+            ctx.font = "900 78px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+            ctx.fillText(festConfig.name.toUpperCase(), CX, 290, 960);
+
+            if(festConfig.desc) {
+                ctx.fillStyle = "rgba(255,255,255,0.85)";
+                ctx.font = "600 24px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+                ctx.fillText(festConfig.desc.toUpperCase(), CX, 340, 900);
+            }
+
+            const PY = 610, PR = 200;
+
+            ring(ctx, CX, PY, PR + 34, 2, "#ffffff", 0.18);
+            ring(ctx, CX, PY, PR + 22, 1.5, "#FFC94A", 0.5);
+
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 50;
+            ctx.shadowOffsetY = 18;
+            ctx.beginPath();
+            ctx.arc(CX, PY, PR, 0, Math.PI * 2);
+            ctx.fillStyle = "#1B1035";
+            ctx.fill();
+            ctx.restore();
 
             ctx.save();
             ctx.beginPath();
-            ctx.arc(540, 530, 180, 0, Math.PI * 2, true);
+            ctx.arc(CX, PY, PR - 8, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
-            ctx.drawImage(croppedCanvas, 360, 350, 360, 360);
+            ctx.drawImage(croppedCanvas, CX - (PR - 8), PY - (PR - 8), (PR - 8) * 2, (PR - 8) * 2);
             ctx.restore();
 
+            const ringGrad = ctx.createLinearGradient(CX - PR, PY - PR, CX + PR, PY + PR);
+            ringGrad.addColorStop(0, "#FFC94A");
+            ringGrad.addColorStop(1, "#FF6B6B");
             ctx.beginPath();
-            ctx.arc(540, 530, 180, 0, Math.PI * 2, true);
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = "#D4AF37";
+            ctx.arc(CX, PY, PR, 0, Math.PI * 2);
+            ctx.lineWidth = 9;
+            ctx.strokeStyle = ringGrad;
             ctx.stroke();
 
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 60px 'Poppins', 'Anek Malayalam', sans-serif";
-            ctx.fillText(currentSearchStudent.name.toUpperCase(), 540, 790);
-            
-            ctx.fillStyle = "#D4AF37";
-            ctx.font = "600 35px 'Poppins', 'Anek Malayalam', sans-serif";
-            ctx.fillText(`Chest No: ${currentSearchStudent.chest}  |  ${currentSearchStudent.grp}`, 540, 840);
+            ctx.save();
+            ctx.translate(CX + PR * 0.68, PY + PR * 0.68);
+            ctx.shadowColor = "rgba(0,0,0,0.4)"; ctx.shadowBlur = 14;
+            ctx.beginPath();
+            ctx.arc(0, 0, 34, 0, Math.PI * 2);
+            ctx.fillStyle = "#4ADEDE";
+            ctx.fill();
+            ctx.restore();
+            ctx.fillStyle = "#1B1035";
+            ctx.font = "900 30px 'Poppins', sans-serif";
+            ctx.fillText("🏆", CX + PR * 0.68, PY + PR * 0.68 + 11);
 
-            ctx.fillStyle = "#e2e8f0";
-            ctx.font = "bold 32px 'Poppins', 'Anek Malayalam', sans-serif";
-            let startY = 910;
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "800 54px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+            ctx.fillText(currentSearchStudent.name.toUpperCase(), CX, PY + PR + 80, 960);
+
+            const barY = PY + PR + 110, barH = 65;
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 8;
+            ctx.fillStyle = "#FFC94A";
+            roundRect(ctx, CX - 320, barY, 640, barH, 32);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.fillStyle = "#1B1035";
+            ctx.font = "700 26px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+            ctx.fillText(`CHEST NO. ${currentSearchStudent.chest}   •   ${currentSearchStudent.grp}`, CX, barY + 42, 600);
+
+            let maxWins = currentSearchWins.length > 5 ? 5 : currentSearchWins.length;
+            const winsToShow = currentSearchWins.slice(0, maxWins);
             
-            const winsToShow = currentSearchWins.slice(0, 3);
-            winsToShow.forEach(win => {
-                ctx.fillText(`🏆 ${win.event} - ${win.pos} Place`, 540, startY);
-                startY += 48;
-            });
+            let yGap = 65, fSize = 28, boxH = 52, boxR = 26;
             
-            if(currentSearchWins.length > 3) {
-                ctx.font = "28px 'Poppins', 'Anek Malayalam', sans-serif";
-                ctx.fillText(`+ ${currentSearchWins.length - 3} more wins!`, 540, startY);
+            if (maxWins >= 4) {
+                yGap = 55; fSize = 25; boxH = 46; boxR = 23;
             }
+
+            let totalWinsHeight = (maxWins * yGap);
+            if (currentSearchWins.length > maxWins) {
+                totalWinsHeight += 30; 
+            }
+
+            let startY = 995 + (380 - totalWinsHeight) / 2 + (boxH / 2);
+
+            winsToShow.forEach(win => {
+                const label = `${win.event} — ${win.pos} Place`;
+                ctx.font = `600 ${fSize}px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif`;
+                const pw = Math.min(ctx.measureText(label).width + 100, 900);
+
+                ctx.fillStyle = "rgba(255,255,255,0.08)";
+                roundRect(ctx, CX - pw / 2, startY - (boxH * 0.7), pw, boxH, boxR);
+                ctx.fill();
+                ctx.strokeStyle = "rgba(255,201,74,0.5)";
+                ctx.lineWidth = 1.5;
+                roundRect(ctx, CX - pw / 2, startY - (boxH * 0.7), pw, boxH, boxR);
+                ctx.stroke();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText(`🏅  ${label}`, CX, startY, pw - 40);
+                startY += yGap; 
+            });
+
+            if (currentSearchWins.length > maxWins) {
+                ctx.font = "italic 500 24px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
+                ctx.fillStyle = "rgba(255,255,255,0.65)";
+                ctx.fillText(`+ ${currentSearchWins.length - maxWins} more wins`, CX, startY);
+            }
+
+            ctx.fillStyle = "rgba(255,255,255,0.45)";
+            ctx.font = "500 20px 'Poppins', sans-serif";
+            ctx.fillText("Generated with FestVue Results Platform", CX, H - 45);
 
             const imgData = canvas.toDataURL("image/png");
             document.getElementById('canvasPreview').src = imgData;
-            
+
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('canvasPreview').style.display = 'block';
-            
+
             const btnDown = document.getElementById('btnDownload');
             btnDown.href = imgData;
             btnDown.download = `${currentSearchStudent.chest}_Winner_Poster.png`;
             btnDown.style.display = 'inline-block';
-            
+
             btn.innerHTML = '<i class="fas fa-magic"></i> Magic Generate'; btn.disabled = false;
         }
 
