@@ -3,850 +3,888 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FestVue - Student & Public Portal</title>
-    <!-- PWA & Icons -->
+    <title>FestVue - Public Results</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#046A38">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <link rel="apple-touch-icon" href="icon.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&family=Cairo:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700&family=Cairo:wght@300;400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    <!-- Cropper.js for Image Cropping -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
     <style>
-        :root { --primary: #046A38; --accent: #D4AF37; --bg: #F8FAFC; --text: #1E293B; --white: #FFFFFF; }
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #F4F7F6; --text: #1E293B; --card-bg: #FFFFFF; --border: #e2e8f0; --muted: #64748b; }
+        body.dark-mode { --bg: #0f172a; --text: #f8fafc; --card-bg: #1e293b; --border: #334155; --muted: #94a3b8; --primary: #10b981; }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; }
-        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; transition: 0.3s; padding-bottom: 70px; }
         
-        /* Navbar */
-        nav { background: var(--primary); color: var(--white); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 1.5rem; font-weight: 700; cursor: pointer; }
-        .logo span { color: var(--accent); }
-        .inst-badge { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        /* Auth Screen */
+        #authScreen { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .auth-card { background: var(--card-bg); padding: 40px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; border-top: 5px solid var(--primary); }
+        .logo-main { font-size: 2.8rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
+        .logo-main span { color: var(--accent); }
+        .auth-input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-top: 20px; background: transparent; color: var(--text); outline: none; transition: 0.3s; text-align: center; text-transform: uppercase;}
+        .auth-input:focus { border-color: var(--primary); }
+        .auth-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; margin-top: 15px; cursor: pointer; transition: 0.3s; }
         
-        /* Hero Section */
-        .hero-section { background: linear-gradient(135deg, var(--primary) 0%, #022c17 100%); color: white; text-align: center; padding: 40px 20px; border-bottom: 4px solid var(--accent); }
-        .hero-section h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
-        .hero-section p { font-size: 1.1rem; opacity: 0.9; max-width: 600px; margin: 0 auto 25px auto; }
+        /* Main App Header & Ticker */
+        #appScreen { display: none; }
+        .app-header { background: var(--card-bg); padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .fest-info { flex-grow: 1; }
+        .fest-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+        .fest-sub { font-size: 0.8rem; color: var(--muted); }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { background: none; border: none; font-size: 1.2rem; color: var(--text); cursor: pointer; padding: 5px; }
         
-        /* Stats Overview Grid */
-        .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 700px; margin: 0 auto; }
-        .overview-card { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(5px); }
-        .overview-card h3 { font-size: 1.8rem; color: var(--accent); font-weight: 700; }
-        .overview-card p { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        /* Scrolling Notification Ticker */
+        .ticker-wrap { width: 100%; background-color: var(--accent); overflow: hidden; height: 30px; display: flex; align-items: center; padding-left: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; }
+        .ticker:hover { animation-play-state: paused; }
+        .ticker-item { display: inline-block; padding: 0 2rem; font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+        .ticker-item a { color: #b45309; text-decoration: none; cursor: pointer; }
+        .ticker-item a:hover { text-decoration: underline; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-        /* Main Container */
+        /* Overview Stats */
+        .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .overview-box { background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+        .overview-box h4 { font-size: 1.2rem; color: var(--primary); margin: 0; }
+        .overview-box p { font-size: 0.75rem; color: var(--muted); margin: 0; font-weight: 600; text-transform: uppercase; }
+
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        
-        /* Tab Navigation */
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: var(--white); padding: 8px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 0.95rem; font-weight: 600; color: #64748b; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .tab-btn.active { background: var(--primary); color: var(--white); }
-        
-        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); }
         
-        /* Cards */
-        .card { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f1f5f9; width: 100%; }
-        .card-header { font-size: 1.2rem; font-weight: 700; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .group-rank { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+        .group-rank:last-child { border-bottom: none; }
+        .rank-pos { font-size: 1.2rem; font-weight: bold; width: 30px; }
+        .rank-name { flex-grow: 1; font-weight: 600; font-size: 1.1rem; }
+        .rank-pts { font-weight: 700; color: var(--primary); font-size: 1.1rem; background: rgba(4, 106, 56, 0.1); padding: 4px 10px; border-radius: 20px; }
+
+        .scorer-card { border-left: 5px solid var(--accent); padding: 15px; border-radius: 8px; background: rgba(212, 175, 55, 0.05); margin-bottom: 12px; border: 1px solid var(--border); }
+        .scorer-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+
+        /* Feed & Filters */
+        .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .filter-row select, .search-feed { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 0.9rem; outline: none; }
+        .search-feed { margin-bottom: 15px; border: 2px solid var(--primary); }
         
-        /* Search Box */
-        .search-box { display: flex; gap: 10px; }
-        .search-box input, .search-box select { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; outline: none; transition: 0.3s; background: #f8fafc; }
-        .search-box input:focus, .search-box select:focus { border-color: var(--primary); background: #fff; }
-        .search-box button { padding: 12px 25px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: #03522b; }
+        .feed-item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        .feed-item:last-child { border-bottom: none; }
+        .feed-ev { font-weight: 600; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .feed-badges { display: flex; gap: 5px; }
+        .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-weight: 600; text-transform: uppercase; background: var(--bg); color: var(--muted); }
+        .feed-res { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
         
-        /* Result Items */
-        .result-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .result-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
-        .result-pos { font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
-        .action-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 130px; padding: 10px; text-align: center; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-cert { background: #e0f2fe; color: #0f172a; border: 1px solid #bae6fd; }
-        .btn-cert:hover { background: #bae6fd; }
-        .btn-poster { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
-        .btn-poster:hover { background: #bbf7d0; }
-
-        /* Podium Winners Style */
-        .podium-box { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .podium-row { display: flex; justify-content: space-between; padding: 12px; border-radius: 8px; font-weight: 600; border: 1px solid #e2e8f0; align-items: center; }
-        .p-1 { background: #fef9c3; border-color: #fde047; color: #713f12; }
-        .p-2 { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
-        .p-3 { background: #ffedd5; border-color: #fed7aa; color: #7c2d12; }
-
-        /* Loader */
-        #loader { text-align: center; padding: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        #renderContainer { position: absolute; left: -9999px; top: -9999px; }
+        /* Medals */
+        .medal-1 { color: #b45309; background: #fef9c3; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .medal-2 { color: #475569; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .medal-3 { color: #9a3412; background: #ffedd5; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
         
-        /* Certificate HTML Template */
-        .cert-template { width: 1122px; height: 793px; background: #fff; padding: 40px; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; }
-        .cert-bg-svg { position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity: 0.06; }
-        .cert-content-box { z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-        .cert-border { position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 3px solid var(--primary); padding: 4px; z-index: 1; pointer-events: none; }
-        .cert-inner-border { border: 1px solid #D4AF37; height: 100%; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%); }
-        .cert-inst { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-        .cert-fest { font-size: 20px; font-weight: 600; color: var(--accent); letter-spacing: 4px; margin-bottom: 30px; text-transform: uppercase; }
-        .cert-title { font-size: 40px; font-weight: 700; color: #1e293b; margin-bottom: 30px; text-transform: uppercase; }
-        .cert-body { font-size: 22px; line-height: 2; color: #334155; max-width: 80%; }
-        .cert-body b { color: var(--primary); font-size: 26px; padding: 0 8px; border-bottom: 2px solid var(--accent); }
-        .cert-footer { display: flex; justify-content: space-between; width: 80%; margin-top: 60px; font-size: 18px; font-weight: 600; color: #475569; }
+        /* Search Tab */
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-box input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 2px solid var(--primary); font-size: 1rem; background: var(--card-bg); color: var(--text); outline: none; text-transform: uppercase; }
+        .search-box button { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
 
-        /* Premium Poster Template */
-        .poster-template { 
-            width: 1080px; 
-            height: 1080px; 
-            background: linear-gradient(135deg, #022c17 0%, #064e3b 50%, #022c17 100%); 
-            position: relative; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 50px 60px; 
-            box-sizing: border-box; 
-            color: white; 
-            text-align: center; 
-        }
+        .profile-head { text-align: center; padding-bottom: 15px; border-bottom: 2px dashed var(--border); margin-bottom: 15px; }
+        .profile-name { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+        .profile-tags { display: flex; justify-content: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
+        .profile-actions { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
         
-        .poster-decor { 
-            position: absolute; 
-            width: calc(100% - 60px); 
-            height: calc(100% - 60px); 
-            top: 30px; 
-            left: 30px; 
-            border: 4px solid var(--accent); 
-            box-sizing: border-box; 
-            pointer-events: none; 
-            z-index: 1;
-        }
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid var(--border); z-index: 100; }
+        .nav-item { flex-grow: 1; text-align: center; color: var(--muted); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: 0.3s; background: none; border: none; }
+        .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); }
 
-        .poster-decor::before {
-            content: '';
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 1px dashed rgba(212, 175, 55, 0.5);
-        }
+        /* Modal for Poster */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--card-bg); margin: auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; position: relative; }
+        .close-modal { position: absolute; right: 15px; top: 15px; color: #ff5a5f; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+        .crop-container { width: 100%; max-height: 300px; margin: 15px 0; background: #eee; }
+        #canvasPreview { width: 100%; max-width: 350px; border-radius: 8px; display: none; margin: 15px auto; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .poster-bg-pattern {
-            position: absolute;
-            top: -150px; left: -150px;
-            width: 600px; height: 600px;
-            background-image: radial-gradient(circle, rgba(212, 175, 55, 0.1) 2px, transparent 2px), radial-gradient(circle, rgba(212, 175, 55, 0.1) 2px, transparent 2px);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .poster-bg-pattern.bottom-right { top: auto; left: auto; bottom: -150px; right: -150px; }
-
-        .poster-header { font-size: 32px; font-weight: 600; color: #fff; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 5px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .poster-sub-header { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 40px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        
-        .poster-photo-frame { 
-            width: 380px; 
-            height: 380px; 
-            border-radius: 50%; 
-            border: 8px solid var(--accent); 
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4), 0 15px 35px rgba(0,0,0,0.6); 
-            object-fit: cover; 
-            background: #fff; 
-            margin-bottom: 45px; 
-            z-index: 2; 
-        }
-        
-        .poster-congrats { font-size: 65px; font-weight: 700; color: var(--accent); margin-bottom: 5px; z-index: 2; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.6); }
-        .poster-name { font-size: 55px; font-weight: 700; color: #fff; margin-bottom: 25px; z-index: 2; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .poster-desc { font-size: 30px; line-height: 1.6; color: #e2e8f0; z-index: 2; max-width: 900px; }
-        
-        .poster-pos { 
-            display: inline-block; 
-            background: linear-gradient(90deg, #b45309, #d4af37, #b45309); 
-            color: #fff; 
-            padding: 10px 30px; 
-            border-radius: 5px; 
-            font-weight: 700; 
-            font-size: 32px;
-            margin-top: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            text-transform: uppercase;
-        }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal { background: #fff; padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
-        .modal h3 { margin-bottom: 15px; color: var(--primary); }
-        .modal input[type="file"] { margin-bottom: 20px; width: 100%; }
-
-        @media (max-width: 768px) {
-            .overview-grid { grid-template-columns: 1fr; gap: 10px; }
-            .hero-section h1 { font-size: 1.6rem; }
-            .search-box { flex-direction: column; }
-        }
+        .loader { text-align: center; padding: 40px; color: var(--muted); }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo" onclick="window.location.href='index.html'">Fest<span>Vue</span></div>
-        <div class="inst-badge" id="navInstName"><i class="fas fa-school"></i> Loading...</div>
-    </nav>
-
-    <section class="hero-section" id="heroBanner" style="display: none;">
-        <h1 id="topFestName">FESTIVAL NAME</h1>
-        <p id="topFestDesc">Festival short description and details will appear here dynamically from settings configuration.</p>
-        
-        <div class="overview-grid">
-            <div class="overview-card"><h3 id="ovStudents">0</h3><p>Total Students</p></div>
-            <div class="overview-card"><h3 id="ovGroups">0</h3><p>Total Groups</p></div>
-            <div class="overview-card"><h3 id="ovResults">0/0</h3><p style="white-space:nowrap;">Results Published</p></div>
-        </div>
-    </section>
-
-    <div id="loader">
-        <div class="spinner"></div>
-        <h3 style="color: #64748b;">Loading Live Data...</h3>
-        <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">Please wait while we fetch the results securely.</p>
-    </div>
-
-    <div class="container" id="mainContent" style="display: none;">
-        
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('leaderboard')"><i class="fas fa-trophy"></i> Standings</button>
-            <button class="tab-btn" onclick="switchTab('search')"><i class="fas fa-user-graduate"></i> My Results</button>
-            <button class="tab-btn" onclick="switchTab('eventsTab')"><i class="fas fa-list-alt"></i> Event Wise</button>
-        </div>
-
-        <div id="leaderboard" class="tab-content active">
-            <div class="card">
-                <div class="card-header"><i class="fas fa-chart-bar"></i> Group Standings</div>
-                <div id="publicGroupLeaderboard" style="font-size: 1.1rem; line-height: 2;"></div>
-            </div>
-            <div class="card">
-                <div class="card-header"><i class="fas fa-star"></i> Individual Top Scorers</div>
-                <div id="publicTopScorers"></div>
-            </div>
-        </div>
-
-        <div id="search" class="tab-content">
-            <div class="card">
-                <div class="card-header">Search via Student Chest Number</div>
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Enter Chest Number (e.g., 102)..." autocomplete="off">
-                    <button onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
-                </div>
-            </div>
-
-            <div id="studentProfile" class="card" style="display: none; background: linear-gradient(135deg, var(--primary) 0%, #022c17 100%); color: white;">
-                <h2 id="stNameDisplay" style="color: var(--accent); margin-bottom: 5px;">Student Name</h2>
-                <div style="font-size: 0.95rem; opacity: 0.9; display: flex; gap: 15px; flex-wrap: wrap;">
-                    <span><i class="fas fa-id-badge"></i> <span id="stChestDisplay">---</span></span>
-                    <span><i class="fas fa-chalkboard-teacher"></i> <span id="stClassDisplay">---</span></span>
-                    <span><i class="fas fa-users"></i> <span id="stGroupDisplay">---</span></span>
-                </div>
-            </div>
-
-            <h3 id="resultHeading" style="margin-bottom: 15px; color: #475569; display: none;">Registered Items & Results Status</h3>
-            <div id="searchResultsContainer"></div>
-        </div>
-
-        <div id="eventsTab" class="tab-content">
-            <div class="card">
-                <div class="card-header">View Results by Event</div>
-                <div class="search-box" style="display: flex; flex-direction: column; gap: 12px;">
-                    <select id="searchEventSelect"><option value="">-- Select Event --</option></select>
-                    <button onclick="searchEventWiseResults()" style="width: 100%;"><i class="fas fa-eye"></i> View Winners Podium</button>
-                </div>
-            </div>
-            <div id="eventWiseContainer"></div>
-        </div>
-
-        <div class="card" id="latestAnnouncementsBox">
-            <div class="card-header" style="color: #b45309;"><i class="fas fa-bullhorn"></i> Recently Announced Results</div>
-            <div id="latestAnnouncementsList" style="font-weight: 500; font-size: 0.95rem;"></div>
-        </div>
-
-    </div>
-
-    <div id="renderContainer">
-        <div id="certRender" class="cert-template">
-            <svg class="cert-bg-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <polygon points="0,0 20,0 0,20" fill="#046A38" /><polygon points="100,0 80,0 100,20" fill="#046A38" />
-                <polygon points="0,100 20,100 0,80" fill="#046A38" /><polygon points="100,100 80,100 100,80" fill="#046A38" />
-                <circle cx="50" cy="50" r="25" fill="none" stroke="#046A38" stroke-width="0.5" />
-            </svg>
-            <div class="cert-border"></div>
-            <div class="cert-inner-border">
-                <div class="cert-inst" id="c_inst">INSTITUTION NAME</div>
-                <div class="cert-fest" id="c_fest_title">ARTS FESTIVAL</div>
-                <div class="cert-title">Certificate of Merit</div>
-                <div class="cert-body" id="c_body_content">
-                    This is to certify that <b id="c_name">STUDENT NAME</b> (Chest No: <b id="c_chest">101</b>) of Class <b id="c_class">10A</b> representing Group <b id="c_group">RED</b> has secured <b id="c_pos">FIRST</b> PLACE in the event <b id="c_event">EVENT NAME</b>.
-                </div>
-                <div class="cert-footer">
-                    <div>Date: <span id="c_date"></span></div>
-                    <div id="c_signature_label" style="border-top: 1px solid #475569; padding-top: 5px; min-width: 200px;">Signature</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="posterRender" class="poster-template">
-            <div class="poster-bg-pattern"></div>
-            <div class="poster-bg-pattern bottom-right"></div>
-            <div class="poster-decor"></div>
-            
-            <div class="poster-header" id="p_inst">INSTITUTION NAME</div>
-            <div class="poster-sub-header" id="p_fest">FESTIVAL NAME</div>
-            
-            <img id="p_photo" class="poster-photo-frame" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Student">
-            
-            <div class="poster-congrats">Congratulations</div>
-            <div class="poster-name" id="p_name">STUDENT NAME</div>
-            
-            <div class="poster-desc">
-                For a spectacular performance and securing<br>
-                <div class="poster-pos" id="p_pos">FIRST PLACE</div><br>
-                <div style="margin-top: 15px;">in <b id="p_event" style="color: var(--accent); font-size: 35px;">EVENT NAME</b></div>
-            </div>
+    <!-- AUTH SCREEN -->
+    <div id="authScreen">
+        <div class="auth-card">
+            <div class="logo-main">Fest<span>Vue</span></div>
+            <p style="color: var(--muted); font-size: 0.95rem;">Public Result Portal</p>
+            <form id="publicAuthForm">
+                <input type="text" id="instIdInput" class="auth-input" placeholder="Enter Institution ID" required autocomplete="off">
+                <button type="submit" class="auth-btn" id="authBtn">Access Results</button>
+            </form>
+            <div id="authMsg" style="margin-top: 15px; color: #ef4444; font-size: 0.9rem; font-weight: 500;"></div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="photoModal">
-        <div class="modal">
-            <h3>Generate WhatsApp Poster</h3>
-            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px;">Upload student's photo to create a personalized celebration poster.</p>
-            <input type="file" id="posterPhotoInput" accept="image/*">
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeModal()" class="primary-btn" style="background: #e2e8f0; color: #1e293b;">Cancel</button>
-                <button onclick="processPoster()" class="primary-btn" id="generatePosterBtn"><i class="fas fa-magic"></i> Create</button>
+    <!-- MAIN APP SCREEN -->
+    <div id="appScreen">
+        <header class="app-header">
+            <div class="fest-info">
+                <div class="fest-title" id="dispFestName">Loading...</div>
+                <div class="fest-sub" id="dispInstName">Institution Name</div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="fetchData(true)" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+                <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><i class="fas fa-moon" id="themeIcon"></i></button>
+            </div>
+        </header>
+
+        <!-- Scrolling Ticker -->
+        <div class="ticker-wrap">
+            <div class="ticker" id="tickerContent">
+                <div class="ticker-item">Loading latest updates...</div>
             </div>
         </div>
+
+        <div class="container">
+            
+            <!-- TAB 1: HOME (LEADERBOARD) -->
+            <div id="tab-home" class="tab-content active">
+                
+                <!-- Feature 1: Overview Stats -->
+                <div class="overview-grid">
+                    <div class="overview-box"><h4 id="statStudents">0</h4><p>Students</p></div>
+                    <div class="overview-box"><h4 id="statGroups">0</h4><p>Groups</p></div>
+                    <div class="overview-box"><h4 id="statResults">0/0</h4><p>Results</p></div>
+                </div>
+
+                <!-- Feature 5: TV Screen Link -->
+                <button onclick="goToTV()" class="auth-btn" style="margin-top:0; margin-bottom:20px; background:var(--bg); border:1px solid var(--primary); color:var(--primary); font-weight:bold;"><i class="fas fa-tv"></i> Open Live TV Screen</button>
+
+                <h3 class="section-title"><i class="fas fa-trophy" style="color: #f59e0b;"></i> Live Group Standings</h3>
+                <div class="card" id="leaderboardContainer">
+                    <div class="loader"><i class="fas fa-spinner fa-spin"></i> Calculating points...</div>
+                </div>
+
+                <h3 class="section-title"><i class="fas fa-star" style="color: var(--accent);"></i> Top Scorers</h3>
+                <div id="topScorersContainer"></div>
+            </div>
+
+            <!-- TAB 2: FEED & FILTERING -->
+            <div id="tab-feed" class="tab-content">
+                <h3 class="section-title"><i class="fas fa-bolt" style="color: #ef4444;"></i> Published Results</h3>
+                
+                <!-- Feature 2 & 3: Filtering & Search -->
+                <div class="card" style="padding:15px; margin-bottom:15px;">
+                    <input type="text" id="feedSearch" class="search-feed" placeholder="Search event name (e.g. Oppana)..." onkeyup="applyFeedFilters()">
+                    <div class="filter-row">
+                        <select id="feedFilterCat" onchange="applyFeedFilters()"><option value="ALL">All Categories</option></select>
+                        <select id="feedFilterGen" onchange="applyFeedFilters()">
+                            <option value="ALL">All Genders</option>
+                            <option value="BOYS">Boys Only</option>
+                            <option value="GIRLS">Girls Only</option>
+                            <option value="COMMON">Common</option>
+                        </select>
+                        <select id="feedFilterType" onchange="applyFeedFilters()">
+                            <option value="ALL">All Types</option>
+                            <option value="INDIVIDUAL">Individual</option>
+                            <option value="GROUP">Group</option>
+                        </select>
+                        <select id="feedFilterMode" onchange="applyFeedFilters()">
+                            <option value="ALL">All Modes</option>
+                            <option value="STAGE">Stage</option>
+                            <option value="OFF-STAGE">Off-Stage</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0; overflow: hidden;" id="feedContainer">
+                    <div class="loader"><i class="fas fa-spinner fa-spin"></i> Loading results...</div>
+                </div>
+            </div>
+
+            <!-- TAB 3: SEARCH -->
+            <div id="tab-search" class="tab-content">
+                <h3 class="section-title"><i class="fas fa-search" style="color: #3b82f6;"></i> Find Participant</h3>
+                <form class="search-box" id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Enter Chest No." required>
+                    <button type="submit"><i class="fas fa-arrow-right"></i></button>
+                </form>
+                
+                <div id="searchResultContainer">
+                    <div style="text-align: center; color: var(--muted); padding: 40px 0;">
+                        <i class="fas fa-id-badge" style="font-size: 3rem; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                        Search by Chest Number to see events, points, and generate posters.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('tab-home', this)"><i class="fas fa-chart-bar"></i> Standings</button>
+            <button class="nav-item" onclick="switchTab('tab-feed', this)"><i class="fas fa-list-ul"></i> Results</button>
+            <button class="nav-item" onclick="switchTab('tab-search', this)"><i class="fas fa-search"></i> Search</button>
+        </nav>
     </div>
+
+    <!-- Feature 4: Poster Generation Modal with Cropper -->
+    <div id="posterModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePosterModal()">&times;</span>
+            <h3 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-paint-brush"></i> Generate Winner Poster</h3>
+            
+            <div id="uploadSection">
+                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 10px;">Upload student photo (Square crop)</p>
+                <input type="file" id="imageUpload" accept="image/*" style="width: 100%; border:1px solid var(--border); padding:10px; border-radius:6px; margin-bottom:10px; color:var(--text);">
+                <div class="crop-container" id="cropContainer" style="display:none;">
+                    <img id="imageToCrop" src="" style="max-width: 100%;">
+                </div>
+                <button id="btnGenerate" class="auth-btn" style="display:none;" onclick="drawAndShowPoster()"><i class="fas fa-magic"></i> Magic Generate</button>
+            </div>
+            
+            <img id="canvasPreview" src="">
+            <a id="btnDownload" class="auth-btn" style="display:none; background:#10b981; text-decoration:none;" download="Winner_Poster.png"><i class="fas fa-download"></i> Download Poster</a>
+        </div>
+    </div>
+    
+    <!-- Hidden Canvas for rendering the Poster -->
+    <canvas id="posterCanvas" width="1080" height="1080" style="display:none;"></canvas>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
-        
-        // QR Code URL Params Logic
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('inst')) sessionStorage.setItem("publicInstId", urlParams.get('inst'));
-        
-        const instId = sessionStorage.getItem("publicInstId");
-        const qrChestNo = urlParams.get('chest'); 
-
+        // ==========================================
+        // 1. INITIALIZATION & UI
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         let globalDbData = {};
-        let currentPosterData = null;
-        let configData = { festName: "FESTVUE ARTS FEST", festDesc: "Cultural Talent Championship Portal", authority: "Convener", date: "", certTemplate: "" };
+        let currentInstId = sessionStorage.getItem("publicInstId") || null;
+        let festConfig = { name: "Kalotsavam Results", desc: "", inst: "", defaultPts: {1:5, 2:3, 3:1}, customPts: {}, titles: [] };
+        let currentSearchStudent = null;
+        let currentSearchWins = [];
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('themeIcon');
+            if(document.body.classList.contains('dark-mode')) { icon.className = 'fas fa-sun'; localStorage.setItem('festvue_public_theme', 'dark'); } 
+            else { icon.className = 'fas fa-moon'; localStorage.setItem('festvue_public_theme', 'light'); }
+        }
+        if(localStorage.getItem('festvue_public_theme') === 'dark') toggleTheme();
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function getVal(row, index) { 
+            return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
+        }
 
         window.onload = function() {
-            if(!instId) {
-                alert("Session Expired or Invalid Access. Redirecting to Home.");
-                window.location.href = "index.html";
-                return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlInst = urlParams.get('inst');
+            const urlChest = urlParams.get('chest');
+            
+            if(urlInst) currentInstId = urlInst.toUpperCase();
+
+            if (currentInstId) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                fetchData(false, urlChest);
             }
-            fetchPublicData();
         };
-        
-        document.getElementById("searchInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                searchStudent();
-            }
+
+        // ==========================================
+        // 2. AUTHENTICATION & DATA FETCHING
+        // ==========================================
+        document.getElementById('publicAuthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const instId = document.getElementById('instIdInput').value.trim().toUpperCase();
+            const btn = document.getElementById('authBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...'; btn.disabled = true;
+            
+            currentInstId = instId;
+            fetchData(false, null, btn);
         });
 
-        function getVal(row, index) {
-            if (!row) return "";
-            const keys = Object.keys(row).filter(k => k !== 'rowIndex');
-            return keys[index] ? row[keys[index]] : "";
-        }
-
-        async function fetchPublicData() {
-            const cachedData = localStorage.getItem("festvue_cache_" + instId);
-            const cachedName = localStorage.getItem("festvue_name_" + instId);
-            const cachedConfig = localStorage.getItem("festvue_config_" + instId);
+        function fetchData(isRefresh = false, autoSearchChest = null, authBtn = null) {
+            if(!currentInstId) return;
+            const msgBox = document.getElementById('authMsg');
             
-            if (cachedData && cachedName) {
-                globalDbData = JSON.parse(cachedData);
-                if (cachedConfig) configData = JSON.parse(cachedConfig);
-                
-                document.getElementById('navInstName').innerHTML = `<i class="fas fa-school"></i> ${cachedName}`;
-                document.getElementById('topFestName').innerText = configData.festName;
-                document.getElementById('topFestDesc').innerText = configData.festDesc;
-                
-                calculateLeaderboard();
-                buildEventDropdowns();
-                renderOverviewCounters();
-                renderLatestAnnouncements();
-                
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('heroBanner').style.display = 'block';
-                document.getElementById('mainContent').style.display = 'block';
-
-                if (qrChestNo) {
-                    setTimeout(() => {
-                        switchTab('search');
-                        document.getElementById('searchInput').value = qrChestNo;
-                        searchStudent();
-                    }, 500);
-                }
-            }
-            
-            try {
-                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
-                let data = await res.json();
-                
-                if(data.status === "success") {
-                    globalDbData = data.data;
-                    document.getElementById('navInstName').innerHTML = `<i class="fas fa-school"></i> ${data.institutionName}`;
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    sessionStorage.setItem("publicInstId", currentInstId);
+                    globalDbData = data.data || {};
+                    festConfig.inst = data.institutionName;
                     
-                    parseConfigurations(data.institutionName);
-                    calculateLeaderboard();
-                    buildEventDropdowns();
-                    renderOverviewCounters();
-                    renderLatestAnnouncements();
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('appScreen').style.display = 'block';
+                    document.getElementById('dispInstName').innerText = data.institutionName;
                     
-                    localStorage.setItem("festvue_cache_" + instId, JSON.stringify(globalDbData));
-                    localStorage.setItem("festvue_name_" + instId, data.institutionName);
-                    localStorage.setItem("festvue_config_" + instId, JSON.stringify(configData));
+                    processData();
+                    populateFilterDropdowns();
                     
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('heroBanner').style.display = 'block';
-                    document.getElementById('mainContent').style.display = 'block';
-
-                    if (qrChestNo && !cachedData) {
-                        setTimeout(() => {
-                            switchTab('search');
-                            document.getElementById('searchInput').value = qrChestNo;
-                            searchStudent();
-                        }, 500);
+                    if(autoSearchChest) {
+                        document.getElementById('searchInput').value = autoSearchChest;
+                        document.querySelectorAll('.nav-item')[2].click(); 
+                        document.getElementById('searchForm').dispatchEvent(new Event('submit'));
                     }
-
+                    if(isRefresh) alert("Data refreshed!");
                 } else {
-                    if (!cachedData) {
-                        alert(data.message || "Institution ID not found.");
-                        window.location.href = "index.html";
-                    }
+                    if(authBtn) {
+                        msgBox.innerText = data.message;
+                        authBtn.innerHTML = 'Access Results'; authBtn.disabled = false;
+                        currentInstId = null;
+                    } else { alert(data.message); }
                 }
-            } catch (error) {
-                console.log("Background Sync Idle.");
-                if (!cachedData) {
-                    alert("Network Error. Please check connection.");
-                    window.location.href = "index.html";
-                }
-            }
+            })
+            .catch(err => {
+                if(authBtn) { msgBox.innerText = "Network Error!"; authBtn.innerHTML = 'Access Results'; authBtn.disabled = false; }
+            });
         }
 
-        function parseConfigurations(defaultInstName) {
+        // ==========================================
+        // 3. CORE LOGIC & OVERVIEW STATS
+        // ==========================================
+        function processData() {
             const settings = globalDbData.Settings || [];
+            festConfig.titles = [];
+            
             settings.forEach(row => {
                 const type = getVal(row, 0).toString().toUpperCase();
-                const key = getVal(row, 1).toString().toUpperCase();
-                const val = getVal(row, 2);
+                const val1 = getVal(row, 1); const val2 = getVal(row, 2);
                 
-                if(type === "CONFIG") {
-                    if(key === 'FEST_NAME') configData.festName = val || configData.festName;
-                    if(key === 'FEST_DESC') configData.festDesc = val || configData.festDesc;
-                    if(key === 'AUTHORITY') configData.authority = val || configData.authority;
-                    if (key === 'DATE') {
-                        if (val) {
-                            let d = new Date(val);
-                            if (!isNaN(d)) {
-                                configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
-                            } else {
-                                configData.date = val;
-                            }
-                        } else {
-                            let d = new Date();
-                            configData.date = String(d.getDate()).padStart(2, '0') + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + d.getFullYear();
-                        }
-                    }
-                    if(key === 'CERT_TEMPLATE') configData.certTemplate = val || configData.certTemplate;
+                if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
+                if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_DESC") festConfig.desc = val2 || "";
+                if (type === "CONFIG" && val1.toString().toUpperCase().startsWith("TITLE_") && val2) {
+                    const p = val2.split('|'); festConfig.titles.push({ name: p[0], gender: p[1], mode: p[2] });
+                }
+                if (type === "POINTS") {
+                    const evCode = val1.toString().toUpperCase(); 
+                    const pts = val2 ? val2.toString().split(',') : [];
+                    if (evCode === "DEFAULT") festConfig.defaultPts = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
+                    else festConfig.customPts[evCode] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
                 }
             });
-            document.getElementById('topFestName').innerText = configData.festName;
-            document.getElementById('topFestDesc').innerText = configData.festDesc;
-        }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            if(event) event.currentTarget.classList.add('active');
-        }
+            document.getElementById('dispFestName').innerText = festConfig.name;
 
-        function renderOverviewCounters() {
-            const totalStudents = (globalDbData.Students || []).length;
-            const totalEvents = (globalDbData.Events || []).length;
-            const results = globalDbData.Results || [];
-            const publishedUniqueEvents = [...new Set(results.map(r => getVal(r, 0).toString().trim()))].length;
-            
-            const settings = globalDbData.Settings || [];
-            const groupCount = settings.filter(row => getVal(row,0).toString().toUpperCase() === "GROUP").length;
-
-            document.getElementById('ovStudents').innerText = totalStudents;
-            document.getElementById('ovGroups').innerText = groupCount || "0";
-            document.getElementById('ovResults').innerText = `${publishedUniqueEvents}/${totalEvents}`;
-        }
-
-        function buildEventDropdowns() {
-            const events = globalDbData.Events || [];
-            let options = '<option value="">-- Choose Event --</option>';
-            events.forEach(ev => {
-                options += `<option value="${getVal(ev,0)}">${getVal(ev,0)} - ${getVal(ev,1)} (${getVal(ev,2)})</option>`;
-            });
-            document.getElementById('searchEventSelect').innerHTML = options;
-        }
-
-        function renderLatestAnnouncements() {
-            const results = globalDbData.Results || [];
-            const events = globalDbData.Events || [];
-            const uniqueEventCodes = [...new Set(results.map(r => getVal(r,0).toString().trim()))].reverse().slice(0, 5);
-            
-            let html = "";
-            uniqueEventCodes.forEach(code => {
-                const ev = events.find(e => getVal(e,0) == code);
-                if(ev) {
-                    html += `<div style="padding:10px 0; border-bottom:1px dashed #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-                                <span>🎉 Results Published for <b>${getVal(ev,1)}</b> (${getVal(ev,2)})</span>
-                                <button class="primary-btn" style="padding:4px 12px; font-size:0.8rem; margin:0;" onclick="viewDirectEvent('${code}')">View</button>
-                             </div>`;
-                }
-            });
-            document.getElementById('latestAnnouncementsList').innerHTML = html || "No results published recently.";
-        }
-
-        function viewDirectEvent(code) {
-            switchTab('eventsTab');
-            document.getElementById('searchEventSelect').value = code;
-            searchEventWiseResults();
-        }
-
-        function searchStudent() {
-            const searchQ = document.getElementById('searchInput').value.trim().toUpperCase();
-            if(!searchQ) return;
-
+            // Overview Stats Calculation
             const students = globalDbData.Students || [];
-            const results = globalDbData.Results || [];
             const events = globalDbData.Events || [];
-            const regs = globalDbData.Registrations || [];
-            const container = document.getElementById('searchResultsContainer');
-            
-            container.innerHTML = "";
-            document.getElementById('resultHeading').style.display = "none";
-            document.getElementById('studentProfile').style.display = "none";
-
-            const student = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === searchQ);
-            if(!student) {
-                container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle" style="font-size:2rem; margin-bottom:10px;"></i><br>Chest Number <b>${searchQ}</b> not found!</div>`;
-                return;
-            }
-
-            document.getElementById('studentProfile').style.display = "block";
-            document.getElementById('stNameDisplay').innerText = getVal(student, 1);
-            document.getElementById('stChestDisplay').innerText = getVal(student, 0);
-            document.getElementById('stClassDisplay').innerText = getVal(student, 3);
-            document.getElementById('stGroupDisplay').innerText = getVal(student, 5) || "N/A";
-
-            const studentRegs = regs.filter(r => getVal(r, 1).toString().trim().toUpperCase() === searchQ);
-            if(studentRegs.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; background:#f8fafc; border-radius:10px;">This student hasn't registered for any events yet.</div>`;
-                return;
-            }
-
-            document.getElementById('resultHeading').style.display = "block";
-
-            studentRegs.forEach(rg => {
-                const evCode = getVal(rg, 0);
-                const evItem = events.find(e => getVal(e, 0) == evCode);
-                const evName = evItem ? getVal(evItem, 1) : evCode;
-                const eventResults = results.filter(r => getVal(r,0) === evCode);
-                const studentWon = eventResults.find(r => getVal(r,1).toString().trim().toUpperCase() === searchQ);
-                
-                let statusHtml = "";
-                let actionBtnHtml = "";
-
-                if (eventResults.length === 0) {
-                    statusHtml = `<div class="result-pos" style="color:#64748b;"><i class="fas fa-clock"></i> Result not announced yet</div>`;
-                } else {
-                    if (studentWon) {
-                        const pos = getVal(studentWon, 2);
-                        let posText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
-                        let medal = pos == 1 ? "🥇" : pos == 2 ? "🥈" : "🥉";
-                        statusHtml = `<div class="result-pos">${medal} ${posText} PLACE</div>`;
-                        
-                        const cleanName = getVal(student, 1).toString().trim();
-                        const cleanEvName = evName.toString().trim();
-                        const cleanPosText = posText.toString().trim();
-
-                        const certData = encodeURIComponent(JSON.stringify({
-                            name: cleanName, chest: getVal(student,0), cls: getVal(student,3),
-                            group: getVal(student,5), event: cleanEvName, position: cleanPosText
-                        }));
-                        
-                        const trophy = '\uD83C\uDFC6';
-                        const shareText = `${trophy} *Proud Moment!* ${trophy}\n\n*${cleanName}* has secured *${cleanPosText} PLACE* in *${cleanEvName}* at the ${configData.festName}!\n\nView live results & download certificate here:\nhttps://festvue.github.io/public.html?inst=${instId}&chest=${searchQ}`;
-                        
-                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-
-                        actionBtnHtml = `
-                            <div class="action-btns">
-                                <button onclick="downloadCert('${certData}')" class="action-btn btn-cert"><i class="fas fa-file-download"></i> Cert</button>
-                                <button onclick="openPosterModal('${certData}')" class="action-btn btn-poster"><i class="fas fa-image"></i> Poster</button>
-                                <a href="${whatsappUrl}" target="_blank" class="action-btn" style="background:#25D366; color:white; text-decoration:none;"><i class="fab fa-whatsapp"></i> Share</a>
-                            </div>`;
-
-                    } else {
-                        statusHtml = `<div class="result-pos" style="color:#ef4444;"><i class="fas fa-times-circle"></i> No Position Secured</div>`;
-                    }
-                }
-
-                container.innerHTML += `
-                    <div class="result-item">
-                        <div class="result-title">${evName} <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(${evCode})</span></div>
-                        ${statusHtml}
-                        ${actionBtnHtml}
-                    </div>`;
-            });
-        }
-
-        function searchEventWiseResults() {
-            const evCode = document.getElementById('searchEventSelect').value;
-            const container = document.getElementById('eventWiseContainer');
-            container.innerHTML = "";
-
-            if(!evCode) { alert("Please choose an event first."); return; }
-
             const results = globalDbData.Results || [];
-            const students = globalDbData.Students || [];
-            const eventResults = results.filter(r => getVal(r,0) === evCode).sort((a,b) => getVal(a,2) - getVal(b,2));
+            
+            const totalStudents = students.length;
+            const totalGroups = [...new Set(students.map(s => getVal(s,5).toString().trim()))].filter(Boolean).length;
+            const totalEvents = events.length;
+            const publishedEvents = [...new Set(results.filter(r => getVal(r,3) !== "Pending").map(r => getVal(r,0).toString().trim().toUpperCase()))].length;
 
-            if(eventResults.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:30px; color:#64748b;" class="card">Results for this event have not been declared yet.</div>`;
-                return;
-            }
+            document.getElementById('statStudents').innerText = totalStudents;
+            document.getElementById('statGroups').innerText = totalGroups;
+            document.getElementById('statResults').innerText = `${publishedEvents}/${totalEvents}`;
 
-            let html = `<div class="card"><div class="card-header"><i class="fas fa-medal"></i> Winners Podium Standings</div><div class="podium-box">`;
-            eventResults.forEach(res => {
-                const chest = getVal(res,1);
-                const pos = parseInt(getVal(res,2));
-                const st = students.find(s => getVal(s,0) == chest);
-                const name = st ? getVal(st,1) : "Unknown Student";
-                const cls = st ? getVal(st,3) : "";
-                const group = st ? getVal(st,5) : "";
-                
-                let pClass = pos === 1 ? "p-1" : pos === 2 ? "p-2" : "p-3";
-                let prizeName = pos === 1 ? "🥇 1st Place" : pos === 2 ? "🥈 2nd Place" : "🥉 3rd Place";
-
-                html += `<div class="podium-row ${pClass}">
-                            <div>
-                                <div style="font-size:0.85rem; font-weight:700; opacity:0.8;">${prizeName}</div>
-                                <div style="font-size:1.1rem; font-weight:700; margin:2px 0;">${name}</div>
-                                <div style="font-size:0.85rem; opacity:0.9;">Class: ${cls} | Group: ${group}</div>
-                            </div>
-                            <div style="font-size:1.3rem; font-weight:700;">#${chest}</div>
-                         </div>`;
-            });
-            html += `</div></div>`;
-            container.innerHTML = html;
+            calculateLeaderboard();
+            renderResultsFeed();
+            updateTicker();
         }
 
-        // --- NEW UPDATED LEADERBOARD LOGIC ---
+        // ==========================================
+        // TV LINK & TICKER
+        // ==========================================
+        function goToTV() {
+            if(currentInstId) window.open(`tv.html?inst=${currentInstId}`, "_blank");
+        }
+
+        function updateTicker() {
+            const results = globalDbData.Results || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
+            let approvedResults = results.filter(r => getVal(r,3) !== "Pending").reverse();
+            let uniqueEvs = []; let tickerHTML = "";
+            
+            for(let r of approvedResults) {
+                const evCode = getVal(r,0).toString().trim().toUpperCase();
+                if(!uniqueEvs.includes(evCode)) uniqueEvs.push(evCode);
+                if(uniqueEvs.length >= 5) break; // Show latest 5
+            }
+
+            if(uniqueEvs.length === 0) {
+                tickerHTML = `<div class="ticker-item">Awaiting Results...</div>`;
+            } else {
+                uniqueEvs.forEach(evCode => {
+                    const ev = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                    const evName = ev ? getVal(ev,1) : evCode;
+                    const isGroup = ev && getVal(ev, 4).toString().trim().toLowerCase() === 'group';
+                    const suffix = isGroup ? " & Team" : "";
+                    
+                    // Find 1st place
+                    const firstRow = approvedResults.find(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,2) == 1);
+                    if(firstRow) {
+                        const chest = getVal(firstRow,1).toString().trim().toUpperCase();
+                        const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                        const nameStr = st ? getVal(st,1) + suffix : chest;
+                        tickerHTML += `<div class="ticker-item">🎉 <b>${evName}</b> 1st Place: <a onclick="jumpToFeed('${evCode}')">${nameStr}</a></div>`;
+                    }
+                });
+            }
+            document.getElementById('tickerContent').innerHTML = tickerHTML;
+        }
+
+        function jumpToFeed(evCode) {
+            document.getElementById('feedSearch').value = evCode;
+            applyFeedFilters();
+            document.querySelectorAll('.nav-item')[1].click(); // Switch to Feed tab
+        }
+
+        // ==========================================
+        // LEADERBOARD
+        // ==========================================
         function calculateLeaderboard() {
-            const results = globalDbData.Results || [];
-            const students = globalDbData.Students || [];
-            const events = globalDbData.Events || [];
-            const settings = globalDbData.Settings || [];
+            const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
+            const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
-            // Load Points Configuration
-            let defaultPoints = { 1: 5, 2: 3, 3: 1 };
-            let customPoints = {};
+            let groupPoints = {}; let studentPoints = {}; let processedGroupEvents = {}; 
             
-            settings.forEach(row => {
-                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
-                    const evCode = getVal(row, 1).toString().toUpperCase();
-                    const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
-                    
-                    const pts = rawVal ? rawVal.split(',') : [];
-                    const p1 = parseInt(pts[0]) || 0;
-                    const p2 = parseInt(pts[1]) || 0;
-                    const p3 = parseInt(pts[2]) || 0;
-                    
-                    if (evCode === "DEFAULT") {
-                        defaultPoints = { 1: p1, 2: p2, 3: p3 };
-                    } else {
-                        customPoints[evCode] = { 1: p1, 2: p2, 3: p3 };
-                    }
-                }
-            });
-
-            let groupPoints = {}; 
-            let studentPoints = {};
-            let processedGroupEvents = {}; 
+            bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
             
             results.forEach(res => {
-                const evCode = getVal(res, 0).toString().toUpperCase();
-                const chestNo = getVal(res, 1);
-                const position = parseInt(getVal(res, 2)); 
-                
-                const ptsMap = customPoints[evCode] || defaultPoints;
+                if(getVal(res,3) === "Pending") return;
+                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
+                const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
                 const points = ptsMap[position] || 0;
-                
                 if(!chestNo || points === 0) return;
-                
-                const st = students.find(s => getVal(s, 0) == chestNo);
-                const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
+
+                const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
+                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
                 
                 const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
                 const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
                 const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
-                
+                const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage"; 
+
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
 
                 if(st) {
                     const group = getVal(st, 5);
-                    const rawGender = getVal(st, 2).toString().trim().toLowerCase();
-                    let genderCat = "other";
-                    if(rawGender.includes("boy") || rawGender.includes("male") || rawGender === "m") genderCat = "boys";
-                    if(rawGender.includes("girl") || rawGender.includes("female") || rawGender === "f") genderCat = "girls";
-                    const name = getVal(st, 1);
-
+                    let stGen = getVal(st, 2).toString().trim().toLowerCase();
+                    if(stGen === "male") stGen = "boys"; if(stGen === "female") stGen = "girls";
+                    
                     if(group) {
                         if (skipIndividualPoints) {
                             const uniqueKey = `${evCode}_${position}_${group}`; 
-                            if (!processedGroupEvents[uniqueKey]) {
-                                groupPoints[group] = (groupPoints[group] || 0) + points;
-                                processedGroupEvents[uniqueKey] = true;
-                            }
-                        } else {
-                            groupPoints[group] = (groupPoints[group] || 0) + points;
-                        }
+                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
+                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
                     }
 
                     if (!skipIndividualPoints) {
-                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: name, gender: genderCat, group: group, points: 0, class: getVal(st,3) };
-                        studentPoints[chestNo].points += points;
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), events: [] };
+                        studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
                     }
                 }
             });
 
             let groupHTML = "";
-            Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]).forEach((g, idx) => {
-                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
-                groupHTML += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #e2e8f0;"><span>${medal} <b style="color:#334155;">${g[0]}</b></span><span style="font-weight:bold; color:var(--primary); background:#e0f2fe; padding:2px 12px; border-radius:20px;">${g[1]} Pts</span></div>`;
-            });
-            document.getElementById('publicGroupLeaderboard').innerHTML = groupHTML || "<p style='color:#64748b;'>Results not published yet.</p>";
+            const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
+            
+            if(sortedGroups.length === 0) {
+                groupHTML = `<div style="text-align:center; color:var(--muted); padding: 20px 0;">No results published yet.</div>`;
+            } else {
+                sortedGroups.forEach((g, idx) => {
+                    const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx+1}.`;
+                    const mColor = idx === 0 ? "#b45309" : idx === 1 ? "#475569" : idx === 2 ? "#9a3412" : "var(--muted)";
+                    groupHTML += `<div class="group-rank"><div class="rank-pos" style="color:${mColor};">${medal}</div><div class="rank-name">${g[0]}</div><div class="rank-pts">${g[1]}</div></div>`;
+                });
+            }
+            document.getElementById('leaderboardContainer').innerHTML = groupHTML;
 
-            let maxBoyPoints = 0; let maxGirlPoints = 0; let topBoys = []; let topGirls = [];
-            Object.values(studentPoints).forEach(data => {
-                if (data.gender === "boys") {
-                    if (data.points > maxBoyPoints) { maxBoyPoints = data.points; topBoys = [data]; } 
-                    else if (data.points === maxBoyPoints && maxBoyPoints > 0) { topBoys.push(data); }
-                } else if (data.gender === "girls") {
-                    if (data.points > maxGirlPoints) { maxGirlPoints = data.points; topGirls = [data]; } 
-                    else if (data.points === maxGirlPoints && maxGirlPoints > 0) { topGirls.push(data); }
+            let topHTML = "";
+            const colorThemes = [
+                { bg: "rgba(212, 175, 55, 0.05)", border: "#D4AF37", text: "#b45309" }, 
+                { bg: "rgba(16, 185, 129, 0.05)", border: "#10b981", text: "#047857" }, 
+                { bg: "rgba(59, 130, 246, 0.05)", border: "#3b82f6", text: "#1d4ed8" }, 
+                { bg: "rgba(139, 92, 246, 0.05)", border: "#8b5cf6", text: "#5b21b6" }  
+            ];
+
+            festConfig.titles.forEach((titleDef, tIdx) => {
+                if(!titleDef.name) return;
+                let maxPoints = 0; let topStudents = [];
+                
+                Object.values(studentPoints).forEach(st => {
+                    let isGenderMatch = (titleDef.gender === "All" || titleDef.gender.toLowerCase() === st.gender);
+                    if(!isGenderMatch) return;
+                    
+                    let stTotal = 0;
+                    st.events.forEach(ev => {
+                        if(titleDef.mode === "All" || titleDef.mode === ev.mode) { stTotal += ev.points; }
+                    });
+                    
+                    if(stTotal > 0) {
+                        if(stTotal > maxPoints) { maxPoints = stTotal; topStudents = [st]; }
+                        else if(stTotal === maxPoints) { topStudents.push(st); }
+                    }
+                });
+
+                const theme = colorThemes[tIdx % 4];
+                if(topStudents.length > 0) {
+                    topHTML += `<div class="scorer-card" style="background:${theme.bg}; border-left-color:${theme.border};">`;
+                    topHTML += `<div class="scorer-title" style="color:${theme.text};">${titleDef.name} <span class="scorer-pts">${maxPoints} Pts</span></div>`;
+                    topStudents.forEach(ts => { topHTML += `<div style="font-weight: 500;">${ts.name} <span style="color:var(--muted); font-size:0.85rem;">(${ts.group})</span></div>`; });
+                    topHTML += `</div>`;
+                }
+            });
+            document.getElementById('topScorersContainer').innerHTML = topHTML || `<p style="color:var(--muted); text-align:center;">Top scorers will appear here.</p>`;
+        }
+
+        // ==========================================
+        // FEED & FILTERING
+        // ==========================================
+        function populateFilterDropdowns() {
+            const settings = globalDbData.Settings || [];
+            let catOpts = '<option value="ALL">All Categories</option>';
+            settings.forEach(row => {
+                if(getVal(row,0).toString().toUpperCase() === 'CATEGORY') {
+                    const cat = getVal(row,1).toString().toUpperCase();
+                    if(cat) catOpts += `<option value="${cat}">${cat}</option>`;
+                }
+            });
+            document.getElementById('feedFilterCat').innerHTML = catOpts;
+        }
+
+        function renderResultsFeed() { applyFeedFilters(); }
+
+        function applyFeedFilters() {
+            const results = globalDbData.Results || []; const events = globalDbData.Events || []; const students = globalDbData.Students || [];
+            
+            const q = document.getElementById('feedSearch').value.trim().toUpperCase();
+            const fCat = document.getElementById('feedFilterCat').value;
+            const fGen = document.getElementById('feedFilterGen').value;
+            const fType = document.getElementById('feedFilterType').value;
+            const fMode = document.getElementById('feedFilterMode').value;
+
+            let groupedResults = {};
+            for(let i = results.length - 1; i >= 0; i--) {
+                const r = results[i];
+                if(getVal(r,3) === "Pending") continue;
+                const evCode = getVal(r,0).toString().trim().toUpperCase();
+                if(!groupedResults[evCode]) groupedResults[evCode] = [];
+                groupedResults[evCode].push(r);
+            }
+
+            let feedHTML = "";
+            let count = 0;
+
+            Object.keys(groupedResults).forEach(evCode => {
+                const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                const evName = evDetails ? getVal(evDetails, 1).toString().toUpperCase() : evCode;
+                const evCat = evDetails ? getVal(evDetails, 2).toString().toUpperCase() : "N/A";
+                const evGen = evDetails ? getVal(evDetails, 3).toString().toUpperCase() : "N/A";
+                const evType = evDetails ? getVal(evDetails, 4).toString().toUpperCase() : "N/A";
+                const evMode = evDetails ? getVal(evDetails, 5).toString().toUpperCase() : "N/A";
+
+                // Filters
+                if(q && !evName.includes(q) && !evCode.includes(q)) return;
+                if(fCat !== "ALL" && evCat !== fCat) return;
+                if(fGen !== "ALL" && evGen !== fGen && evGen !== 'COMMON') return;
+                if(fType !== "ALL" && evType !== fType) return;
+                if(fMode !== "ALL" && evMode !== fMode) return;
+
+                count++;
+                const isGroup = evType === 'GROUP';
+                const suffix = isGroup ? " & Team" : "";
+
+                feedHTML += `<div class="feed-item">
+                                <div class="feed-ev">${evName} 
+                                    <div class="feed-badges">
+                                        <span class="badge">${evCat}</span>
+                                        <span class="badge">${evGen}</span>
+                                        <span class="badge" style="border:none; color:var(--muted);">${evCode}</span>
+                                    </div>
+                                </div>`;
+                
+                let p1="", p2="", p3="";
+                groupedResults[evCode].forEach(r => {
+                    const chest = getVal(r,1).toString().trim().toUpperCase();
+                    const pos = getVal(r,2);
+                    const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                    const nameStr = st ? getVal(st,1) + suffix : chest;
+                    const grpStr = st && getVal(st,5) ? ` <small style="color:var(--muted);">(${getVal(st,5)})</small>` : "";
+                    
+                    if(pos == 1) p1 += `<div>${nameStr}${grpStr}</div>`;
+                    if(pos == 2) p2 += `<div>${nameStr}${grpStr}</div>`;
+                    if(pos == 3) p3 += `<div>${nameStr}${grpStr}</div>`;
+                });
+
+                if(p1) feedHTML += `<div class="feed-res"><span class="medal-1">1st</span> <div style="flex-grow:1; font-size:0.95rem;">${p1}</div></div>`;
+                if(p2) feedHTML += `<div class="feed-res"><span class="medal-2">2nd</span> <div style="flex-grow:1; font-size:0.95rem;">${p2}</div></div>`;
+                if(p3) feedHTML += `<div class="feed-res"><span class="medal-3">3rd</span> <div style="flex-grow:1; font-size:0.95rem;">${p3}</div></div>`;
+                feedHTML += `</div>`;
+            });
+
+            if(count === 0) {
+                feedHTML = `<div style="text-align:center; color:var(--muted); padding: 40px 0;">No results match your filters.</div>`;
+            }
+            document.getElementById('feedContainer').innerHTML = feedHTML;
+        }
+
+        // ==========================================
+        // 6. SEARCH & WHATSAPP SHARE
+        // ==========================================
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const q = document.getElementById('searchInput').value.trim().toUpperCase();
+            const students = globalDbData.Students || []; const events = globalDbData.Events || []; 
+            const regs = globalDbData.Registrations || []; const results = globalDbData.Results || [];
+            const container = document.getElementById('searchResultContainer');
+            
+            const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === q);
+            
+            if(!st) {
+                container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:30px 0;"><i class="fas fa-exclamation-circle" style="font-size:2rem; margin-bottom:10px;"></i><br>Chest No. '${q}' not found!</div>`;
+                return;
+            }
+
+            const name = getVal(st,1); const cls = getVal(st,3); const cat = getVal(st,4); const grp = getVal(st,5);
+            currentSearchStudent = { name: name, chest: q, cls: cls, grp: grp };
+            currentSearchWins = [];
+
+            let html = `<div class="card" style="margin-top:10px;">
+                            <div class="profile-head">
+                                <div class="profile-name">${name}</div>
+                                <div class="profile-tags">
+                                    <span class="tag">#${q}</span>
+                                    <span class="tag"><i class="fas fa-layer-group"></i> ${grp}</span>
+                                    <span class="tag"><i class="fas fa-tag"></i> ${cat}</span>
+                                    <span class="tag"><i class="fas fa-graduation-cap"></i> ${cls}</span>
+                                </div>
+                            </div>`;
+
+            let stEvents = [];
+            regs.forEach(r => {
+                const evCode = getVal(r,0).toString().trim().toUpperCase();
+                const capt = getVal(r,1).toString().trim().toUpperCase();
+                let membersStr = "";
+                const keys = Object.keys(r);
+                const teamHeader = keys.find(k => k.toLowerCase().includes("team member"));
+                if(teamHeader && r[teamHeader]) membersStr = String(r[teamHeader]).toUpperCase();
+                
+                if(capt === q || membersStr.includes(q)) {
+                    if(!stEvents.includes(evCode)) stEvents.push(evCode);
                 }
             });
 
-            let topHTML = "";
-            if (topBoys.length > 0) {
-                topHTML += `<div style="padding:15px; background:#f0fdf4; border-radius:10px; margin-bottom:15px; border-left: 4px solid #166534;"><span style="font-size: 0.8rem; color: #166534; font-weight: 700; text-transform:uppercase;">Top Boy(s) - ${maxBoyPoints} Pts</span>`;
-                topBoys.forEach(boy => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${boy.name}</b> <span style="font-size: 0.9rem; color:#475569;">${boy.class}</span></div>`; });
-                topHTML += `</div>`;
-            }
-            if (topGirls.length > 0) {
-                topHTML += `<div style="padding:15px; background:#fffbeb; border-radius:10px; border-left: 4px solid #bbf7d0;"><span style="font-size: 0.8rem; color: #b45309; font-weight: 700; text-transform:uppercase;">Top Girl(s) - ${maxGirlPoints} Pts</span>`;
-                topGirls.forEach(girl => { topHTML += `<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:1.05rem;"><b>${girl.name}</b> <span style="font-size: 0.9rem; color:#475569;">${girl.class}</span></div>`; });
-                topHTML += `</div>`;
-            }
-            document.getElementById('publicTopScorers').innerHTML = topHTML || "<p style='color:#64748b;'>No winners declared yet.</p>";
-        }
+            let shareText = `*${festConfig.name} - Participant Info*\n\n👤 Name: ${name}\n🔢 Chest No: ${q}\n🏠 Group: ${grp}\n\n*Events & Results:*\n`;
 
-        async function downloadCert(encodedData) {
-            const data = JSON.parse(decodeURIComponent(encodedData));
-            const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
-            
-            document.getElementById('c_inst').innerText = instNameTxt;
-            document.getElementById('c_fest_title').innerText = configData.festName;
-            document.getElementById('c_signature_label').innerText = configData.authority;
-            document.getElementById('c_date').innerText = configData.date;
-
-            let dynamicText = configData.certTemplate
-                .replace(/\[NAME\]/g, `<b>${data.name}</b>`)
-                .replace(/\[CHEST\]/g, `<b>${data.chest}</b>`)
-                .replace(/\[CLASS\]/g, `<b>${data.cls}</b>`)
-                .replace(/\[GROUP\]/g, `<b>${data.group || "N/A"}</b>`)
-                .replace(/\[EVENT\]/g, `<b>${data.event}</b>`)
-                .replace(/\[POSITION\]/g, `<b>${data.position}</b>`);
-            
-            document.getElementById('c_body_content').innerHTML = dynamicText;
-
-            const btn = event.currentTarget; const originalContent = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...'; btn.disabled = true;
-            
-            try {
-                const element = document.getElementById('certRender');
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
-                const link = document.createElement('a');
-                link.download = `${data.chest}_Certificate.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-            } catch (err) { alert("Error generating certificate. Please try from a different browser."); } finally { btn.innerHTML = originalContent; btn.disabled = false; }
-        }
-
-        function openPosterModal(encodedData) {
-            currentPosterData = JSON.parse(decodeURIComponent(encodedData));
-            document.getElementById('posterPhotoInput').value = "";
-            document.getElementById('photoModal').style.display = "flex";
-        }
-
-        function closeModal() { document.getElementById('photoModal').style.display = "none"; currentPosterData = null; }
-
-        async function processPoster() {
-            const fileInput = document.getElementById('posterPhotoInput');
-            if(!fileInput.files.length) { alert("Please select a photo first!"); return; }
-
-            const btn = document.getElementById('generatePosterBtn'); const originalBtnText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
-
-            try {
-                const instNameTxt = document.getElementById('navInstName').innerText.replace('Loading...', '').trim();
-                document.getElementById('p_inst').innerText = instNameTxt;
-                document.getElementById('p_fest').innerText = configData.festName;
-                document.getElementById('p_name').innerText = currentPosterData.name;
-                document.getElementById('p_event').innerText = currentPosterData.event;
-                document.getElementById('p_pos').innerText = currentPosterData.position + " PLACE";
-
-                const photoUrl = URL.createObjectURL(fileInput.files[0]);
-                const imgElement = document.getElementById('p_photo');
-                imgElement.src = photoUrl;
-
-                await new Promise((resolve) => { imgElement.onload = resolve; });
-
-                const element = document.getElementById('posterRender');
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+            if(stEvents.length === 0) {
+                html += `<div style="text-align:center; color:var(--muted); padding:10px 0;">No events registered.</div></div>`;
+                shareText += "No events registered.";
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:8px;">`;
                 
-                const link = document.createElement('a');
-                link.download = `${currentPosterData.name}_Poster.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-                closeModal();
-            } catch (err) { alert("Error generating poster."); } finally { btn.innerHTML = originalBtnText; btn.disabled = false; }
+                stEvents.forEach(evCode => {
+                    const ev = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                    const evName = ev ? getVal(ev,1) : evCode;
+                    const isGroup = ev && getVal(ev,4).toString().trim().toLowerCase() === 'group';
+                    
+                    let medalBadge = ""; let posText = "Participant";
+                    results.forEach(resRow => {
+                        if(getVal(resRow,3) === "Pending") return;
+                        if(getVal(resRow,0).toString().trim().toUpperCase() === evCode) {
+                            const resChest = getVal(resRow,1).toString().trim().toUpperCase();
+                            if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
+                                const pos = getVal(resRow,2);
+                                if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "First"}); }
+                                else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "Second"}); }
+                                else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "Third"}); }
+                            }
+                        }
+                    });
+                    
+                    const groupBadge = isGroup ? `<span style="font-size:0.7rem; background:var(--bg); padding:2px 5px; border-radius:4px; border:1px solid var(--border); color:var(--muted); margin-left:5px;">Group</span>` : "";
+                    
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--input-bg); border-radius:6px; border:1px solid var(--border);">
+                                <div style="font-size:0.95rem; font-weight:500; color:var(--text);">${evName} ${groupBadge}</div>
+                                <div>${medalBadge}</div>
+                             </div>`;
+                    shareText += `🔸 ${evName} - ${posText}\n`;
+                });
+                html += `</div>`;
+                
+                // Add Share and Poster Buttons
+                html += `<div class="profile-actions">
+                            <button onclick="shareWhatsApp('${encodeURIComponent(shareText)}')" class="auth-btn" style="background:#25D366; margin:0;"><i class="fab fa-whatsapp"></i> Share</button>`;
+                
+                if(currentSearchWins.length > 0) {
+                    html += `<button onclick="openPosterModal()" class="auth-btn" style="background:var(--accent); margin:0; color:#1e293b;"><i class="fas fa-image"></i> Poster</button>`;
+                }
+                html += `</div></div>`;
+            }
+            container.innerHTML = html;
+        });
+
+        function isTeamWinner(evCode, captChest, targetChest) {
+            const regs = globalDbData.Registrations || [];
+            const r = regs.find(reg => getVal(reg,0).toString().trim().toUpperCase() === evCode && getVal(reg,1).toString().trim().toUpperCase() === captChest);
+            if(r) {
+                const keys = Object.keys(r);
+                const teamHeader = keys.find(k => k.toLowerCase().includes("team member"));
+                if(teamHeader && r[teamHeader]) {
+                    const members = String(r[teamHeader]).toUpperCase().split(',').map(m => m.trim());
+                    if(members.includes(targetChest)) return true;
+                }
+            }
+            return false;
         }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker Registered!', reg))
-                    .catch(err => console.log('Service Worker Registration Failed!', err));
+
+        function shareWhatsApp(text) {
+            window.open(`https://wa.me/?text=${text}`, "_blank");
+        }
+
+        // ==========================================
+        // 7. POSTER GENERATION (CANVAS + CROPPER)
+        // ==========================================
+        let cropper;
+
+        function openPosterModal() {
+            document.getElementById('posterModal').style.display = 'flex';
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('canvasPreview').style.display = 'none';
+            document.getElementById('btnDownload').style.display = 'none';
+            document.getElementById('imageUpload').value = "";
+            document.getElementById('cropContainer').style.display = 'none';
+            document.getElementById('btnGenerate').style.display = 'none';
+            if(cropper) cropper.destroy();
+        }
+
+        function closePosterModal() {
+            document.getElementById('posterModal').style.display = 'none';
+        }
+
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('cropContainer').style.display = 'block';
+                    const img = document.getElementById('imageToCrop');
+                    img.src = event.target.result;
+                    if(cropper) cropper.destroy();
+                    cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
+                    document.getElementById('btnGenerate').style.display = 'block';
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        function drawAndShowPoster() {
+            if(!cropper) return;
+            const btn = document.getElementById('btnGenerate');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...'; btn.disabled = true;
+            
+            // Get Cropped Image
+            const croppedCanvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+            
+            // Setup Main Canvas
+            const canvas = document.getElementById('posterCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 1. Background (Dark Green Gradient)
+            const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
+            gradient.addColorStop(0, "#022c17");
+            gradient.addColorStop(1, "#046A38");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1080, 1080);
+
+            // 2. Gold Borders
+            ctx.strokeStyle = "#D4AF37";
+            ctx.lineWidth = 15;
+            ctx.strokeRect(30, 30, 1020, 1020);
+            ctx.lineWidth = 3;
+            ctx.strokeRect(45, 45, 990, 990);
+
+            // 3. Text Styling
+            ctx.textAlign = "center";
+            
+            // Fest & Inst Name
+            ctx.fillStyle = "#D4AF37";
+            ctx.font = "bold 50px Arial";
+            ctx.fillText(festConfig.name.toUpperCase(), 540, 130);
+            ctx.fillStyle = "#e2e8f0";
+            ctx.font = "30px Arial";
+            ctx.fillText(festConfig.inst, 540, 180);
+
+            // "CONGRATULATIONS" Ribbon
+            ctx.fillStyle = "#D4AF37";
+            ctx.fillRect(240, 240, 600, 70);
+            ctx.fillStyle = "#022c17";
+            ctx.font = "bold 45px Arial";
+            ctx.fillText("CONGRATULATIONS", 540, 290);
+
+            // 4. Draw Circular Cropped Image
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(540, 520, 180, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(croppedCanvas, 360, 340, 360, 360);
+            ctx.restore();
+
+            // Gold Ring around Image
+            ctx.beginPath();
+            ctx.arc(540, 520, 180, 0, Math.PI * 2, true);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#D4AF37";
+            ctx.stroke();
+
+            // 5. Student Details
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 55px Arial";
+            ctx.fillText(currentSearchStudent.name.toUpperCase(), 540, 780);
+            
+            ctx.fillStyle = "#D4AF37";
+            ctx.font = "35px Arial";
+            ctx.fillText(`Chest No: ${currentSearchStudent.chest}  |  ${currentSearchStudent.grp}`, 540, 830);
+
+            // 6. Achievements
+            ctx.fillStyle = "#e2e8f0";
+            ctx.font = "bold 30px Arial";
+            let startY = 900;
+            // Draw up to 3 wins
+            const winsToShow = currentSearchWins.slice(0, 3);
+            winsToShow.forEach(win => {
+                ctx.fillText(`🏆 ${win.event} - ${win.pos} Place`, 540, startY);
+                startY += 45;
             });
+            
+            if(currentSearchWins.length > 3) {
+                ctx.font = "25px Arial";
+                ctx.fillText(`+ ${currentSearchWins.length - 3} more wins!`, 540, startY);
+            }
+
+            // Export to Image
+            const imgData = canvas.toDataURL("image/png");
+            document.getElementById('canvasPreview').src = imgData;
+            
+            // Update UI
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('canvasPreview').style.display = 'block';
+            
+            const btnDown = document.getElementById('btnDownload');
+            btnDown.href = imgData;
+            btnDown.download = `${currentSearchStudent.chest}_Winner_Poster.png`;
+            btnDown.style.display = 'inline-block';
+            
+            btn.innerHTML = '<i class="fas fa-magic"></i> Magic Generate'; btn.disabled = false;
         }
+
     </script>
 </body>
 </html>
