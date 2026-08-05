@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700&family=Cairo:wght@300;400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;600;700;800&family=Cairo:wght@300;400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Cropper.js for Image Cropping -->
@@ -86,19 +86,22 @@
         .feed-res { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
         
         /* Medals */
-        .medal-1 { color: #b45309; background: #fef9c3; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
-        .medal-2 { color: #475569; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
-        .medal-3 { color: #9a3412; background: #ffedd5; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .medal-1 { color: #b45309; background: #fef9c3; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #fde047; }
+        .medal-2 { color: #475569; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #cbd5e1; }
+        .medal-3 { color: #9a3412; background: #ffedd5; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #fed7aa; }
         
-        /* Search Tab */
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 2px solid var(--primary); font-size: 1rem; background: var(--card-bg); color: var(--text); outline: none; text-transform: uppercase; }
-        .search-box button { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
+        /* Search Tab - Updated Design */
+        .search-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 14px; border-radius: 8px; border: 2px solid var(--primary); font-size: 1.1rem; background: var(--card-bg); color: var(--text); outline: none; text-transform: uppercase; text-align: center; font-weight: 600; }
+        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2); }
+        .search-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; }
+        .search-box button:hover { opacity: 0.9; }
 
         .profile-head { text-align: center; padding-bottom: 15px; border-bottom: 2px dashed var(--border); margin-bottom: 15px; }
         .profile-name { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
         .profile-tags { display: flex; justify-content: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
         .profile-actions { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
+        .tag { font-size: 0.8rem; padding: 3px 8px; background: var(--bg); border-radius: 4px; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
         
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid var(--border); z-index: 100; }
@@ -156,14 +159,12 @@
             <!-- TAB 1: HOME (LEADERBOARD) -->
             <div id="tab-home" class="tab-content active">
                 
-                <!-- Feature 1: Overview Stats -->
                 <div class="overview-grid">
                     <div class="overview-box"><h4 id="statStudents">0</h4><p>Students</p></div>
                     <div class="overview-box"><h4 id="statGroups">0</h4><p>Groups</p></div>
                     <div class="overview-box"><h4 id="statResults">0/0</h4><p>Results</p></div>
                 </div>
 
-                <!-- Feature 5: TV Screen Link -->
                 <button onclick="goToTV()" class="auth-btn" style="margin-top:0; margin-bottom:20px; background:var(--bg); border:1px solid var(--primary); color:var(--primary); font-weight:bold;"><i class="fas fa-tv"></i> Open Live TV Screen</button>
 
                 <h3 class="section-title"><i class="fas fa-trophy" style="color: #f59e0b;"></i> Live Group Standings</h3>
@@ -179,7 +180,6 @@
             <div id="tab-feed" class="tab-content">
                 <h3 class="section-title"><i class="fas fa-bolt" style="color: #ef4444;"></i> Published Results</h3>
                 
-                <!-- Feature 2 & 3: Filtering & Search -->
                 <div class="card" style="padding:15px; margin-bottom:15px;">
                     <input type="text" id="feedSearch" class="search-feed" placeholder="Search event name (e.g. Oppana)..." onkeyup="applyFeedFilters()">
                     <div class="filter-row">
@@ -211,9 +211,11 @@
             <!-- TAB 3: SEARCH -->
             <div id="tab-search" class="tab-content">
                 <h3 class="section-title"><i class="fas fa-search" style="color: #3b82f6;"></i> Find Participant</h3>
+                
+                <!-- Fixed Search Box Design -->
                 <form class="search-box" id="searchForm">
-                    <input type="text" id="searchInput" placeholder="Enter Chest No." required>
-                    <button type="submit"><i class="fas fa-arrow-right"></i></button>
+                    <input type="text" id="searchInput" placeholder="ENTER CHEST NO." required>
+                    <button type="submit"><i class="fas fa-search"></i> SEARCH RESULT</button>
                 </form>
                 
                 <div id="searchResultContainer">
@@ -234,7 +236,7 @@
         </nav>
     </div>
 
-    <!-- Feature 4: Poster Generation Modal with Cropper -->
+    <!-- Poster Generation Modal -->
     <div id="posterModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closePosterModal()">&times;</span>
@@ -254,7 +256,6 @@
         </div>
     </div>
     
-    <!-- Hidden Canvas for rendering the Poster -->
     <canvas id="posterCanvas" width="1080" height="1080" style="display:none;"></canvas>
 
     <script>
@@ -381,7 +382,6 @@
 
             document.getElementById('dispFestName').innerText = festConfig.name;
 
-            // Overview Stats Calculation
             const students = globalDbData.Students || [];
             const events = globalDbData.Events || [];
             const results = globalDbData.Results || [];
@@ -400,9 +400,6 @@
             updateTicker();
         }
 
-        // ==========================================
-        // TV LINK & TICKER
-        // ==========================================
         function goToTV() {
             if(currentInstId) window.open(`tv.html?inst=${currentInstId}`, "_blank");
         }
@@ -415,7 +412,7 @@
             for(let r of approvedResults) {
                 const evCode = getVal(r,0).toString().trim().toUpperCase();
                 if(!uniqueEvs.includes(evCode)) uniqueEvs.push(evCode);
-                if(uniqueEvs.length >= 5) break; // Show latest 5
+                if(uniqueEvs.length >= 5) break; 
             }
 
             if(uniqueEvs.length === 0) {
@@ -427,7 +424,6 @@
                     const isGroup = ev && getVal(ev, 4).toString().trim().toLowerCase() === 'group';
                     const suffix = isGroup ? " & Team" : "";
                     
-                    // Find 1st place
                     const firstRow = approvedResults.find(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,2) == 1);
                     if(firstRow) {
                         const chest = getVal(firstRow,1).toString().trim().toUpperCase();
@@ -443,12 +439,9 @@
         function jumpToFeed(evCode) {
             document.getElementById('feedSearch').value = evCode;
             applyFeedFilters();
-            document.querySelectorAll('.nav-item')[1].click(); // Switch to Feed tab
+            document.querySelectorAll('.nav-item')[1].click();
         }
 
-        // ==========================================
-        // LEADERBOARD
-        // ==========================================
         function calculateLeaderboard() {
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
@@ -591,7 +584,6 @@
                 const evType = evDetails ? getVal(evDetails, 4).toString().toUpperCase() : "N/A";
                 const evMode = evDetails ? getVal(evDetails, 5).toString().toUpperCase() : "N/A";
 
-                // Filters
                 if(q && !evName.includes(q) && !evCode.includes(q)) return;
                 if(fCat !== "ALL" && evCat !== fCat) return;
                 if(fGen !== "ALL" && evGen !== fGen && evGen !== 'COMMON') return;
@@ -637,7 +629,7 @@
         }
 
         // ==========================================
-        // 6. SEARCH & WHATSAPP SHARE
+        // 6. SEARCH & WHATSAPP SHARE (Fixed Logic)
         // ==========================================
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -695,19 +687,31 @@
                     const evName = ev ? getVal(ev,1) : evCode;
                     const isGroup = ev && getVal(ev,4).toString().trim().toLowerCase() === 'group';
                     
-                    let medalBadge = ""; let posText = "Participant";
-                    results.forEach(resRow => {
-                        if(getVal(resRow,3) === "Pending") return;
-                        if(getVal(resRow,0).toString().trim().toUpperCase() === evCode) {
+                    let medalBadge = ""; let posText = "";
+                    
+                    // റിസൾട്ട് വന്നിട്ടുണ്ടോ എന്ന് പരിശോധിക്കുന്നു
+                    const evResults = results.filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,3) !== "Pending");
+                    
+                    if(evResults.length === 0) {
+                        medalBadge = `<span style="font-size:0.8rem; color:var(--muted);"><i class="fas fa-clock"></i> Awaiting Results</span>`;
+                        posText = "Awaiting Results";
+                    } else {
+                        let won = false;
+                        evResults.forEach(resRow => {
                             const resChest = getVal(resRow,1).toString().trim().toUpperCase();
                             if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
+                                won = true;
                                 const pos = getVal(resRow,2);
                                 if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "First"}); }
                                 else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "Second"}); }
                                 else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "Third"}); }
                             }
+                        });
+                        if(!won) {
+                            medalBadge = `<span style="font-size:0.8rem; color:var(--muted);">Participant</span>`;
+                            posText = "Participant";
                         }
-                    });
+                    }
                     
                     const groupBadge = isGroup ? `<span style="font-size:0.7rem; background:var(--bg); padding:2px 5px; border-radius:4px; border:1px solid var(--border); color:var(--muted); margin-left:5px;">Group</span>` : "";
                     
@@ -750,7 +754,7 @@
         }
 
         // ==========================================
-        // 7. POSTER GENERATION (CANVAS + CROPPER)
+        // 7. POSTER GENERATION (Google Fonts Supported)
         // ==========================================
         let cropper;
 
@@ -789,91 +793,80 @@
             const btn = document.getElementById('btnGenerate');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...'; btn.disabled = true;
             
-            // Get Cropped Image
             const croppedCanvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
             
-            // Setup Main Canvas
             const canvas = document.getElementById('posterCanvas');
             const ctx = canvas.getContext('2d');
             
-            // 1. Background (Dark Green Gradient)
             const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
             gradient.addColorStop(0, "#022c17");
             gradient.addColorStop(1, "#046A38");
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 1080, 1080);
 
-            // 2. Gold Borders
             ctx.strokeStyle = "#D4AF37";
             ctx.lineWidth = 15;
             ctx.strokeRect(30, 30, 1020, 1020);
             ctx.lineWidth = 3;
             ctx.strokeRect(45, 45, 990, 990);
 
-            // 3. Text Styling
             ctx.textAlign = "center";
             
-            // Fest & Inst Name
+            // Modern Fonts injected here
             ctx.fillStyle = "#D4AF37";
-            ctx.font = "bold 50px Arial";
+            ctx.font = "bold 55px 'Poppins', 'Anek Malayalam', sans-serif";
             ctx.fillText(festConfig.name.toUpperCase(), 540, 130);
+            
             ctx.fillStyle = "#e2e8f0";
-            ctx.font = "30px Arial";
-            ctx.fillText(festConfig.inst, 540, 180);
+            ctx.font = "600 35px 'Poppins', 'Anek Malayalam', sans-serif";
+            ctx.fillText(festConfig.inst, 540, 190);
 
-            // "CONGRATULATIONS" Ribbon
             ctx.fillStyle = "#D4AF37";
-            ctx.fillRect(240, 240, 600, 70);
+            ctx.fillRect(240, 250, 600, 75);
             ctx.fillStyle = "#022c17";
-            ctx.font = "bold 45px Arial";
-            ctx.fillText("CONGRATULATIONS", 540, 290);
+            ctx.font = "bold 45px 'Poppins', sans-serif";
+            ctx.fillText("CONGRATULATIONS", 540, 302);
 
-            // 4. Draw Circular Cropped Image
             ctx.save();
             ctx.beginPath();
-            ctx.arc(540, 520, 180, 0, Math.PI * 2, true);
+            ctx.arc(540, 530, 180, 0, Math.PI * 2, true);
             ctx.closePath();
             ctx.clip();
-            ctx.drawImage(croppedCanvas, 360, 340, 360, 360);
+            ctx.drawImage(croppedCanvas, 360, 350, 360, 360);
             ctx.restore();
 
-            // Gold Ring around Image
             ctx.beginPath();
-            ctx.arc(540, 520, 180, 0, Math.PI * 2, true);
+            ctx.arc(540, 530, 180, 0, Math.PI * 2, true);
             ctx.lineWidth = 10;
             ctx.strokeStyle = "#D4AF37";
             ctx.stroke();
 
-            // 5. Student Details
             ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 55px Arial";
-            ctx.fillText(currentSearchStudent.name.toUpperCase(), 540, 780);
+            ctx.font = "bold 60px 'Poppins', 'Anek Malayalam', sans-serif";
+            ctx.fillText(currentSearchStudent.name.toUpperCase(), 540, 790);
             
             ctx.fillStyle = "#D4AF37";
-            ctx.font = "35px Arial";
-            ctx.fillText(`Chest No: ${currentSearchStudent.chest}  |  ${currentSearchStudent.grp}`, 540, 830);
+            ctx.font = "600 35px 'Poppins', 'Anek Malayalam', sans-serif";
+            ctx.fillText(`Chest No: ${currentSearchStudent.chest}  |  ${currentSearchStudent.grp}`, 540, 840);
 
-            // 6. Achievements
             ctx.fillStyle = "#e2e8f0";
-            ctx.font = "bold 30px Arial";
-            let startY = 900;
-            // Draw up to 3 wins
+            ctx.font = "bold 32px 'Poppins', 'Anek Malayalam', sans-serif";
+            let startY = 910;
+            
             const winsToShow = currentSearchWins.slice(0, 3);
             winsToShow.forEach(win => {
                 ctx.fillText(`🏆 ${win.event} - ${win.pos} Place`, 540, startY);
-                startY += 45;
+                startY += 48;
             });
             
             if(currentSearchWins.length > 3) {
-                ctx.font = "25px Arial";
+                ctx.font = "28px 'Poppins', 'Anek Malayalam', sans-serif";
                 ctx.fillText(`+ ${currentSearchWins.length - 3} more wins!`, 540, startY);
             }
 
-            // Export to Image
             const imgData = canvas.toDataURL("image/png");
             document.getElementById('canvasPreview').src = imgData;
             
-            // Update UI
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('canvasPreview').style.display = 'block';
             
