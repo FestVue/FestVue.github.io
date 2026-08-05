@@ -3,239 +3,562 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FestVue - Judge Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>FestVue - Judges Portal</title>
+    <meta name="theme-color" content="#046A38">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #046A38; --accent: #D4AF37; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
-        
-        /* Navbar */
-        nav { background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 1.5rem; font-weight: 700; }
-        .logo span { color: var(--accent); }
-        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; display: none; }
-        
-        /* Container */
-        .container { flex-grow: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 450px; border-top: 5px solid var(--primary); animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        h2 { text-align: center; margin-bottom: 5px; color: var(--primary); font-weight: 700; }
-        p.subtitle { text-align: center; color: #64748b; font-size: 0.95rem; margin-bottom: 25px; }
-        
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: #475569; }
-        .input-group input, .input-group select { width: 100%; padding: 14px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; color: var(--text); transition: 0.3s; }
-        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 106, 56, 0.1); background: #fff; }
-        .input-group input { text-transform: uppercase; }
-        .input-group input[type="password"] { text-transform: none; }
-        
-        .primary-btn { width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .primary-btn:hover { background: #03522b; box-shadow: 0 5px 15px rgba(4, 106, 56, 0.3); }
-        .primary-btn:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
-        
-        /* Rank Rows */
-        .rank-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
-        .rank-medal { font-size: 2rem; width: 40px; text-align: center; }
+        :root { --primary: #046A38; --accent: #D4AF37; --bg: #F4F7F6; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --muted: #64748B; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
         
         /* Toast Notification */
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
-        #toast.show { transform: translateX(-50%) translateY(0); }
-        #toast.error { background: #ef4444; }
+        .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 500; z-index: 9999; transition: 0.4s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; }
+        .toast.success { background: #10B981; }
+        .toast.error { background: #EF4444; }
+        .toast.show { top: 20px; }
+
+        /* Login Screen */
+        #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card); padding: 40px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 400px; border-top: 5px solid var(--primary); }
+        .logo { text-align: center; font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
+        .logo span { color: var(--accent); }
+        .subtitle { text-align: center; color: var(--muted); font-weight: 500; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase;}
+        .input-group input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: var(--primary); }
+        
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-main:hover { opacity: 0.9; }
+        .btn-main:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Dashboard Screen */
+        #dashboardScreen, #judgingScreen { display: none; padding-bottom: 80px; }
+        header { background: var(--card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .header-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+        .header-subtitle { font-size: 0.8rem; color: var(--muted); }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
+        .icon-btn:hover { color: var(--primary); }
+
+        .container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-box select, .search-box input { flex-grow: 1; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1rem; outline: none; }
+        .search-box button { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+
+        .section-title { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Event Cards */
+        .event-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .ec-details h3 { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+        .ec-badge { font-size: 0.75rem; background: var(--bg); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
+        .ec-status { font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-approved { background: #D1FAE5; color: #059669; }
+        .btn-edit { background: var(--bg); border: 1px solid var(--border); padding: 8px 15px; border-radius: 6px; color: var(--text); font-weight: 600; cursor: pointer; }
+
+        /* Judging Interface */
+        .judging-header { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); border-left: 5px solid var(--accent); }
+        .jh-title { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+        .jh-meta { font-size: 0.9rem; color: var(--muted); margin-top: 5px; font-weight: 500; }
+
+        .participant-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 15px; }
+        .pc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+        .pc-code { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
+        .pc-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+        
+        .pc-body { display: flex; gap: 15px; align-items: flex-start; }
+        @media (max-width: 500px) { .pc-body { flex-direction: column; } }
+        
+        .pc-rank { width: 120px; }
+        @media (max-width: 500px) { .pc-rank { width: 100%; } }
+        .pc-rank select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; font-weight: 600; color: var(--text); outline: none; background: var(--bg); appearance: none; cursor: pointer; }
+        .pc-rank select:focus { border-color: var(--primary); }
+        
+        .pc-remarks { flex-grow: 1; width: 100%; }
+        .pc-remarks input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: var(--bg); }
+        .pc-remarks input:focus { border-color: var(--primary); background: var(--card); }
+
+        .tie-badge { display: none; font-size: 0.75rem; background: #FEE2E2; color: #EF4444; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-top: 5px; text-align: center; }
+
+        .submit-section { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 30px; text-align: center; }
+        .validation-msg { color: #EF4444; font-size: 0.9rem; font-weight: 500; margin-bottom: 15px; display: none; }
+        
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">Fest<span>Vue</span></div>
-        <button class="nav-btn" id="logoutBtn" onclick="judgeLogout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
-    </nav>
+    <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span id="toastMsg">Message</span></div>
 
-    <div class="container">
-        <!-- LOGIN VIEW -->
-        <div class="card" id="loginBox">
-            <h2>Judge Portal</h2>
-            <p class="subtitle">Secure Anonymous Result Entry</p>
+    <!-- 1. LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="logo">Fest<span>Vue</span></div>
+            <div class="subtitle">Judges Portal</div>
             
-            <form id="judgeLoginForm">
-                <div class="input-group" id="instIdGroup">
+            <form id="loginForm">
+                <div class="input-group">
                     <label>Institution ID</label>
-                    <input type="text" id="jInstId" placeholder="Provided by Admin" required>
+                    <input type="text" id="instId" placeholder="e.g. FEST101" oninput="this.value = this.value.toUpperCase()" required>
                 </div>
                 <div class="input-group">
-                    <label>Judge Username</label>
-                    <input type="text" id="jUser" required>
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter Judge Username" required>
                 </div>
                 <div class="input-group">
-                    <label>Access Password</label>
-                    <input type="password" id="jPass" required>
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter Password" required>
                 </div>
-                <button type="submit" class="primary-btn" id="loginSubmitBtn">Secure Login <i class="fas fa-lock"></i></button>
-            </form>
-        </div>
-
-        <!-- ENTRY VIEW -->
-        <div class="card" id="entryBox" style="display: none; max-width: 500px;">
-            <h2>Enter Results</h2>
-            <p class="subtitle">Assign placements using Code Letters</p>
-            
-            <form id="resultForm">
-                <div class="input-group">
-                    <label>Select Event</label>
-                    <select id="jEventCode" required>
-                        <option value="">-- Choose Assigned Event --</option>
-                    </select>
-                </div>
-                
-                <div class="rank-box">
-                    <div class="rank-medal">🥇</div>
-                    <div style="flex: 1;">
-                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">1st Place Code Letter</label>
-                        <input type="text" id="pos1" placeholder="e.g., A" required style="padding: 10px;">
-                    </div>
-                </div>
-                <div class="rank-box">
-                    <div class="rank-medal">🥈</div>
-                    <div style="flex: 1;">
-                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">2nd Place Code Letter</label>
-                        <input type="text" id="pos2" placeholder="e.g., B" style="padding: 10px;">
-                    </div>
-                </div>
-                <div class="rank-box">
-                    <div class="rank-medal">🥉</div>
-                    <div style="flex: 1;">
-                        <label style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">3rd Place Code Letter</label>
-                        <input type="text" id="pos3" placeholder="e.g., C" style="padding: 10px;">
-                    </div>
-                </div>
-                
-                <button type="submit" class="primary-btn" id="submitBtn">Submit for Approval <i class="fas fa-paper-plane"></i></button>
+                <button type="submit" class="btn-main" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Secure Login</button>
             </form>
         </div>
     </div>
 
-    <div id="toast">Message goes here</div>
+    <!-- 2. DASHBOARD SCREEN -->
+    <div id="dashboardScreen">
+        <header>
+            <div>
+                <div class="header-title" id="dashJudgeName">Welcome, Judge</div>
+                <div class="header-subtitle" id="dashInstName">Institution Name</div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="refreshBtn" onclick="fetchDataSilent(true)" title="Refresh Events"><i class="fas fa-sync-alt"></i></button>
+                <button class="icon-btn" onclick="logout()" style="color: #EF4444;" title="Logout"><i class="fas fa-power-off"></i></button>
+            </div>
+        </header>
+
+        <div class="container">
+            <h3 class="section-title"><i class="fas fa-search"></i> Select Event to Judge</h3>
+            <div class="search-box">
+                <select id="eventSelect">
+                    <option value="">-- Choose an Event --</option>
+                </select>
+                <button onclick="startJudging()"><i class="fas fa-gavel"></i> Judge</button>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 40px;"><i class="fas fa-history"></i> My Judgments</h3>
+            <div id="historyContainer">
+                <div style="text-align:center; padding: 30px; color: var(--muted); font-size: 0.9rem;">No results submitted yet.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. JUDGING SCREEN -->
+    <div id="judgingScreen">
+        <header>
+            <div>
+                <div class="header-title">Live Scoring</div>
+                <div class="header-subtitle">Ensure fair evaluation</div>
+            </div>
+            <button class="btn-edit" style="border:none; color:var(--muted);" onclick="backToDashboard()"><i class="fas fa-times"></i> Cancel</button>
+        </header>
+
+        <div class="container">
+            <div class="judging-header">
+                <div class="jh-title" id="judgeEvName">Event Name</div>
+                <div class="jh-meta"><span id="judgeEvCode">CODE</span> • <span id="judgeEvCat">Category</span> • <span id="judgeTotalPart">0 Participants</span></div>
+            </div>
+
+            <div id="participantsContainer">
+                <!-- Participant Cards will be generated here dynamically -->
+            </div>
+
+            <div class="submit-section">
+                <div class="validation-msg" id="valMsg"><i class="fas fa-exclamation-triangle"></i> You must assign a position or DQ to all participants.</div>
+                <button class="btn-main" id="submitResultBtn" onclick="submitResults()"><i class="fas fa-check-circle"></i> Submit Final Results</button>
+                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 10px;">Results will be sent to Admin for approval.</p>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
-        let targetSheetId = null;
+        // ==========================================
+        // 1. CONFIGURATION & STATE
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
+        
+        let currentState = {
+            instId: localStorage.getItem('fv_judge_inst') || "",
+            username: localStorage.getItem('fv_judge_user') || "",
+            name: localStorage.getItem('fv_judge_name') || "",
+            password: localStorage.getItem('fv_judge_pass') || "", 
+            dbData: null,
+            currentEventCode: null,
+            participants: []
+        };
 
-        // Auto-fill Institution ID if provided in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.get('inst')) {
-            document.getElementById('jInstId').value = urlParams.get('inst');
-            document.getElementById('instIdGroup').style.display = 'none'; // Hide it since it's auto-filled
+        window.onload = () => {
+            if(currentState.instId && currentState.username && currentState.password) {
+                document.getElementById('instId').value = currentState.instId;
+                document.getElementById('username').value = currentState.username;
+                fetchDataSilent(false); 
+            }
+        };
+
+        function showToast(msg, type="success") {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.className = `toast show ${type}`;
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Custom Toast Notification
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            if(isError) toast.classList.add('error'); else toast.classList.remove('error');
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
-        }
-
-        // Handle Login
-        document.getElementById('judgeLoginForm').addEventListener('submit', async function(e) {
+        // ==========================================
+        // 2. AUTHENTICATION & DATA FETCH
+        // ==========================================
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('loginSubmitBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...'; btn.disabled = true;
+            const inst = document.getElementById('instId').value.trim().toUpperCase();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
             
-            const req = {
-                action: "judgeLogin",
-                instId: document.getElementById('jInstId').value.trim(),
-                username: document.getElementById('jUser').value.trim(),
-                password: document.getElementById('jPass').value.trim()
-            };
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...'; btn.disabled = true;
 
-            try {
-                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                let data = await res.json();
-                
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "judgeLogin", instId: inst, username: user, password: pass }) 
+            })
+            .then(res => res.json())
+            .then(data => {
                 if(data.status === "success") {
-                    targetSheetId = data.targetSheetId;
+                    currentState.instId = inst;
+                    currentState.username = user;
+                    currentState.password = pass;
+                    currentState.name = data.judgeName; 
+                    currentState.dbData = data.data;
                     
-                    // Populate Assigned Events Dropdown
-                    const evDropdown = document.getElementById('jEventCode');
-                    evDropdown.innerHTML = '<option value="">-- Choose Assigned Event --</option>';
-                    if(data.assignedEvents) {
-                        // Assuming admin enters events separated by commas (e.g. OP101, OP102)
-                        data.assignedEvents.split(',').forEach(ev => {
-                            let cleanEv = ev.trim().toUpperCase();
-                            if(cleanEv) evDropdown.innerHTML += `<option value="${cleanEv}">${cleanEv}</option>`;
-                        });
-                    } else {
-                        // Fallback if no specific events assigned - make it a text input
-                        evDropdown.outerHTML = '<input type="text" id="jEventCode" placeholder="Enter Event Code" required>';
-                    }
-
-                    document.getElementById('loginBox').style.display = 'none';
-                    document.getElementById('entryBox').style.display = 'block';
-                    document.getElementById('logoutBtn').style.display = 'block';
+                    localStorage.setItem('fv_judge_inst', inst);
+                    localStorage.setItem('fv_judge_user', user);
+                    localStorage.setItem('fv_judge_pass', pass);
+                    localStorage.setItem('fv_judge_name', currentState.name);
+                    
+                    document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
+                    document.getElementById('dashInstName').innerText = data.institutionName;
+                    
+                    buildDashboard();
+                    
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('dashboardScreen').style.display = 'block';
                     showToast("Login Successful!");
                 } else {
-                    showToast(data.message, true);
+                    showToast(data.message || "Invalid Username or Password", "error");
                 }
-            } catch(error) {
-                showToast("Network Error. Please try again.", true);
-            }
-            btn.innerHTML = 'Secure Login <i class="fas fa-lock"></i>'; btn.disabled = false;
+            })
+            .catch(err => showToast("Network Error!", "error"))
+            .finally(() => { btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Login'; btn.disabled = false; });
         });
 
-        // Handle Submit
-        document.getElementById('resultForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const evCode = document.getElementById('jEventCode').value.trim();
-            const p1 = document.getElementById('pos1').value.trim().toUpperCase();
-            const p2 = document.getElementById('pos2').value.trim().toUpperCase();
-            const p3 = document.getElementById('pos3').value.trim().toUpperCase();
+        // isManual=true if triggered by the refresh button
+        function fetchDataSilent(isManual = false) {
+            const btn = document.getElementById(isManual ? 'refreshBtn' : 'loginBtn');
+            if(isManual) {
+                btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resuming...';
+                btn.disabled = true;
+            }
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "judgeLogin", instId: currentState.instId, username: currentState.username, password: currentState.password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    currentState.dbData = data.data;
+                    document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
+                    document.getElementById('dashInstName').innerText = data.institutionName;
+                    
+                    buildDashboard();
+                    
+                    if(!isManual) {
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('dashboardScreen').style.display = 'block';
+                    } else {
+                        showToast("Data Refreshed Successfully!");
+                    }
+                } else {
+                    if(!isManual) logout(); 
+                }
+            })
+            .finally(() => { 
+                if(isManual) {
+                    btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    btn.disabled = false;
+                } else {
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Login'; 
+                    btn.disabled = false; 
+                }
+            });
+        }
 
-            if(!evCode || !p1) { showToast("Event Code and 1st Place are mandatory!", true); return; }
+        function logout() {
+            localStorage.removeItem('fv_judge_inst'); localStorage.removeItem('fv_judge_user'); localStorage.removeItem('fv_judge_name'); localStorage.removeItem('fv_judge_pass');
+            document.getElementById('password').value = "";
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
 
-            const btn = document.getElementById('submitBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
+        // ==========================================
+        // 3. DASHBOARD (EVENTS & HISTORY)
+        // ==========================================
+        function buildDashboard() {
+            const events = currentState.dbData.Events || [];
+            const results = currentState.dbData.Results || [];
+            const regs = currentState.dbData.Registrations || [];
+            
+            let evOptions = '<option value="">-- Search / Select Event --</option>';
+            let activeEvents = [];
+            
+            const regEvCodes = [...new Set(regs.slice(1).map(r => r[0] ? r[0].toString().toUpperCase() : ""))];
+            
+            for(let i=1; i<events.length; i++) {
+                const evCode = events[i][0] ? events[i][0].toString().toUpperCase() : "";
+                const evName = events[i][1] || "";
+                if(evCode && regEvCodes.includes(evCode)) {
+                    activeEvents.push({code: evCode, name: evName});
+                    evOptions += `<option value="${evCode}">${evName} (${evCode})</option>`;
+                }
+            }
+            document.getElementById('eventSelect').innerHTML = evOptions;
 
-            let resData = [];
-            if(p1) resData.push({position: 1, codeLetter: p1});
-            if(p2) resData.push({position: 2, codeLetter: p2});
-            if(p3) resData.push({position: 3, codeLetter: p3});
+            let historyHtml = "";
+            let groupedResults = {};
+            
+            for(let i=1; i<results.length; i++) {
+                const r = results[i];
+                const evCode = r[0] ? r[0].toString().toUpperCase() : "";
+                const judgeId = r[5] ? r[5].toString() : ""; 
+                
+                if(judgeId === currentState.username || judgeId === currentState.name) {
+                    if(!groupedResults[evCode]) groupedResults[evCode] = { status: r[3], records: [] };
+                    groupedResults[evCode].records.push(r);
+                }
+            }
 
-            const req = { 
-                action: "saveJudgeResults", 
-                targetSheetId: targetSheetId, 
-                eventCode: evCode, 
-                results: resData 
+            for(let evCode in groupedResults) {
+                const status = groupedResults[evCode].status;
+                const badgeClass = status.toLowerCase() === 'approved' ? 'status-approved' : 'status-pending';
+                const evName = activeEvents.find(e => e.code === evCode)?.name || evCode;
+                
+                historyHtml += `
+                    <div class="event-card">
+                        <div class="ec-details">
+                            <h3>${evName}</h3>
+                            <div><span class="ec-badge">${evCode}</span> <span class="ec-status ${badgeClass}">${status}</span></div>
+                        </div>
+                        <button class="btn-edit" onclick="startJudging('${evCode}')"><i class="fas fa-edit"></i> Edit</button>
+                    </div>`;
+            }
+
+            if(historyHtml) {
+                document.getElementById('historyContainer').innerHTML = historyHtml;
+            } else {
+                document.getElementById('historyContainer').innerHTML = `<div style="text-align:center; padding: 30px; color: var(--muted); font-size: 0.9rem;">No results submitted yet.</div>`;
+            }
+        }
+
+        // ==========================================
+        // 4. JUDGING INTERFACE
+        // ==========================================
+        function startJudging(preSelectedCode = null) {
+            const evCode = preSelectedCode || document.getElementById('eventSelect').value;
+            if(!evCode) { showToast("Please select an event first.", "error"); return; }
+
+            currentState.currentEventCode = evCode;
+            
+            const events = currentState.dbData.Events || [];
+            let evDetails = ["", "Unknown Event", "General"];
+            for(let i=1; i<events.length; i++) {
+                if(events[i][0] && events[i][0].toString().toUpperCase() === evCode) { evDetails = events[i]; break; }
+            }
+
+            const regs = currentState.dbData.Registrations || [];
+            let participants = [];
+            
+            const regHeaders = regs[0] || [];
+            let evCodeIdx = 0, chestIdx = 1, secCodeIdx = -1;
+            regHeaders.forEach((h, i) => {
+                if(h && h.toString().toLowerCase().includes("secret")) secCodeIdx = i;
+            });
+
+            for(let i=1; i<regs.length; i++) {
+                if(regs[i][evCodeIdx] && regs[i][evCodeIdx].toString().toUpperCase() === evCode) {
+                    let chest = regs[i][chestIdx] ? regs[i][chestIdx].toString().toUpperCase() : "";
+                    let secret = secCodeIdx !== -1 && regs[i][secCodeIdx] ? regs[i][secCodeIdx].toString() : "";
+                    if(chest) participants.push({ chest: chest, secret: secret, existingPos: "", existingRemarks: "" });
+                }
+            }
+
+            if(participants.length === 0) { showToast("No participants registered for this event.", "error"); return; }
+
+            currentState.participants = participants;
+
+            const results = currentState.dbData.Results || [];
+            for(let i=1; i<results.length; i++) {
+                if(results[i][0] && results[i][0].toString().toUpperCase() === evCode) {
+                    let rChest = results[i][1].toString().toUpperCase();
+                    let rPos = results[i][2];
+                    let rRemarks = results[i][4] || "";
+                    
+                    let pMatch = participants.find(p => p.chest === rChest);
+                    if(pMatch) { pMatch.existingPos = rPos; pMatch.existingRemarks = rRemarks; }
+                }
+            }
+
+            document.getElementById('judgeEvName').innerText = evDetails[1];
+            document.getElementById('judgeEvCode').innerText = evCode;
+            document.getElementById('judgeEvCat').innerText = evDetails[2];
+            document.getElementById('judgeTotalPart').innerText = `${participants.length} Participants`;
+
+            let pHTML = "";
+            const maxPos = participants.length; 
+            
+            let optHtml = `<option value="">-- Select Position --</option>`;
+            for(let i=1; i<=maxPos; i++) {
+                let suffix = "th"; if(i===1) suffix="st"; else if(i===2) suffix="nd"; else if(i===3) suffix="rd";
+                optHtml += `<option value="${i}">${i}${suffix} Place</option>`;
+            }
+            // Added explicit "Participant" and "DQ" options
+            optHtml += `<option value="P">Participant (No Prize)</option>`;
+            optHtml += `<option value="DQ">Disqualified (DQ)</option>`;
+
+            participants.sort((a,b) => (a.secret || a.chest).localeCompare(b.secret || b.chest));
+
+            participants.forEach((p, idx) => {
+                const displayId = p.secret ? p.secret : p.chest;
+                const labelId = p.secret ? "Secret Code" : "Chest No";
+                
+                let specificOptHtml = optHtml;
+                if(p.existingPos) {
+                    specificOptHtml = specificOptHtml.replace(`value="${p.existingPos}"`, `value="${p.existingPos}" selected`);
+                }
+
+                pHTML += `
+                    <div class="participant-card" data-chest="${p.chest}">
+                        <div class="pc-header">
+                            <div><div class="pc-label">${labelId}</div><div class="pc-code">${displayId}</div></div>
+                            <div class="tie-badge" id="tie-${idx}">Tie Warning!</div>
+                        </div>
+                        <div class="pc-body">
+                            <div class="pc-rank">
+                                <select class="rank-select" onchange="checkTies()">
+                                    ${specificOptHtml}
+                                </select>
+                            </div>
+                            <div class="pc-remarks">
+                                <input type="text" class="remark-input" placeholder="Remarks / Reason (Optional)" value="${p.existingRemarks}">
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('participantsContainer').innerHTML = pHTML;
+            document.getElementById('valMsg').style.display = 'none';
+
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('judgingScreen').style.display = 'block';
+            
+            checkTies(); 
+        }
+
+        function backToDashboard() {
+            document.getElementById('judgingScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            currentState.currentEventCode = null;
+        }
+
+        // ==========================================
+        // 5. VALIDATION & SUBMISSION
+        // ==========================================
+        function checkTies() {
+            const selects = document.querySelectorAll('.rank-select');
+            const badges = document.querySelectorAll('.tie-badge');
+            
+            let counts = {};
+            selects.forEach(s => {
+                const val = s.value;
+                if(val && val !== "DQ" && val !== "P") counts[val] = (counts[val] || 0) + 1;
+            });
+
+            selects.forEach((s, i) => {
+                const val = s.value;
+                // Only show tie warning for actual ranked positions (1, 2, 3...)
+                if(val && val !== "DQ" && val !== "P" && counts[val] > 1) {
+                    badges[i].style.display = 'block';
+                } else {
+                    badges[i].style.display = 'none';
+                }
+            });
+        }
+
+        function submitResults() {
+            const evCode = currentState.currentEventCode;
+            const cards = document.querySelectorAll('.participant-card');
+            
+            let finalResults = [];
+            let unassignedCount = 0;
+
+            cards.forEach(card => {
+                const chest = card.getAttribute('data-chest');
+                const pos = card.querySelector('.rank-select').value;
+                const remarks = card.querySelector('.remark-input').value.trim();
+                
+                if(!pos) {
+                    unassignedCount++;
+                } else {
+                    // Save even if it is "P" or "DQ"
+                    finalResults.push({ chest: chest, pos: pos, remarks: remarks });
+                }
+            });
+
+            // VALIDATION: Everyone MUST be assigned something (Rank, P, or DQ). 
+            // This completely solves the "Gap" and "Tie" issue while ensuring no one is missed.
+            if(unassignedCount > 0) {
+                const vMsg = document.getElementById('valMsg');
+                vMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Please assign a Position, "Participant", or "DQ" to everyone before submitting!`;
+                vMsg.style.display = 'block';
+                window.scrollTo(0, document.body.scrollHeight);
+                return;
+            }
+
+            const btn = document.getElementById('submitResultBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
+
+            const payload = {
+                action: "submitJudgeResults",
+                instId: currentState.instId,
+                judgeId: currentState.username,
+                eventCode: evCode,
+                results: finalResults
             };
 
-            try {
-                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                let data = await res.json();
-                
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
                 if(data.status === "success") {
-                    showToast("Results submitted for Admin Approval! 🏆");
-                    document.getElementById('resultForm').reset();
+                    showToast("Results Submitted Successfully!");
+                    fetchDataSilent(false); 
+                    backToDashboard();
                 } else {
-                    showToast(data.message, true);
+                    showToast("Failed to save results.", "error");
                 }
-            } catch(error) {
-                showToast("Failed to submit data.", true);
-            }
-            btn.innerHTML = 'Submit for Approval <i class="fas fa-paper-plane"></i>'; btn.disabled = false;
-        });
-
-        // Handle Logout
-        function judgeLogout() {
-            targetSheetId = null;
-            document.getElementById('judgeLoginForm').reset();
-            document.getElementById('resultForm').reset();
-            document.getElementById('entryBox').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'none';
-            document.getElementById('loginBox').style.display = 'block';
-            showToast("Logged out securely.");
+            })
+            .catch(err => showToast("Network Error!", "error"))
+            .finally(() => { btn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Final Results'; btn.disabled = false; });
         }
+
     </script>
 </body>
 </html>
