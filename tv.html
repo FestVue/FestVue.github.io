@@ -3,277 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FestVue - Live TV Broadcast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <title>FestVue - Live TV Screen</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;800&family=Cairo:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #046A38; --accent: #D4AF37; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        :root {
+            --bg-color: #0B0F19;
+            --card-bg: #151C2C;
+            --primary: #D4AF37; /* Gold */
+            --text-main: #FFFFFF;
+            --text-muted: #94A3B8;
+            --border: #2A3249;
+            --accent-green: #10B981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif; }
         
-        /* Fullscreen Starter Overlay */
-        #startOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        #startBtn { padding: 20px 40px; font-size: 1.5rem; background: var(--primary); color: #fff; border: none; border-radius: 50px; cursor: pointer; font-weight: 700; box-shadow: 0 10px 30px rgba(4, 106, 56, 0.4); transition: 0.3s; }
-        #startBtn:hover { transform: scale(1.05); }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column;
+        }
 
-        /* Header */
-        header { background: linear-gradient(135deg, var(--primary) 0%, #022c17 100%); padding: 25px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; }
-        .head-left h1 { font-size: 3rem; font-weight: 800; color: #fff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: -5px; }
-        .head-left h1 span { color: var(--accent); }
-        .head-left h2 { font-size: 1.2rem; color: #cbd5e1; font-weight: 400; text-transform: uppercase; letter-spacing: 5px; }
-        .head-right { text-align: right; }
-        .head-right #timeDisplay { font-size: 2.5rem; font-weight: 700; color: var(--accent); }
-        .head-right #dateDisplay { font-size: 1.2rem; color: #cbd5e1; }
-
-        /* Slideshow Container */
-        #sliderContainer { flex-grow: 1; position: relative; padding: 40px; display: flex; justify-content: center; align-items: center; }
+        /* HEADER */
+        .tv-header {
+            background: linear-gradient(90deg, #151C2C 0%, #1a233a 100%);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
         
-        .slide { position: absolute; width: 90%; height: 85%; opacity: 0; transform: translateY(30px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; visibility: hidden; display: flex; flex-direction: column; }
-        .slide.active { opacity: 1; transform: translateY(0); pointer-events: auto; visibility: visible; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .logo-box { background: var(--primary); color: #0B0F19; padding: 8px 15px; border-radius: 8px; font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
+        .fest-titles h1 { font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; }
+        .fest-titles p { font-size: 1.1rem; color: var(--primary); font-weight: 600; }
+        
+        .header-right { text-align: right; }
+        .live-badge { background: #EF4444; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; display: inline-flex; align-items: center; gap: 8px; animation: pulse 2s infinite; }
+        .time-display { font-size: 1.5rem; font-weight: 600; margin-top: 5px; color: var(--text-muted); }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .slide-title { font-size: 3.5rem; font-weight: 800; text-align: center; margin-bottom: 40px; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .slide-title span { color: var(--accent); }
+        /* MAIN CONTENT AREA */
+        .tv-main {
+            display: flex;
+            flex-grow: 1;
+            height: calc(100vh - 100px);
+            padding: 30px;
+            gap: 30px;
+        }
 
-        /* Leaderboard UI */
-        .lb-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
-        .lb-row { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 30px 50px; border-radius: 20px; font-size: 2.5rem; font-weight: 700; border-left: 10px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .lb-row.rank-1 { border-left-color: #fbbf24; transform: scale(1.02); }
-        .lb-row.rank-2 { border-left-color: #cbd5e1; }
-        .lb-row.rank-3 { border-left-color: #b45309; }
-        .lb-pts { background: rgba(255,255,255,0.1); padding: 10px 30px; border-radius: 50px; color: var(--accent); }
+        /* LEFT SIDE - LEADERBOARD */
+        .tv-left {
+            width: 35%;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section-header {
+            background: #1a233a;
+            padding: 20px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
 
-        /* Results UI */
-        .res-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; width: 100%; }
-        .res-card { background: var(--card); border-radius: 20px; padding: 30px; border-top: 8px solid var(--accent); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .res-event-title { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #334155; }
-        .res-winner { display: flex; align-items: center; justify-content: space-between; font-size: 1.8rem; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; }
-        .medal { font-size: 2.2rem; margin-right: 15px; }
+        .leaderboard-container {
+            padding: 20px;
+            overflow: hidden;
+            flex-grow: 1;
+            position: relative;
+        }
+        
+        .lb-scroll {
+            position: absolute;
+            width: calc(100% - 40px);
+            animation: scrollUp 20s linear infinite;
+        }
+
+        .lb-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .lb-item.rank-1 { background: rgba(212, 175, 55, 0.15); border-color: var(--primary); }
+        .lb-item.rank-2 { background: rgba(148, 163, 184, 0.1); border-color: #94A3B8; }
+        .lb-item.rank-3 { background: rgba(180, 83, 9, 0.1); border-color: #B45309; }
+
+        .lb-rank { font-size: 2rem; font-weight: 800; width: 50px; }
+        .rank-1 .lb-rank { color: var(--primary); }
+        .rank-2 .lb-rank { color: #CBD5E1; }
+        .rank-3 .lb-rank { color: #F59E0B; }
+
+        .lb-name { font-size: 1.8rem; font-weight: 700; flex-grow: 1; }
+        .lb-pts { font-size: 2.2rem; font-weight: 900; color: var(--primary); }
+
+        /* RIGHT SIDE - RESULTS FEED */
+        .tv-right {
+            width: 65%;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results-container {
+            padding: 20px 30px;
+            overflow: hidden;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .res-scroll {
+            position: absolute;
+            width: calc(100% - 60px);
+            animation: scrollUp 40s linear infinite;
+        }
+
+        .res-card {
+            background: #1a233a;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .res-header {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .res-ev-name { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .res-ev-tags { display: flex; gap: 10px; }
+        .res-tag { background: #0B0F19; padding: 5px 12px; border-radius: 6px; font-size: 1rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border); }
+
+        .res-body { padding: 20px 25px; }
+
+        .winner-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .winner-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .win-pos { font-size: 1.2rem; font-weight: 800; width: 100px; padding: 5px 15px; border-radius: 8px; text-align: center; margin-right: 20px; }
+        .pos-1 { background: rgba(212, 175, 55, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+        .pos-2 { background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid #94A3B8; }
+        .pos-3 { background: rgba(180, 83, 9, 0.15); color: #F59E0B; border: 1px solid #B45309; }
+
+        .win-name { font-size: 1.6rem; font-weight: 600; flex-grow: 1; }
+        .win-grp { font-size: 1.3rem; color: var(--text-muted); font-weight: 500; }
+
+        /* SCROLL ANIMATION */
+        @keyframes scrollUp {
+            0% { top: 100%; }
+            100% { top: -200%; }
+        }
+
+        /* When Hovered (For manual reading) */
+        .lb-scroll:hover, .res-scroll:hover { animation-play-state: paused; }
 
         /* Loader */
-        .loader-spinner { border: 6px solid #1e293b; border-top: 6px solid var(--accent); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .spinner { font-size: 4rem; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
-    <div id="startOverlay">
-        <div class="loader-spinner" id="tvLoader"></div>
-        <h2 style="margin-bottom: 30px; color: #94a3b8;" id="tvStatus">Connecting to FestVue Server...</h2>
-        <button id="startBtn" style="display: none;" onclick="startBroadcast()"><i class="fas fa-play"></i> START LIVE BROADCAST</button>
-        <p style="margin-top: 20px; color: #64748b; font-size: 0.9rem;">(Browser requires a click to enter Fullscreen mode)</p>
+    <!-- Loading Screen -->
+    <div class="loader-screen" id="loader">
+        <i class="fas fa-circle-notch spinner"></i>
+        <h2 style="color: var(--primary); font-size: 2rem;">Connecting to Live Server...</h2>
+        <p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 10px;">Please wait while we fetch the latest results</p>
     </div>
 
-    <header>
-        <div class="head-left">
-            <h1 id="tvFestName">FEST<span>VUE</span></h1>
-            <h2 id="tvInstName">Loading Institution...</h2>
+    <!-- Header -->
+    <header class="tv-header">
+        <div class="header-left">
+            <div class="logo-box">FESTVUE</div>
+            <div class="fest-titles">
+                <h1 id="tvFestName">FESTIVAL NAME</h1>
+                <p id="tvInstName">Institution Name</p>
+            </div>
         </div>
-        <div class="head-right">
-            <div id="timeDisplay">00:00</div>
-            <div id="dateDisplay">Loading Date...</div>
+        <div class="header-right">
+            <div class="live-badge"><i class="fas fa-broadcast-tower"></i> LIVE</div>
+            <div class="time-display" id="clock">00:00:00</div>
         </div>
     </header>
 
-    <div id="sliderContainer">
-        <!-- Slide 1: Group Standings -->
-        <div id="slide-leaderboard" class="slide">
-            <div class="slide-title">🏆 OVERALL <span>STANDINGS</span></div>
-            <div class="lb-grid" id="lbContainer"></div>
+    <!-- Main Content -->
+    <main class="tv-main">
+        
+        <!-- Left: Leaderboard -->
+        <div class="tv-left">
+            <div class="section-header">
+                <i class="fas fa-trophy"></i> GROUP STANDINGS
+            </div>
+            <div class="leaderboard-container">
+                <div class="lb-scroll" id="lbScroll">
+                    <!-- Dynamic Leaderboard Data -->
+                </div>
+            </div>
         </div>
 
-        <!-- Slide 2: Latest Results -->
-        <div id="slide-results" class="slide">
-            <div class="slide-title">📢 LATEST <span>RESULTS</span></div>
-            <div class="res-grid" id="resContainer"></div>
+        <!-- Right: Latest Results -->
+        <div class="tv-right">
+            <div class="section-header" style="color: var(--accent-green);">
+                <i class="fas fa-bolt"></i> LATEST PUBLISHED RESULTS
+            </div>
+            <div class="results-container">
+                <div class="res-scroll" id="resScroll">
+                    <!-- Dynamic Results Data -->
+                </div>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec";
-        const urlParams = new URLSearchParams(window.location.search);
-        const instId = urlParams.get('inst');
-
-        let globalData = {};
-        let currentSlideIdx = 0;
-        const slides = document.querySelectorAll('.slide');
-        let slideInterval;
-
-        // 1. Clock Logic
+        // ==========================================
+        // 1. CLOCK & INITIALIZATION
+        // ==========================================
         function updateClock() {
             const now = new Date();
-            document.getElementById('timeDisplay').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('dateDisplay').innerText = now.toLocaleDateString([], {weekday: 'long', month: 'long', day: 'numeric'});
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 2. Fetch Data
-        async function fetchTVData() {
-            if(!instId) { document.getElementById('tvStatus').innerText = "⚠️ Missing ?inst= ID in URL"; document.getElementById('tvLoader').style.display='none'; return; }
-            try {
-                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchPublicData", instId: instId }) });
-                let data = await res.json();
-                if(data.status === "success") {
-                    globalData = data.data;
-                    document.getElementById('tvInstName').innerText = data.institutionName;
-                    
-                    // Parse Fest Name
-                    const settings = globalData.Settings || [];
-                    const festNameRow = settings.find(r => r["0"] === "CONFIG" && r["1"] === "FEST_NAME");
-                    if(festNameRow) document.getElementById('tvFestName').innerHTML = festNameRow["2"];
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
+        let globalDbData = {};
+        let currentInstId = null;
+        let festConfig = { name: "", inst: "", defaultPts: {1:5, 2:3, 3:1}, customPts: {} };
 
-                    renderLeaderboard();
-                    renderResults();
-
-                    // Show Start Button on first successful load
-                    if(document.getElementById('startOverlay').style.display !== 'none') {
-                        document.getElementById('tvLoader').style.display = 'none';
-                        document.getElementById('tvStatus').style.display = 'none';
-                        document.getElementById('startBtn').style.display = 'block';
-                    }
-                }
-            } catch(e) {
-                console.log("Background refresh failed, retrying on next cycle.");
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlInst = urlParams.get('inst');
+            
+            if (urlInst) {
+                currentInstId = urlInst.trim().toUpperCase();
+            } else {
+                currentInstId = localStorage.getItem("festvue_public_instId");
             }
+
+            if (!currentInstId) {
+                alert("Institution ID not provided! Please open this page from the Public Portal.");
+                return;
+            }
+
+            fetchData();
+            // Auto Refresh Data Every 30 Seconds
+            setInterval(fetchDataSilent, 30000); 
+        };
+
+        // Helper to safely get value from object
+        function getVal(row, index) { 
+            return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
         }
 
-        // 3. Render Leaderboard
-        function renderLeaderboard() {
-            const settings = globalData.Settings || [];
-            const results = globalData.Results || [];
-            const students = globalData.Students || [];
-            const bonus = globalData.Bonus || [];
-
-            // Get Points Mapping
-            let defaultPts = { 1: 5, 2: 3, 3: 1 };
-            let customPts = {};
-            settings.filter(r => r["0"] === "POINTS").forEach(r => {
-                let p = r["2"].toString().split(',');
-                if(r["1"] === "DEFAULT") { defaultPts = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; } 
-                else { customPts[r["1"]] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
-            });
-
-            // Initialize Groups
-            let groupPts = {};
-            settings.filter(r => r["0"] === "GROUP").forEach(g => groupPts[g["1"]] = 0);
-
-            // Add Bonus
-            bonus.forEach(b => { if(groupPts[b["0"]] !== undefined) groupPts[b["0"]] += parseInt(b["1"] || 0); });
-
-            // Add Result Points (Group events only count once per team per event)
-            let processedGroupEvents = {}; 
-            const events = globalData.Events || [];
-
-            results.forEach(res => {
-                const evCode = res["0"];
-                const chestNo = res["1"];
-                const pos = parseInt(res["2"]);
-                const st = students.find(s => s["0"] == chestNo);
-                const evDetails = events.find(e => e["0"] == evCode);
-                
-                if(!st || !st["5"]) return; // No group
-
-                const ptsMap = customPts[evCode] || defaultPts;
-                const points = ptsMap[pos] || 0;
-                const isGroupEvent = evDetails && evDetails["4"] && evDetails["4"].toString().toLowerCase() === "group";
-                
-                if (isGroupEvent) {
-                    const uniqueKey = `${evCode}_${pos}_${st["5"]}`; 
-                    if (!processedGroupEvents[uniqueKey]) {
-                        if(groupPts[st["5"]] !== undefined) groupPts[st["5"]] += points;
-                        processedGroupEvents[uniqueKey] = true;
-                    }
+        // ==========================================
+        // 2. DATA FETCHING
+        // ==========================================
+        function fetchData() {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    globalDbData = data.data || {};
+                    festConfig.inst = data.institutionName;
+                    processData();
+                    document.getElementById('loader').style.display = 'none';
                 } else {
-                    if(groupPts[st["5"]] !== undefined) groupPts[st["5"]] += points;
+                    document.getElementById('loader').innerHTML = `<h2 style="color:#ef4444;">Error: ${data.message}</h2>`;
                 }
+            })
+            .catch(err => {
+                document.getElementById('loader').innerHTML = `<h2 style="color:#ef4444;">Network Error. Retrying...</h2>`;
+                setTimeout(fetchData, 5000);
             });
-
-            // Build HTML
-            let html = "";
-            let rank = 1;
-            Object.entries(groupPts).sort((a,b)=>b[1]-a[1]).forEach((g, idx) => {
-                let rankClass = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "";
-                let medal = idx === 0 ? "🏆" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
-                html += `<div class="lb-row ${rankClass}">
-                            <div>${medal} ${g[0]}</div>
-                            <div class="lb-pts">${g[1]} PTS</div>
-                         </div>`;
-            });
-            document.getElementById('lbContainer').innerHTML = html;
         }
 
-        // 4. Render Results
-        function renderResults() {
-            const results = globalData.Results || [];
-            const events = globalData.Events || [];
-            const students = globalData.Students || [];
-            
-            // Get 4 most recently published unique events
-            const uniqueEventCodes = [...new Set(results.map(r => r["0"]))].reverse().slice(0, 4);
-            let html = "";
+        // Silent Fetch (Doesn't show loading screen, just updates DOM)
+        function fetchDataSilent() {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    globalDbData = data.data || {};
+                    processData();
+                }
+            }).catch(err => console.log("Silent update failed."));
+        }
 
-            uniqueEventCodes.forEach(code => {
-                const ev = events.find(e => e["0"] == code);
-                const evRes = results.filter(r => r["0"] == code).sort((a,b) => a["2"] - b["2"]);
+        // ==========================================
+        // 3. PROCESS & RENDER DATA
+        // ==========================================
+        function processData() {
+            const settings = globalDbData.Settings || [];
+            
+            settings.forEach(row => {
+                const type = getVal(row, 0).toString().toUpperCase();
+                const val1 = getVal(row, 1); const val2 = getVal(row, 2);
                 
-                if(ev) {
-                    html += `<div class="res-card"><div class="res-event-title">${ev["1"]} <span style="font-size:1.2rem; color:#94a3b8;">(${ev["2"]})</span></div>`;
-                    evRes.slice(0,3).forEach(r => {
-                        const st = students.find(s => s["0"] == r["1"]);
-                        let medal = r["2"] == 1 ? "🥇" : r["2"] == 2 ? "🥈" : "🥉";
-                        let posTxt = r["2"] == 1 ? "1st" : r["2"] == 2 ? "2nd" : "3rd";
-                        html += `<div class="res-winner">
-                                    <div style="display:flex; align-items:center;">
-                                        <span class="medal">${medal}</span> 
-                                        <div><div style="font-size:1rem; color:#94a3b8; font-weight:600; line-height:1;">${posTxt} Place</div>
-                                        <div style="font-weight:700;">${st ? st["1"] : "Unknown"}</div></div>
-                                    </div>
-                                    <div style="color:var(--accent); font-weight:700;">${st ? st["5"] : ""}</div>
-                                 </div>`;
-                    });
-                    html += `</div>`;
+                if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
+                if (type === "POINTS") {
+                    const evCode = val1.toString().toUpperCase(); 
+                    const pts = val2 ? val2.toString().split(',') : [];
+                    if (evCode === "DEFAULT") festConfig.defaultPts = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
+                    else festConfig.customPts[evCode] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
                 }
             });
-            document.getElementById('resContainer').innerHTML = html || "<div style='grid-column: 1 / -1; text-align:center; font-size:2rem; padding: 50px; color:#64748b;'>Waiting for results to be published...</div>";
+
+            document.getElementById('tvFestName').innerText = festConfig.name;
+            document.getElementById('tvInstName').innerText = festConfig.inst;
+
+            renderLeaderboard();
+            renderResults();
         }
 
-        // 5. Broadcast Control
-        function startBroadcast() {
-            document.getElementById('startOverlay').style.display = 'none';
-            // Request Fullscreen
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
+        // ==========================================
+        // 4. RENDER LEADERBOARD
+        // ==========================================
+        function renderLeaderboard() {
+            const results = globalDbData.Results || []; 
+            const students = globalDbData.Students || []; 
+            const events = globalDbData.Events || []; 
+            const bonus = globalDbData.Bonus || [];
             
-            // Start Slideshow
-            slides[0].classList.add('active');
-            slideInterval = setInterval(() => {
-                slides[currentSlideIdx].classList.remove('active');
-                currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-                slides[currentSlideIdx].classList.add('active');
-            }, 10000); // Swap every 10 seconds
+            let groupPoints = {}; let processedGroupEvents = {}; 
+            
+            bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
+            
+            results.forEach(res => {
+                if(getVal(res,3) === "Pending") return;
+                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
+                const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                const points = ptsMap[position] || 0;
+                if(!chestNo || points === 0) return;
 
-            // Auto-refresh data every 30 seconds
-            setInterval(fetchTVData, 30000);
-        }
+                const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
+                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
+                
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
 
-        // Listen for Exit Fullscreen (Back button / Esc)
-        document.addEventListener('fullscreenchange', exitHandler);
-        document.addEventListener('webkitfullscreenchange', exitHandler);
-        document.addEventListener('mozfullscreenchange', exitHandler);
-        function exitHandler() {
-            if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen) {
-                // Stopped fullscreen - pause slideshow and show overlay again
-                clearInterval(slideInterval);
-                slides.forEach(s => s.classList.remove('active'));
-                document.getElementById('startOverlay').style.display = 'flex';
-                document.getElementById('tvStatus').style.display = 'none';
+                const skipIndividualPoints = isGroupEvent || isGeneralCat;
+
+                if(st) {
+                    const group = getVal(st, 5);
+                    if(group) {
+                        if (skipIndividualPoints) {
+                            const uniqueKey = `${evCode}_${position}_${group}`; 
+                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
+                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                    }
+                }
+            });
+
+            const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
+            let html = "";
+
+            if(sortedGroups.length === 0) {
+                html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Calculating Points...</div>`;
+            } else {
+                // To make the scroll loop smooth, we duplicate the list if it's too short
+                let listToRender = sortedGroups;
+                if(sortedGroups.length < 10) { listToRender = sortedGroups.concat(sortedGroups); }
+
+                listToRender.forEach((g, idx) => {
+                    const actualIdx = idx % sortedGroups.length;
+                    const rankClass = actualIdx === 0 ? "rank-1" : actualIdx === 1 ? "rank-2" : actualIdx === 2 ? "rank-3" : "";
+                    const rankTxt = actualIdx === 0 ? "1" : actualIdx === 1 ? "2" : actualIdx === 2 ? "3" : (actualIdx+1);
+                    
+                    html += `<div class="lb-item ${rankClass}">
+                                <div class="lb-rank">#${rankTxt}</div>
+                                <div class="lb-name">${g[0]}</div>
+                                <div class="lb-pts">${g[1]}</div>
+                             </div>`;
+                });
             }
+
+            // Adjust animation duration based on content length
+            const scrollBox = document.getElementById('lbScroll');
+            scrollBox.innerHTML = html;
+            const scrollTime = Math.max(20, listToRender.length * 3); // 3 seconds per item
+            scrollBox.style.animationDuration = `${scrollTime}s`;
         }
 
-        // Init
-        fetchTVData();
+        // ==========================================
+        // 5. RENDER RESULTS FEED
+        // ==========================================
+        function renderResults() {
+            const results = globalDbData.Results || []; 
+            const events = globalDbData.Events || []; 
+            const students = globalDbData.Students || [];
+
+            let groupedResults = {};
+            // Filter only approved and group by event
+            for(let i = results.length - 1; i >= 0; i--) {
+                const r = results[i];
+                if(getVal(r,3) === "Pending") continue;
+                const evCode = getVal(r,0).toString().trim().toUpperCase();
+                if(!groupedResults[evCode]) groupedResults[evCode] = [];
+                groupedResults[evCode].push(r);
+            }
+
+            const sortedEvCodes = Object.keys(groupedResults);
+            let html = "";
+
+            if(sortedEvCodes.length === 0) {
+                html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Awaiting Results...</div>`;
+            } else {
+                // Duplicate list for smooth infinite scrolling
+                let listToRender = sortedEvCodes;
+                if(sortedEvCodes.length < 5) { listToRender = sortedEvCodes.concat(sortedEvCodes); }
+
+                listToRender.forEach(evCode => {
+                    const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                    const evName = evDetails ? getVal(evDetails, 1).toString().toUpperCase() : evCode;
+                    const evCat = evDetails ? getVal(evDetails, 2).toString().toUpperCase() : "";
+                    const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
+                    const suffix = isGroup ? " & Team" : "";
+
+                    html += `<div class="res-card">
+                                <div class="res-header">
+                                    <div class="res-ev-name">${evName}</div>
+                                    <div class="res-ev-tags">
+                                        <span class="res-tag">${evCat}</span>
+                                        <span class="res-tag" style="border-color:var(--primary); color:var(--primary);">${evCode}</span>
+                                    </div>
+                                </div>
+                                <div class="res-body">`;
+                    
+                    let p1="", p2="", p3="";
+                    groupedResults[evCode].forEach(r => {
+                        const chest = getVal(r,1).toString().trim().toUpperCase();
+                        const pos = getVal(r,2);
+                        const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                        
+                        const nameStr = st ? getVal(st,1) + suffix : chest;
+                        const grpStr = st && getVal(st,5) ? getVal(st,5) : "No Group";
+
+                        const rowHtml = `<div class="winner-row">
+                                            <div class="win-name">${nameStr}</div>
+                                            <div class="win-grp">${grpStr}</div>
+                                         </div>`;
+                        
+                        if(pos == 1) p1 += rowHtml;
+                        if(pos == 2) p2 += rowHtml;
+                        if(pos == 3) p3 += rowHtml;
+                    });
+
+                    if(p1) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-1">1ST</div><div style="flex-grow:1;">${p1}</div></div>`;
+                    if(p2) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-2">2ND</div><div style="flex-grow:1;">${p2}</div></div>`;
+                    if(p3) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-3">3RD</div><div style="flex-grow:1;">${p3}</div></div>`;
+
+                    html += `</div></div>`;
+                });
+            }
+
+            const scrollBox = document.getElementById('resScroll');
+            scrollBox.innerHTML = html;
+            // Adjust scroll speed (approx 5 seconds per event block)
+            const scrollTime = Math.max(30, (listToRender.length || 1) * 8); 
+            scrollBox.style.animationDuration = `${scrollTime}s`;
+        }
+
     </script>
 </body>
 </html>
