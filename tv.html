@@ -26,130 +26,160 @@
         body { 
             background-color: var(--bg-color); 
             color: var(--text-main); 
+            width: 100vw;
             height: 100vh; 
-            overflow: hidden; 
+            overflow: hidden; /* No scrollbars anywhere */
             display: flex; 
             flex-direction: column;
         }
 
         /* SETUP SCREEN */
         .setup-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: var(--bg-color); z-index: 2000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .setup-card {
-            background: var(--card-bg); padding: 40px; border-radius: 15px;
+            background: var(--card-bg); padding: 4vw; border-radius: 20px;
             border-top: 5px solid var(--primary); text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); width: 40vw; min-width: 400px;
         }
-        .setup-card h2 { color: var(--primary); margin-bottom: 10px; font-size: 2rem; }
+        .setup-card h2 { color: var(--primary); margin-bottom: 10px; font-size: 2.5vw; }
         .setup-card input {
-            width: 100%; padding: 15px; border-radius: 8px; border: 2px solid var(--border);
-            background: var(--bg-color); color: white; font-size: 1.2rem;
-            text-align: center; text-transform: uppercase; margin: 20px 0; outline: none;
+            width: 100%; padding: 1.5vw; border-radius: 10px; border: 2px solid var(--border);
+            background: var(--bg-color); color: white; font-size: 1.5vw;
+            text-align: center; text-transform: uppercase; margin: 2vw 0; outline: none; font-weight: bold;
         }
         .setup-card input:focus { border-color: var(--primary); }
         .setup-card button {
-            width: 100%; padding: 15px; border-radius: 8px; background: var(--primary);
-            color: #0B0F19; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer;
+            width: 100%; padding: 1.5vw; border-radius: 10px; background: var(--primary);
+            color: #0B0F19; font-size: 1.5vw; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; transition: 0.3s;
         }
+        .setup-card button:hover { transform: scale(1.02); }
 
         /* HEADER */
         .tv-header {
             background: linear-gradient(90deg, #151C2C 0%, #1a233a 100%);
-            padding: 15px 40px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;
+            padding: 1.5vh 3vw; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 3px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10;
+            height: 12vh;
         }
         
-        .header-left { display: flex; align-items: center; gap: 20px; }
-        .logo-box { background: var(--primary); color: #0B0F19; padding: 8px 15px; border-radius: 8px; font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
-        .fest-titles h1 { font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 2px; }
-        .fest-titles p { font-size: 1.1rem; color: var(--primary); font-weight: 600; }
+        .header-left { display: flex; align-items: center; gap: 1.5vw; }
+        .logo-box { background: var(--primary); color: #0B0F19; padding: 0.8vh 1vw; border-radius: 8px; font-weight: 900; font-size: 2.5vh; letter-spacing: 2px; }
+        .fest-titles h1 { font-size: 3.5vh; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 2px; }
+        .fest-titles p { font-size: 2vh; color: var(--primary); font-weight: 600; }
         
         .header-right { text-align: right; }
-        .live-badge { background: #EF4444; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; display: inline-flex; align-items: center; gap: 8px; animation: pulse 2s infinite; }
-        .time-display { font-size: 1.5rem; font-weight: 600; margin-top: 5px; color: var(--text-muted); }
+        .live-badge { background: #EF4444; color: white; padding: 0.5vh 1vw; border-radius: 20px; font-weight: bold; font-size: 2vh; display: inline-flex; align-items: center; gap: 8px; animation: blinkRed 1.5s infinite; }
+        .time-display { font-size: 2.5vh; font-weight: 600; margin-top: 5px; color: var(--text-muted); }
         
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes blinkRed { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         /* MAIN CONTENT AREA */
-        .tv-main { display: none; flex-grow: 1; height: calc(100vh - 100px); padding: 30px; gap: 30px; }
+        .tv-main { display: none; flex-grow: 1; height: 88vh; padding: 2vh 2vw; gap: 2vw; }
 
-        /* LEFT SIDE - LEADERBOARD */
-        .tv-left { width: 35%; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .section-header { background: #1a233a; padding: 20px; font-size: 1.8rem; font-weight: 700; color: var(--primary); text-align: center; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; gap: 15px; }
+        /* LEFT SIDE - STANDINGS & SCORERS */
+        .tv-left { width: 38%; display: flex; flex-direction: column; gap: 2vh; height: 100%; transition: opacity 0.4s ease; }
+        
+        .left-box { background: var(--card-bg); border-radius: 15px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.3); flex: 1; }
+        .section-header { background: #1a233a; padding: 1.5vh; font-size: 2.2vh; font-weight: 800; color: var(--primary); text-align: center; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; gap: 10px; letter-spacing: 1px; }
 
-        .leaderboard-container { padding: 20px; overflow: hidden; flex-grow: 1; position: relative; }
-        .lb-scroll { position: absolute; width: calc(100% - 40px); animation: scrollUp 20s linear infinite; }
+        /* Group Standings */
+        .standings-container { padding: 1.5vh; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+        .lb-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 1.5vh 1.5vw; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; animation: softGlow 3s infinite alternate; }
+        
+        @keyframes softGlow { 0% { box-shadow: 0 0 0px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); } }
 
-        .lb-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 15px 25px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .lb-item.rank-1 { background: rgba(212, 175, 55, 0.15); border-color: var(--primary); }
+        .lb-item.rank-1 { background: rgba(212, 175, 55, 0.15); border-color: var(--primary); animation: goldGlow 2s infinite alternate; }
+        @keyframes goldGlow { 0% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); } 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); } }
+        
         .lb-item.rank-2 { background: rgba(148, 163, 184, 0.1); border-color: #94A3B8; }
         .lb-item.rank-3 { background: rgba(180, 83, 9, 0.1); border-color: #B45309; }
 
-        .lb-rank { font-size: 2rem; font-weight: 800; width: 50px; }
-        .rank-1 .lb-rank { color: var(--primary); }
+        .lb-rank { font-size: 3vh; font-weight: 800; width: 4vw; }
+        .rank-1 .lb-rank { color: var(--primary); font-size: 3.5vh; }
         .rank-2 .lb-rank { color: #CBD5E1; }
         .rank-3 .lb-rank { color: #F59E0B; }
 
-        .lb-name { font-size: 1.8rem; font-weight: 700; flex-grow: 1; }
-        .lb-pts { font-size: 2.2rem; font-weight: 900; color: var(--primary); }
+        .lb-name { font-size: 2.8vh; font-weight: 700; flex-grow: 1; }
+        .lb-pts { font-size: 3.5vh; font-weight: 900; color: var(--primary); }
 
-        /* RIGHT SIDE - RESULTS FEED */
-        .tv-right { width: 65%; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .results-container { padding: 20px 30px; overflow: hidden; flex-grow: 1; position: relative; }
-        .res-scroll { position: absolute; width: calc(100% - 60px); animation: scrollUp 40s linear infinite; }
+        /* Top Scorers Grid */
+        .scorers-container { padding: 1.5vh; flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vh; align-items: center; }
+        .scorer-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-left: 4px solid var(--accent-green); border-radius: 10px; padding: 1.5vh 1vw; text-align: left; display: flex; flex-direction: column; justify-content: center; }
+        .sc-title { font-size: 1.8vh; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 0.5vh; letter-spacing: 1px; }
+        .sc-pts { float: right; color: var(--text-main); font-weight: 900; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; }
+        .sc-name { font-size: 2.2vh; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sc-grp { font-size: 1.6vh; color: var(--text-muted); font-weight: 600; margin-top: 3px; }
 
-        .res-card { background: #1a233a; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 25px; overflow: hidden; }
-        .res-header { background: rgba(255,255,255,0.05); padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .res-ev-name { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
-        .res-ev-tags { display: flex; gap: 10px; }
-        .res-tag { background: #0B0F19; padding: 5px 12px; border-radius: 6px; font-size: 1rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border); }
+        /* RIGHT SIDE - RESULTS CAROUSEL */
+        .tv-right { width: 62%; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .carousel-container { flex-grow: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 3vh 3vw; perspective: 1000px; }
 
-        .res-body { padding: 20px 25px; }
-        .winner-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
-        .winner-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .res-slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; padding: 3vh 3vw; flex-direction: column; justify-content: center; }
+        
+        .res-slide.active { display: flex; animation: flipIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .res-slide.exit { display: flex; animation: flipOut 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; z-index: 10; }
 
-        .win-pos { font-size: 1.2rem; font-weight: 800; width: 100px; padding: 5px 15px; border-radius: 8px; text-align: center; margin-right: 20px; }
-        .pos-1 { background: rgba(212, 175, 55, 0.2); color: var(--primary); border: 1px solid var(--primary); }
-        .pos-2 { background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid #94A3B8; }
-        .pos-3 { background: rgba(180, 83, 9, 0.15); color: #F59E0B; border: 1px solid #B45309; }
+        @keyframes flipIn { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: rotateX(0deg); opacity: 1; } }
+        @keyframes flipOut { 0% { transform: rotateX(0deg); opacity: 1; } 100% { transform: rotateX(-90deg); opacity: 0; } }
 
-        .win-name { font-size: 1.6rem; font-weight: 600; flex-grow: 1; }
-        .win-grp { font-size: 1.3rem; color: var(--text-muted); font-weight: 500; }
+        /* Result Card Design inside Slide */
+        .big-res-card { background: #1a233a; border: 2px solid var(--border); border-radius: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .big-res-header { background: rgba(255,255,255,0.03); padding: 2.5vh 2vw; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .big-ev-name { font-size: 4vh; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* NEW: Tag Container for Category & Gender */
+        .big-tags-container { display: flex; gap: 1vw; align-items: center; flex-wrap: wrap; }
+        .big-res-tag { background: #0B0F19; padding: 1vh 1vw; border-radius: 8px; font-size: 2vh; font-weight: 700; color: var(--text-muted); border: 1px solid var(--border); text-transform: uppercase; }
+        .tag-highlight { border-color: var(--primary); color: var(--primary); }
 
-        @keyframes scrollUp { 0% { top: 100%; } 100% { top: -200%; } }
-        .lb-scroll:hover, .res-scroll:hover { animation-play-state: paused; }
+        .big-res-body { padding: 3vh 2vw; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+        .big-winner-row { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 2vh 2vw; border-radius: 12px; border: 1px solid var(--border); }
+        
+        .b-pos { font-size: 2.5vh; font-weight: 900; width: 10vw; padding: 1.5vh; border-radius: 10px; text-align: center; margin-right: 2vw; letter-spacing: 2px; }
+        .b-pos-1 { background: linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(212,175,55,0.1) 100%); color: var(--primary); border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+        .b-pos-2 { background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 2px solid #94A3B8; }
+        .b-pos-3 { background: rgba(180, 83, 9, 0.15); color: #F59E0B; border: 2px solid #B45309; }
+
+        .b-name { font-size: 3.5vh; font-weight: 700; flex-grow: 1; color: white; }
+        .b-grp { font-size: 2.2vh; color: var(--text-muted); font-weight: 600; text-align: right; }
 
         /* Loader */
-        .loader-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; display: none; }
-        .spinner { font-size: 4rem; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .loader-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; display: none; }
+        .spinner { font-size: 6vh; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 2vh; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Scrolling Ticker at Bottom */
+        .ticker-wrap { width: 100%; background-color: var(--accent); overflow: hidden; height: 4vh; display: flex; align-items: center; padding-left: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); position: fixed; bottom: 0; z-index: 50; }
+        .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 2rem; font-size: 2vh; font-weight: 700; color: #1e293b; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
     </style>
 </head>
 <body>
 
-    <!-- SETUP SCREEN (If directly opened) -->
+    <!-- SETUP SCREEN -->
     <div class="setup-screen" id="setupScreen">
         <div class="setup-card">
             <h2><i class="fas fa-tv"></i> FestVue TV Mode</h2>
-            <p style="color: var(--text-muted);">Enter Institution ID to Start Broadcast</p>
-            <input type="text" id="manualInstId" placeholder="e.g. FEST101">
-            <button onclick="startManualTV()"><i class="fas fa-play"></i> Start Broadcasting</button>
+            <p style="color: var(--text-muted); font-size: 1.2vw;">Live Broadcast Setup</p>
+            <input type="text" id="manualInstId" placeholder="Institution ID (e.g. FEST101)">
+            <button onclick="startTVMode()"><i class="fas fa-expand"></i> Launch Fullscreen</button>
         </div>
     </div>
 
     <!-- Loading Screen -->
     <div class="loader-screen" id="loader">
         <i class="fas fa-circle-notch spinner"></i>
-        <h2 style="color: var(--primary); font-size: 2rem;">Connecting to Live Server...</h2>
-        <p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 10px;" id="loaderMsg">Please wait while we fetch the latest results</p>
+        <h2 style="color: var(--primary); font-size: 4vh;">Syncing with Live Server...</h2>
+        <p style="color: var(--text-muted); font-size: 2.5vh; margin-top: 1vh;" id="loaderMsg">Fetching latest results and standings</p>
     </div>
 
-    <!-- Main Content wrapper -->
-    <div id="mainContentWrapper" style="display: none; height: 100%;">
+    <!-- Main TV Wrapper -->
+    <div id="mainContentWrapper" style="display: none; height: 100vh; width: 100vw;">
         <!-- Header -->
         <header class="tv-header">
             <div class="header-left">
@@ -160,113 +190,118 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="live-badge"><i class="fas fa-broadcast-tower"></i> LIVE</div>
+                <div class="live-badge"><i class="fas fa-circle"></i> LIVE</div>
                 <div class="time-display" id="clock">00:00:00</div>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="tv-main" id="tvMainContent">
-            <!-- Left: Leaderboard -->
-            <div class="tv-left">
-                <div class="section-header">
-                    <i class="fas fa-trophy"></i> GROUP STANDINGS
+            <!-- Left: Groups & Scorers -->
+            <div class="tv-left" id="tvLeftPane">
+                <!-- Group Standings -->
+                <div class="left-box" style="flex: 1.2;">
+                    <div class="section-header"><i class="fas fa-trophy"></i> TOP GROUP STANDINGS</div>
+                    <div class="standings-container" id="groupStandingsBox">
+                        <div style="text-align:center; color:var(--text-muted); font-size:2.5vh;">Calculating...</div>
+                    </div>
                 </div>
-                <div class="leaderboard-container">
-                    <div class="lb-scroll" id="lbScroll"></div>
+                <!-- Top Scorers -->
+                <div class="left-box" style="flex: 0.8;">
+                    <div class="section-header" style="color:var(--accent-green);"><i class="fas fa-star"></i> TOP SCORERS</div>
+                    <div class="scorers-container" id="topScorersBox">
+                        <div style="grid-column: span 2; text-align:center; color:var(--text-muted); font-size:2vh;">Loading Titles...</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right: Latest Results -->
+            <!-- Right: Results Carousel -->
             <div class="tv-right">
-                <div class="section-header" style="color: var(--accent-green);">
-                    <i class="fas fa-bolt"></i> LATEST PUBLISHED RESULTS
-                </div>
-                <div class="results-container">
-                    <div class="res-scroll" id="resScroll"></div>
+                <div class="section-header" style="color: white; background: #B45309;"><i class="fas fa-bullhorn"></i> LATEST PUBLISHED RESULTS</div>
+                <div class="carousel-container" id="carouselContainer">
+                    <div style="text-align:center; color:var(--text-muted); font-size:3vh;">Awaiting Results...</div>
                 </div>
             </div>
         </main>
+
+        <!-- Bottom Ticker -->
+        <div class="ticker-wrap">
+            <div class="ticker" id="tickerContent">
+                <div class="ticker-item">Loading latest updates...</div>
+            </div>
+        </div>
     </div>
 
     <script>
         // ==========================================
-        // 1. CLOCK & INITIALIZATION
+        // 1. SYSTEM INITIALIZATION & FULLSCREEN
         // ==========================================
-        function updateClock() {
-            const now = new Date();
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         let globalDbData = {};
         let currentInstId = null;
-        let festConfig = { name: "", inst: "", defaultPts: {1:5, 2:3, 3:1}, customPts: {} };
+        let festConfig = { name: "", inst: "", defaultPts: {1:5, 2:3, 3:1}, customPts: {}, titles: [] };
+        
+        let resultSlidesArray = [];
+        let currentSlideIndex = 0;
+        let carouselInterval = null;
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlInst = urlParams.get('inst');
             
             if (urlInst) {
-                currentInstId = urlInst.trim().toUpperCase();
+                document.getElementById('manualInstId').value = urlInst.trim().toUpperCase();
             } else {
-                currentInstId = localStorage.getItem("festvue_public_instId");
-            }
-
-            // ഐഡി ഉണ്ടെങ്കിൽ നേരെ കണക്ട് ചെയ്യും, അല്ലെങ്കിൽ സെറ്റപ്പ് സ്ക്രീൻ കാണിക്കും
-            if (currentInstId) {
-                document.getElementById('setupScreen').style.display = 'none';
-                document.getElementById('loader').style.display = 'flex';
-                fetchData();
-                setInterval(fetchDataSilent, 30000); // 30 sec auto-refresh
-            } else {
-                document.getElementById('setupScreen').style.display = 'flex';
+                let saved = localStorage.getItem("festvue_public_instId");
+                if(saved) document.getElementById('manualInstId').value = saved;
             }
         };
 
-        function startManualTV() {
+        function startTVMode() {
             const val = document.getElementById('manualInstId').value.trim().toUpperCase();
             if(!val) { alert("Please enter Institution ID"); return; }
             currentInstId = val;
             localStorage.setItem("festvue_public_instId", val);
             
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err=>console.log(err)); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('loader').style.display = 'flex';
+            
             fetchData();
-            setInterval(fetchDataSilent, 30000);
+            setInterval(fetchDataSilent, 30000); 
         }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours(); let minutes = now.getMinutes(); let seconds = now.getSeconds();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12; hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            document.getElementById('clock').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
 
         function getVal(row, index) { 
             return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
         }
 
         // ==========================================
-        // 2. DATA FETCHING (Robust Handling)
+        // 2. DATA FETCHING
         // ==========================================
         function fetchData() {
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
             })
-            .then(res => res.text()) // Text ആയി എടുക്കുന്നു എറർ ഒഴിവാക്കാൻ
+            .then(res => res.text())
             .then(text => {
                 let data;
-                try {
-                    data = JSON.parse(text);
-                } catch(e) {
-                    console.error("Invalid Response from Server:", text);
-                    document.getElementById('loaderMsg').innerHTML = `<span style="color:#ef4444;">Server Error. Trying again...</span>`;
-                    setTimeout(fetchData, 5000);
-                    return;
-                }
+                try { data = JSON.parse(text); } catch(e) { throw new Error("Invalid Server Data"); }
 
                 if (data.status === "success") {
                     globalDbData = data.data || {};
@@ -276,13 +311,13 @@
                     document.getElementById('mainContentWrapper').style.display = 'block';
                     document.getElementById('tvMainContent').style.display = 'flex';
                     
-                    processData();
+                    processData(true); 
                 } else {
-                    document.getElementById('loaderMsg').innerHTML = `<span style="color:#ef4444;">Error: ${data.message}</span><br><button onclick="window.location.reload()" style="margin-top:15px; padding:8px 15px; cursor:pointer;">Go Back</button>`;
+                    document.getElementById('loaderMsg').innerHTML = `<span style="color:#ef4444;">Error: ${data.message}</span><br><button onclick="window.location.reload()" style="margin-top:15px; padding:10px 20px; font-weight:bold; cursor:pointer;">Go Back</button>`;
                 }
             })
             .catch(err => {
-                document.getElementById('loaderMsg').innerHTML = `<span style="color:#ef4444;">Network Error. Retrying in 5 seconds...</span>`;
+                document.getElementById('loaderMsg').innerHTML = `<span style="color:#ef4444;">Network Error. Retrying...</span>`;
                 setTimeout(fetchData, 5000);
             });
         }
@@ -299,23 +334,27 @@
                     if (data.status === "success") {
                         globalDbData = data.data || {};
                         festConfig.inst = data.institutionName;
-                        processData();
+                        processData(false); 
                     }
                 } catch(e) {}
             }).catch(err => {});
         }
 
         // ==========================================
-        // 3. PROCESS & RENDER DATA
+        // 3. PROCESS & DISTRIBUTE DATA
         // ==========================================
-        function processData() {
+        function processData(isInitialLoad) {
             const settings = globalDbData.Settings || [];
+            festConfig.titles = [];
             
             settings.forEach(row => {
                 const type = getVal(row, 0).toString().toUpperCase();
                 const val1 = getVal(row, 1); const val2 = getVal(row, 2);
                 
                 if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
+                if (type === "CONFIG" && val1.toString().toUpperCase().startsWith("TITLE_") && val2) {
+                    const p = val2.split('|'); festConfig.titles.push({ name: p[0], gender: p[1], mode: p[2] });
+                }
                 if (type === "POINTS") {
                     const evCode = val1.toString().toUpperCase(); 
                     const pts = val2 ? val2.toString().split(',') : [];
@@ -327,20 +366,27 @@
             document.getElementById('tvFestName').innerText = festConfig.name;
             document.getElementById('tvInstName').innerText = festConfig.inst;
 
-            renderLeaderboard();
-            renderResults();
+            const leftPane = document.getElementById('tvLeftPane');
+            if(!isInitialLoad) { leftPane.style.opacity = '0.1'; }
+            
+            setTimeout(() => {
+                renderStandingsAndScorers();
+                if(!isInitialLoad) { leftPane.style.opacity = '1'; }
+            }, isInitialLoad ? 0 : 400);
+
+            buildResultsCarousel();
+            if(isInitialLoad) startCarousel();
+            updateTicker();
         }
 
         // ==========================================
-        // 4. RENDER LEADERBOARD
+        // 4. LEFT PANE: STANDINGS & SCORERS
         // ==========================================
-        function renderLeaderboard() {
-            const results = globalDbData.Results || []; 
-            const students = globalDbData.Students || []; 
-            const events = globalDbData.Events || []; 
-            const bonus = globalDbData.Bonus || [];
+        function renderStandingsAndScorers() {
+            const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
+            const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
-            let groupPoints = {}; let processedGroupEvents = {}; 
+            let groupPoints = {}; let studentPoints = {}; let processedGroupEvents = {}; 
             
             bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
             
@@ -357,55 +403,80 @@
                 const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
                 const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
                 const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+                const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage"; 
 
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
 
                 if(st) {
                     const group = getVal(st, 5);
+                    let stGen = getVal(st, 2).toString().trim().toLowerCase();
+                    if(stGen === "male") stGen = "boys"; if(stGen === "female") stGen = "girls";
+                    
                     if(group) {
                         if (skipIndividualPoints) {
                             const uniqueKey = `${evCode}_${position}_${group}`; 
                             if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
                         } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
                     }
+
+                    if (!skipIndividualPoints) {
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), events: [] };
+                        studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
+                    }
                 }
             });
 
             const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
-            let html = "";
-
+            let gHtml = "";
             if(sortedGroups.length === 0) {
-                html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Calculating Points...</div>`;
+                gHtml = `<div style="text-align:center; color:var(--text-muted); font-size:2vh;">Awaiting points...</div>`;
             } else {
-                let listToRender = sortedGroups;
-                if(sortedGroups.length < 10) { listToRender = sortedGroups.concat(sortedGroups); }
-
-                listToRender.forEach((g, idx) => {
-                    const actualIdx = idx % sortedGroups.length;
-                    const rankClass = actualIdx === 0 ? "rank-1" : actualIdx === 1 ? "rank-2" : actualIdx === 2 ? "rank-3" : "";
-                    const rankTxt = actualIdx === 0 ? "1" : actualIdx === 1 ? "2" : actualIdx === 2 ? "3" : (actualIdx+1);
-                    
-                    html += `<div class="lb-item ${rankClass}">
+                const topGroups = sortedGroups.slice(0, 4);
+                topGroups.forEach((g, idx) => {
+                    const rankClass = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "";
+                    const rankTxt = idx === 0 ? "1" : idx === 1 ? "2" : idx === 2 ? "3" : (idx+1);
+                    gHtml += `<div class="lb-item ${rankClass}">
                                 <div class="lb-rank">#${rankTxt}</div>
                                 <div class="lb-name">${g[0]}</div>
                                 <div class="lb-pts">${g[1]}</div>
                              </div>`;
                 });
             }
+            document.getElementById('groupStandingsBox').innerHTML = gHtml;
 
-            const scrollBox = document.getElementById('lbScroll');
-            scrollBox.innerHTML = html;
-            const scrollTime = Math.max(20, (listToRender.length || 1) * 3); 
-            scrollBox.style.animationDuration = `${scrollTime}s`;
+            let sHtml = "";
+            const colorThemes = ["#D4AF37", "#10B981", "#3B82F6", "#8B5CF6"];
+
+            festConfig.titles.forEach((titleDef, tIdx) => {
+                if(!titleDef.name) return;
+                let maxPoints = 0; let topStudent = null;
+                
+                Object.values(studentPoints).forEach(st => {
+                    let isGenderMatch = (titleDef.gender === "All" || titleDef.gender.toLowerCase() === st.gender);
+                    if(!isGenderMatch) return;
+                    let stTotal = 0;
+                    st.events.forEach(ev => { if(titleDef.mode === "All" || titleDef.mode === ev.mode) stTotal += ev.points; });
+                    
+                    if(stTotal > 0 && stTotal > maxPoints) { maxPoints = stTotal; topStudent = st; }
+                });
+
+                const theme = colorThemes[tIdx % 4];
+                if(topStudent) {
+                    sHtml += `<div class="scorer-card" style="border-left-color:${theme};">
+                                <div class="sc-title" style="color:${theme};">${titleDef.name} <span class="sc-pts">${maxPoints} Pts</span></div>
+                                <div class="sc-name">${topStudent.name}</div>
+                                <div class="sc-grp">${topStudent.group || 'No Group'} - Cls ${topStudent.class}</div>
+                              </div>`;
+                }
+            });
+            document.getElementById('topScorersBox').innerHTML = sHtml || `<div style="grid-column:span 2; text-align:center; color:var(--text-muted); font-size:2vh;">Top scorers will appear here</div>`;
         }
 
         // ==========================================
-        // 5. RENDER RESULTS FEED
+        // 5. RIGHT PANE: RESULTS CAROUSEL
         // ==========================================
-        function renderResults() {
-            const results = globalDbData.Results || []; 
-            const events = globalDbData.Events || []; 
-            const students = globalDbData.Students || [];
+        function buildResultsCarousel() {
+            const results = globalDbData.Results || []; const events = globalDbData.Events || []; const students = globalDbData.Students || [];
 
             let groupedResults = {};
             for(let i = results.length - 1; i >= 0; i--) {
@@ -417,62 +488,127 @@
             }
 
             const sortedEvCodes = Object.keys(groupedResults);
-            let html = "";
+            let tempSlides = [];
 
-            if(sortedEvCodes.length === 0) {
-                html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Awaiting Results...</div>`;
-            } else {
-                let listToRender = sortedEvCodes;
-                if(sortedEvCodes.length < 5) { listToRender = sortedEvCodes.concat(sortedEvCodes); }
+            sortedEvCodes.forEach(evCode => {
+                const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                const evName = evDetails ? getVal(evDetails, 1).toString().toUpperCase() : evCode;
+                // NEW: Extract Category and Gender for Badges
+                const evCat = evDetails ? getVal(evDetails, 2).toString().toUpperCase() : "N/A";
+                const evGen = evDetails ? getVal(evDetails, 3).toString().toUpperCase() : "N/A";
+                const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
+                const suffix = isGroup ? " & Team" : "";
 
-                listToRender.forEach(evCode => {
-                    const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
-                    const evName = evDetails ? getVal(evDetails, 1).toString().toUpperCase() : evCode;
-                    const evCat = evDetails ? getVal(evDetails, 2).toString().toUpperCase() : "";
-                    const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
-                    const suffix = isGroup ? " & Team" : "";
+                let p1="", p2="", p3="";
+                groupedResults[evCode].forEach(r => {
+                    const chest = getVal(r,1).toString().trim().toUpperCase();
+                    const pos = getVal(r,2);
+                    const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                    const nameStr = st ? getVal(st,1) + suffix : chest;
+                    const grpStr = st && getVal(st,5) ? getVal(st,5) : "No Group";
 
-                    html += `<div class="res-card">
-                                <div class="res-header">
-                                    <div class="res-ev-name">${evName}</div>
-                                    <div class="res-ev-tags">
-                                        <span class="res-tag">${evCat}</span>
-                                        <span class="res-tag" style="border-color:var(--primary); color:var(--primary);">${evCode}</span>
-                                    </div>
-                                </div>
-                                <div class="res-body">`;
-                    
-                    let p1="", p2="", p3="";
-                    groupedResults[evCode].forEach(r => {
-                        const chest = getVal(r,1).toString().trim().toUpperCase();
-                        const pos = getVal(r,2);
-                        const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
-                        
-                        const nameStr = st ? getVal(st,1) + suffix : chest;
-                        const grpStr = st && getVal(st,5) ? getVal(st,5) : "No Group";
-
-                        const rowHtml = `<div class="winner-row">
-                                            <div class="win-name">${nameStr}</div>
-                                            <div class="win-grp">${grpStr}</div>
-                                         </div>`;
-                        
-                        if(pos == 1) p1 += rowHtml;
-                        if(pos == 2) p2 += rowHtml;
-                        if(pos == 3) p3 += rowHtml;
-                    });
-
-                    if(p1) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-1">1ST</div><div style="flex-grow:1;">${p1}</div></div>`;
-                    if(p2) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-2">2ND</div><div style="flex-grow:1;">${p2}</div></div>`;
-                    if(p3) html += `<div style="display:flex; margin-bottom:10px;"><div class="win-pos pos-3">3RD</div><div style="flex-grow:1;">${p3}</div></div>`;
-
-                    html += `</div></div>`;
+                    const rowHtml = `<div class="b-name">${nameStr}</div><div class="b-grp">${grpStr}</div>`;
+                    if(pos == 1) p1 += rowHtml; if(pos == 2) p2 += rowHtml; if(pos == 3) p3 += rowHtml;
                 });
+
+                // NEW: Added Display Flex tag container for Badges (Category & Gender)
+                let slideHtml = `<div class="res-slide">
+                                    <div class="big-res-card">
+                                        <div class="big-res-header">
+                                            <div class="big-ev-name">${evName}</div>
+                                            <div class="big-tags-container">
+                                                <div class="big-res-tag">${evCat}</div>
+                                                <div class="big-res-tag">${evGen}</div>
+                                                <div class="big-res-tag tag-highlight">${evCode}</div>
+                                            </div>
+                                        </div>
+                                        <div class="big-res-body">`;
+                if(p1) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-1">1ST</div>${p1}</div>`;
+                if(p2) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-2">2ND</div>${p2}</div>`;
+                if(p3) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-3">3RD</div>${p3}</div>`;
+                slideHtml += `</div></div></div>`;
+                
+                tempSlides.push(slideHtml);
+            });
+
+            resultSlidesArray = tempSlides;
+        }
+
+        function startCarousel() {
+            if(resultSlidesArray.length === 0) {
+                document.getElementById('carouselContainer').innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:3vh;">Awaiting Published Results...</div>`;
+                setTimeout(startCarousel, 5000); 
+                return;
             }
 
-            const scrollBox = document.getElementById('resScroll');
-            scrollBox.innerHTML = html;
-            const scrollTime = Math.max(30, (listToRender.length || 1) * 8); 
-            scrollBox.style.animationDuration = `${scrollTime}s`;
+            currentSlideIndex = 0;
+            document.getElementById('carouselContainer').innerHTML = resultSlidesArray[currentSlideIndex];
+            document.getElementById('carouselContainer').firstElementChild.classList.add('active');
+
+            if(carouselInterval) clearInterval(carouselInterval);
+            
+            carouselInterval = setInterval(() => {
+                if(resultSlidesArray.length <= 1) {
+                    document.getElementById('carouselContainer').innerHTML = resultSlidesArray[0];
+                    document.getElementById('carouselContainer').firstElementChild.style.display = 'flex';
+                    return; 
+                }
+
+                const container = document.getElementById('carouselContainer');
+                const oldSlide = container.firstElementChild;
+                
+                oldSlide.classList.remove('active');
+                oldSlide.classList.add('exit');
+
+                currentSlideIndex = (currentSlideIndex + 1) % resultSlidesArray.length;
+                const newSlide = document.createElement('div');
+                newSlide.innerHTML = resultSlidesArray[currentSlideIndex];
+                const newSlideContent = newSlide.firstElementChild;
+                newSlideContent.classList.add('active');
+
+                container.appendChild(newSlideContent);
+                setTimeout(() => { if(oldSlide && oldSlide.parentNode) oldSlide.remove(); }, 800);
+
+            }, 10000);
+        }
+
+        // ==========================================
+        // 6. BOTTOM TICKER (Updated with Badges)
+        // ==========================================
+        function updateTicker() {
+            const results = globalDbData.Results || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
+            let approvedResults = results.filter(r => getVal(r,3) !== "Pending").reverse();
+            let uniqueEvs = []; let tickerHTML = "";
+            
+            for(let r of approvedResults) {
+                const evCode = getVal(r,0).toString().trim().toUpperCase();
+                if(!uniqueEvs.includes(evCode)) uniqueEvs.push(evCode);
+                if(uniqueEvs.length >= 10) break; 
+            }
+
+            if(uniqueEvs.length === 0) {
+                tickerHTML = `<div class="ticker-item">Awaiting Results...</div>`;
+            } else {
+                uniqueEvs.forEach(evCode => {
+                    const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                    const evName = evDetails ? getVal(evDetails, 1).toUpperCase() : evCode;
+                    const evCat = evDetails ? getVal(evDetails, 2).toUpperCase() : "";
+                    const evGen = evDetails ? getVal(evDetails, 3).toUpperCase() : "";
+                    const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
+                    const suffix = isGroup ? " & Team" : "";
+                    
+                    const badgeStr = (evCat && evGen) ? `<span style="color:var(--text-muted); font-size:0.8em; font-weight:500;"> (${evCat} - ${evGen})</span>` : "";
+                    
+                    const firstRow = approvedResults.find(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,2) == 1);
+                    if(firstRow) {
+                        const chest = getVal(firstRow,1).toString().trim().toUpperCase();
+                        const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                        const nameStr = st ? getVal(st,1) + suffix : chest;
+                        tickerHTML += `<div class="ticker-item">🎉 <b style="color:var(--primary);">${evName}</b>${badgeStr} - 1st Place: <span>${nameStr}</span></div>`;
+                    }
+                });
+            }
+            document.getElementById('tickerContent').innerHTML = tickerHTML;
         }
 
     </script>
