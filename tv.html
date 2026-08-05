@@ -267,7 +267,7 @@
         </div>
 
     </main>
-
+    
     <script>
         // ==========================================
         // 1. CLOCK & INITIALIZATION
@@ -452,6 +452,201 @@
         }
 
         // ==========================================
+        // 5    <script>
+        // ==========================================
+        // 1. CLOCK & INITIALIZATION
+        // ==========================================
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
+        let globalDbData = {};
+        let currentInstId = null;
+        let festConfig = { name: "Loading...", inst: "Connecting...", defaultPts: {1:5, 2:3, 3:1}, customPts: {} };
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlInst = urlParams.get('inst');
+            
+            if (urlInst) {
+                currentInstId = urlInst.trim().toUpperCase();
+            } else {
+                currentInstId = localStorage.getItem("festvue_public_instId");
+            }
+
+            if (!currentInstId) {
+                document.getElementById('loader').innerHTML = `<h2 style="color:#ef4444;">Error: Institution ID Missing!</h2><p>Please open this from the Public Portal.</p>`;
+                return;
+            }
+
+            fetchData();
+            // Auto Refresh Data Every 30 Seconds
+            setInterval(fetchDataSilent, 30000); 
+        };
+
+        function getVal(row, index) { 
+            return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
+        }
+
+        // ==========================================
+        // 2. ROBUST DATA FETCHING
+        // ==========================================
+        function fetchData() {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Server response wasn't OK");
+                return res.text(); // JSON-ന് പകരം ആദ്യം Text ആയി എടുക്കുന്നു
+            })
+            .then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text); // അതിനുശേഷം JSON ആക്കുന്നു (എറർ കണ്ടെത്താൻ)
+                } catch(e) {
+                    console.error("Invalid Backend Response:", text);
+                    throw new Error("Invalid Server Data. Check Google Apps Script.");
+                }
+
+                if (data.status === "success") {
+                    globalDbData = data.data || {};
+                    festConfig.inst = data.institutionName;
+                    processData();
+                    document.getElementById('loader').style.display = 'none';
+                } else {
+                    document.getElementById('loader').innerHTML = `<h2 style="color:#ef4444;">Error: ${data.message}</h2>`;
+                }
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                document.getElementById('loader').innerHTML = `<h2 style="color:#ef4444;">Network Error. Retrying...</h2><p style="font-size:1rem; color:var(--text-muted);">${err.message}</p>`;
+                setTimeout(fetchData, 5000);
+            });
+        }
+
+        function fetchDataSilent() {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => res.text())
+            .then(text => {
+                try {
+                    let data = JSON.parse(text);
+                    if (data.status === "success") {
+                        globalDbData = data.data || {};
+                        processData();
+                    }
+                } catch(e) { console.log("Silent update parse error."); }
+            }).catch(err => console.log("Silent update network error."));
+        }
+
+        // ==========================================
+        // 3. PROCESS & RENDER DATA
+        // ==========================================
+        function processData() {
+            const settings = globalDbData.Settings || [];
+            
+            settings.forEach(row => {
+                const type = getVal(row, 0).toString().toUpperCase();
+                const val1 = getVal(row, 1); const val2 = getVal(row, 2);
+                
+                if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
+                if (type === "POINTS") {
+                    const evCode = val1.toString().toUpperCase(); 
+                    const pts = val2 ? val2.toString().split(',') : [];
+                    if (evCode === "DEFAULT") festConfig.defaultPts = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
+                    else festConfig.customPts[evCode] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 };
+                }
+            });
+
+            document.getElementById('tvFestName').innerText = festConfig.name;
+            document.getElementById('tvInstName').innerText = festConfig.inst;
+
+            renderLeaderboard();
+            renderResults();
+        }
+
+        // ==========================================
+        // 4. RENDER LEADERBOARD
+        // ==========================================
+        function renderLeaderboard() {
+            const results = globalDbData.Results || []; 
+            const students = globalDbData.Students || []; 
+            const events = globalDbData.Events || []; 
+            const bonus = globalDbData.Bonus || [];
+            
+            let groupPoints = {}; let processedGroupEvents = {}; 
+            
+            bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
+            
+            results.forEach(res => {
+                if(getVal(res,3) === "Pending") return;
+                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
+                const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                const points = ptsMap[position] || 0;
+                if(!chestNo || points === 0) return;
+
+                const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
+                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
+                
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+
+                const skipIndividualPoints = isGroupEvent || isGeneralCat;
+
+                if(st) {
+                    const group = getVal(st, 5);
+                    if(group) {
+                        if (skipIndividualPoints) {
+                            const uniqueKey = `${evCode}_${position}_${group}`; 
+                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
+                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                    }
+                }
+            });
+
+            const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
+            let html = "";
+
+            if(sortedGroups.length === 0) {
+                html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Calculating Points...</div>`;
+            } else {
+                let listToRender = sortedGroups;
+                if(sortedGroups.length < 10) { listToRender = sortedGroups.concat(sortedGroups); }
+
+                listToRender.forEach((g, idx) => {
+                    const actualIdx = idx % sortedGroups.length;
+                    const rankClass = actualIdx === 0 ? "rank-1" : actualIdx === 1 ? "rank-2" : actualIdx === 2 ? "rank-3" : "";
+                    const rankTxt = actualIdx === 0 ? "1" : actualIdx === 1 ? "2" : actualIdx === 2 ? "3" : (actualIdx+1);
+                    
+                    html += `<div class="lb-item ${rankClass}">
+                                <div class="lb-rank">#${rankTxt}</div>
+                                <div class="lb-name">${g[0]}</div>
+                                <div class="lb-pts">${g[1]}</div>
+                             </div>`;
+                });
+            }
+
+            const scrollBox = document.getElementById('lbScroll');
+            scrollBox.innerHTML = html;
+            const scrollTime = Math.max(20, (listToRender.length || 1) * 3); 
+            scrollBox.style.animationDuration = `${scrollTime}s`;
+        }
+
+        // ==========================================
         // 5. RENDER RESULTS FEED
         // ==========================================
         function renderResults() {
@@ -460,7 +655,6 @@
             const students = globalDbData.Students || [];
 
             let groupedResults = {};
-            // Filter only approved and group by event
             for(let i = results.length - 1; i >= 0; i--) {
                 const r = results[i];
                 if(getVal(r,3) === "Pending") continue;
@@ -475,7 +669,6 @@
             if(sortedEvCodes.length === 0) {
                 html = `<div style="text-align:center; color:var(--text-muted); font-size:1.5rem; margin-top:50px;">Awaiting Results...</div>`;
             } else {
-                // Duplicate list for smooth infinite scrolling
                 let listToRender = sortedEvCodes;
                 if(sortedEvCodes.length < 5) { listToRender = sortedEvCodes.concat(sortedEvCodes); }
 
@@ -525,7 +718,6 @@
 
             const scrollBox = document.getElementById('resScroll');
             scrollBox.innerHTML = html;
-            // Adjust scroll speed (approx 5 seconds per event block)
             const scrollTime = Math.max(30, (listToRender.length || 1) * 8); 
             scrollBox.style.animationDuration = `${scrollTime}s`;
         }
