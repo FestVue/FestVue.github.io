@@ -28,7 +28,7 @@
             color: var(--text-main); 
             width: 100vw;
             height: 100vh; 
-            overflow: hidden; /* No scrollbars anywhere */
+            overflow: hidden; 
             display: flex; 
             flex-direction: column;
         }
@@ -60,34 +60,34 @@
         /* HEADER */
         .tv-header {
             background: linear-gradient(90deg, #151C2C 0%, #1a233a 100%);
-            padding: 1.5vh 3vw; display: flex; justify-content: space-between; align-items: center;
+            padding: 1vh 3vw; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 3px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10;
-            height: 12vh;
+            height: 11vh;
         }
         
         .header-left { display: flex; align-items: center; gap: 1.5vw; }
-        .logo-box { background: var(--primary); color: #0B0F19; padding: 0.8vh 1vw; border-radius: 8px; font-weight: 900; font-size: 2.5vh; letter-spacing: 2px; }
-        .fest-titles h1 { font-size: 3.5vh; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 2px; }
-        .fest-titles p { font-size: 2vh; color: var(--primary); font-weight: 600; }
+        .logo-box { background: var(--primary); color: #0B0F19; padding: 0.6vh 1vw; border-radius: 8px; font-weight: 900; font-size: 2.3vh; letter-spacing: 2px; }
+        .fest-titles h1 { font-size: 3.2vh; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 2px; }
+        .fest-titles p { font-size: 1.8vh; color: var(--primary); font-weight: 600; }
         
         .header-right { text-align: right; }
-        .live-badge { background: #EF4444; color: white; padding: 0.5vh 1vw; border-radius: 20px; font-weight: bold; font-size: 2vh; display: inline-flex; align-items: center; gap: 8px; animation: blinkRed 1.5s infinite; }
-        .time-display { font-size: 2.5vh; font-weight: 600; margin-top: 5px; color: var(--text-muted); }
+        .live-badge { background: #EF4444; color: white; padding: 0.4vh 1vw; border-radius: 20px; font-weight: bold; font-size: 1.8vh; display: inline-flex; align-items: center; gap: 8px; animation: blinkRed 1.5s infinite; }
+        .time-display { font-size: 2.2vh; font-weight: 600; margin-top: 3px; color: var(--text-muted); }
         
         @keyframes blinkRed { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* MAIN CONTENT AREA */
-        .tv-main { display: none; flex-grow: 1; height: 88vh; padding: 2vh 2vw; gap: 2vw; }
+        /* MAIN CONTENT AREA (Adjusted to leave space for Ticker) */
+        .tv-main { display: none; flex-grow: 1; height: 83vh; padding: 1.5vh 2vw; gap: 2vw; }
 
         /* LEFT SIDE - STANDINGS & SCORERS */
-        .tv-left { width: 38%; display: flex; flex-direction: column; gap: 2vh; height: 100%; transition: opacity 0.4s ease; }
+        .tv-left { width: 38%; display: flex; flex-direction: column; gap: 1.5vh; height: 100%; transition: opacity 0.4s ease; }
         
         .left-box { background: var(--card-bg); border-radius: 15px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.3); flex: 1; }
-        .section-header { background: #1a233a; padding: 1.5vh; font-size: 2.2vh; font-weight: 800; color: var(--primary); text-align: center; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; gap: 10px; letter-spacing: 1px; }
+        .section-header { background: #1a233a; padding: 1.2vh; font-size: 2vh; font-weight: 800; color: var(--primary); text-align: center; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; gap: 10px; letter-spacing: 1px; }
 
         /* Group Standings */
-        .standings-container { padding: 1.5vh; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
-        .lb-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 1.5vh 1.5vw; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; animation: softGlow 3s infinite alternate; }
+        .standings-container { padding: 1vh 1.5vh; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+        .lb-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 1vh 1.5vw; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; animation: softGlow 3s infinite alternate; }
         
         @keyframes softGlow { 0% { box-shadow: 0 0 0px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); } }
 
@@ -97,27 +97,27 @@
         .lb-item.rank-2 { background: rgba(148, 163, 184, 0.1); border-color: #94A3B8; }
         .lb-item.rank-3 { background: rgba(180, 83, 9, 0.1); border-color: #B45309; }
 
-        .lb-rank { font-size: 3vh; font-weight: 800; width: 4vw; }
-        .rank-1 .lb-rank { color: var(--primary); font-size: 3.5vh; }
+        .lb-rank { font-size: 2.6vh; font-weight: 800; width: 4vw; }
+        .rank-1 .lb-rank { color: var(--primary); font-size: 3vh; }
         .rank-2 .lb-rank { color: #CBD5E1; }
         .rank-3 .lb-rank { color: #F59E0B; }
 
-        .lb-name { font-size: 2.8vh; font-weight: 700; flex-grow: 1; }
-        .lb-pts { font-size: 3.5vh; font-weight: 900; color: var(--primary); }
+        .lb-name { font-size: 2.4vh; font-weight: 700; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lb-pts { font-size: 3vh; font-weight: 900; color: var(--primary); }
 
-        /* Top Scorers Grid */
-        .scorers-container { padding: 1.5vh; flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vh; align-items: center; }
-        .scorer-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-left: 4px solid var(--accent-green); border-radius: 10px; padding: 1.5vh 1vw; text-align: left; display: flex; flex-direction: column; justify-content: center; }
-        .sc-title { font-size: 1.8vh; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 0.5vh; letter-spacing: 1px; }
-        .sc-pts { float: right; color: var(--text-main); font-weight: 900; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; }
-        .sc-name { font-size: 2.2vh; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sc-grp { font-size: 1.6vh; color: var(--text-muted); font-weight: 600; margin-top: 3px; }
+        /* FIXED: Top Scorers Grid (Perfect Alignment for 4 titles) */
+        .scorers-container { padding: 1vh; flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 1vh; align-content: center; }
+        .scorer-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-left: 4px solid var(--accent-green); border-radius: 8px; padding: 1vh 0.8vw; text-align: left; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .sc-title { font-size: 1.5vh; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sc-pts { float: right; color: var(--text-main); font-weight: 900; background: rgba(0,0,0,0.5); padding: 1px 6px; border-radius: 4px; font-size: 1.4vh; }
+        .sc-name { font-size: 1.9vh; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sc-grp { font-size: 1.4vh; color: var(--text-muted); font-weight: 600; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* RIGHT SIDE - RESULTS CAROUSEL */
         .tv-right { width: 62%; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .carousel-container { flex-grow: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 3vh 3vw; perspective: 1000px; }
+        .carousel-container { flex-grow: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 2vh 2vw; perspective: 1000px; }
 
-        .res-slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; padding: 3vh 3vw; flex-direction: column; justify-content: center; }
+        .res-slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; padding: 2vh 2vw; flex-direction: column; justify-content: center; }
         
         .res-slide.active { display: flex; animation: flipIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         .res-slide.exit { display: flex; animation: flipOut 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; z-index: 10; }
@@ -127,35 +127,61 @@
 
         /* Result Card Design inside Slide */
         .big-res-card { background: #1a233a; border: 2px solid var(--border); border-radius: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        .big-res-header { background: rgba(255,255,255,0.03); padding: 2.5vh 2vw; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .big-ev-name { font-size: 4vh; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .big-res-header { background: rgba(255,255,255,0.03); padding: 2vh 2vw; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .big-ev-name { font-size: 3.5vh; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         
-        /* NEW: Tag Container for Category & Gender */
         .big-tags-container { display: flex; gap: 1vw; align-items: center; flex-wrap: wrap; }
-        .big-res-tag { background: #0B0F19; padding: 1vh 1vw; border-radius: 8px; font-size: 2vh; font-weight: 700; color: var(--text-muted); border: 1px solid var(--border); text-transform: uppercase; }
+        .big-res-tag { background: #0B0F19; padding: 0.8vh 1vw; border-radius: 8px; font-size: 1.8vh; font-weight: 700; color: var(--text-muted); border: 1px solid var(--border); text-transform: uppercase; }
         .tag-highlight { border-color: var(--primary); color: var(--primary); }
 
-        .big-res-body { padding: 3vh 2vw; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
-        .big-winner-row { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 2vh 2vw; border-radius: 12px; border: 1px solid var(--border); }
+        .big-res-body { padding: 2vh 2vw; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+        .big-winner-row { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 1.5vh 2vw; border-radius: 12px; border: 1px solid var(--border); }
         
-        .b-pos { font-size: 2.5vh; font-weight: 900; width: 10vw; padding: 1.5vh; border-radius: 10px; text-align: center; margin-right: 2vw; letter-spacing: 2px; }
+        .b-pos { font-size: 2.2vh; font-weight: 900; width: 9vw; padding: 1.2vh; border-radius: 8px; text-align: center; margin-right: 2vw; letter-spacing: 2px; }
         .b-pos-1 { background: linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(212,175,55,0.1) 100%); color: var(--primary); border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(212,175,55,0.2); }
         .b-pos-2 { background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 2px solid #94A3B8; }
         .b-pos-3 { background: rgba(180, 83, 9, 0.15); color: #F59E0B; border: 2px solid #B45309; }
 
-        .b-name { font-size: 3.5vh; font-weight: 700; flex-grow: 1; color: white; }
-        .b-grp { font-size: 2.2vh; color: var(--text-muted); font-weight: 600; text-align: right; }
+        .b-name { font-size: 3vh; font-weight: 700; flex-grow: 1; color: white; }
+        .b-grp { font-size: 2vh; color: var(--text-muted); font-weight: 600; text-align: right; }
 
         /* Loader */
         .loader-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; display: none; }
         .spinner { font-size: 6vh; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 2vh; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Scrolling Ticker at Bottom */
-        .ticker-wrap { width: 100%; background-color: var(--accent); overflow: hidden; height: 4vh; display: flex; align-items: center; padding-left: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); position: fixed; bottom: 0; z-index: 50; }
-        .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; }
-        .ticker-item { display: inline-block; padding: 0 2rem; font-size: 2vh; font-weight: 700; color: #1e293b; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        /* FIXED: Bottom Ticker (Slow speed + 1st, 2nd, 3rd visible & clear style) */
+        .ticker-wrap { 
+            width: 100vw; 
+            background: linear-gradient(90deg, #151C2C 0%, #1a233a 100%); 
+            border-top: 2px solid var(--primary); 
+            height: 6vh; 
+            display: flex; 
+            align-items: center; 
+            overflow: hidden; 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            z-index: 100; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+        }
+        .ticker { 
+            display: inline-block; 
+            white-space: nowrap; 
+            padding-left: 100%; 
+            animation: ticker 45s linear infinite; /* Slower speed: 45 seconds */
+        }
+        .ticker-item { 
+            display: inline-block; 
+            padding: 0 3rem; 
+            font-size: 2.2vh; 
+            font-weight: 600; 
+            color: var(--text-main); 
+        }
+        @keyframes ticker { 
+            0% { transform: translate3d(0, 0, 0); } 
+            100% { transform: translate3d(-100%, 0, 0); } 
+        }
 
     </style>
 </head>
@@ -233,9 +259,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. SYSTEM INITIALIZATION & FULLSCREEN
-        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         let globalDbData = {};
         let currentInstId = null;
@@ -290,9 +313,6 @@
             return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
         }
 
-        // ==========================================
-        // 2. DATA FETCHING
-        // ==========================================
         function fetchData() {
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -340,9 +360,6 @@
             }).catch(err => {});
         }
 
-        // ==========================================
-        // 3. PROCESS & DISTRIBUTE DATA
-        // ==========================================
         function processData(isInitialLoad) {
             const settings = globalDbData.Settings || [];
             festConfig.titles = [];
@@ -379,9 +396,6 @@
             updateTicker();
         }
 
-        // ==========================================
-        // 4. LEFT PANE: STANDINGS & SCORERS
-        // ==========================================
         function renderStandingsAndScorers() {
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
@@ -472,9 +486,6 @@
             document.getElementById('topScorersBox').innerHTML = sHtml || `<div style="grid-column:span 2; text-align:center; color:var(--text-muted); font-size:2vh;">Top scorers will appear here</div>`;
         }
 
-        // ==========================================
-        // 5. RIGHT PANE: RESULTS CAROUSEL
-        // ==========================================
         function buildResultsCarousel() {
             const results = globalDbData.Results || []; const events = globalDbData.Events || []; const students = globalDbData.Students || [];
 
@@ -493,7 +504,6 @@
             sortedEvCodes.forEach(evCode => {
                 const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
                 const evName = evDetails ? getVal(evDetails, 1).toString().toUpperCase() : evCode;
-                // NEW: Extract Category and Gender for Badges
                 const evCat = evDetails ? getVal(evDetails, 2).toString().toUpperCase() : "N/A";
                 const evGen = evDetails ? getVal(evDetails, 3).toString().toUpperCase() : "N/A";
                 const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
@@ -511,7 +521,6 @@
                     if(pos == 1) p1 += rowHtml; if(pos == 2) p2 += rowHtml; if(pos == 3) p3 += rowHtml;
                 });
 
-                // NEW: Added Display Flex tag container for Badges (Category & Gender)
                 let slideHtml = `<div class="res-slide">
                                     <div class="big-res-card">
                                         <div class="big-res-header">
@@ -573,7 +582,7 @@
         }
 
         // ==========================================
-        // 6. BOTTOM TICKER (Updated with Badges)
+        // BOTTOM TICKER (Showing 1st, 2nd, 3rd)
         // ==========================================
         function updateTicker() {
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
@@ -583,7 +592,7 @@
             for(let r of approvedResults) {
                 const evCode = getVal(r,0).toString().trim().toUpperCase();
                 if(!uniqueEvs.includes(evCode)) uniqueEvs.push(evCode);
-                if(uniqueEvs.length >= 10) break; 
+                if(uniqueEvs.length >= 12) break; 
             }
 
             if(uniqueEvs.length === 0) {
@@ -597,20 +606,31 @@
                     const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
                     const suffix = isGroup ? " & Team" : "";
                     
-                    const badgeStr = (evCat && evGen) ? `<span style="color:var(--text-muted); font-size:0.8em; font-weight:500;"> (${evCat} - ${evGen})</span>` : "";
+                    const badgeStr = (evCat && evGen) ? `<span style="color:var(--text-muted); font-size:0.85em; font-weight:500;"> (${evCat} - ${evGen})</span>` : "";
                     
-                    const firstRow = approvedResults.find(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,2) == 1);
-                    if(firstRow) {
-                        const chest = getVal(firstRow,1).toString().trim().toUpperCase();
-                        const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
-                        const nameStr = st ? getVal(st,1) + suffix : chest;
-                        tickerHTML += `<div class="ticker-item">🎉 <b style="color:var(--primary);">${evName}</b>${badgeStr} - 1st Place: <span>${nameStr}</span></div>`;
+                    let getWinnerName = (pos) => {
+                        let resRow = approvedResults.find(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,2) == pos);
+                        if(!resRow) return null;
+                        let chest = getVal(resRow,1).toString().trim().toUpperCase();
+                        let st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                        return st ? getVal(st,1) + suffix : chest;
+                    };
+
+                    const w1 = getWinnerName(1);
+                    const w2 = getWinnerName(2);
+                    const w3 = getWinnerName(3);
+
+                    if(w1 || w2 || w3) {
+                        tickerHTML += `<div class="ticker-item">🏆 <b style="color:var(--primary);">${evName}</b>${badgeStr} &nbsp;—&nbsp; `;
+                        if(w1) tickerHTML += `<span style="color:#10B981;">1st: ${w1}</span>`;
+                        if(w2) tickerHTML += ` &nbsp;|&nbsp; <span style="color:#CBD5E1;">2nd: ${w2}</span>`;
+                        if(w3) tickerHTML += ` &nbsp;|&nbsp; <span style="color:#F59E0B;">3rd: ${w3}</span>`;
+                        tickerHTML += `</div>`;
                     }
                 });
             }
             document.getElementById('tickerContent').innerHTML = tickerHTML;
         }
-
     </script>
 </body>
 </html>
