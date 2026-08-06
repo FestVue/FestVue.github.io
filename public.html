@@ -102,9 +102,20 @@
         .crop-container { width: 100%; max-height: 300px; margin: 15px 0; background: #eee; }
         #canvasPreview { width: 100%; max-width: 350px; border-radius: 8px; display: none; margin: 15px auto; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .loader { text-align: center; padding: 40px; color: var(--muted); }
+
+        .global-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(253, 251, 247, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        body.dark-mode .global-loader { background: rgba(15, 23, 42, 0.95); }
+        .spinner { font-size: 3rem; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <!-- Global Loader -->
+    <div id="globalLoader" class="global-loader">
+        <i class="fas fa-circle-notch spinner"></i>
+        <h3 style="color: var(--primary);">Syncing Live Results...</h3>
+        <p style="color: var(--text); opacity: 0.7; font-size: 0.9rem;">Please wait a moment</p>
+    </div>
 
     <!-- MAIN APP SCREEN (Login Screen & Toast Notifications Completely Removed) -->
     <div id="appScreen">
@@ -280,6 +291,7 @@
 
             document.getElementById('appScreen').style.display = 'block';
 
+            // Cache checking logic
             const cachedData = localStorage.getItem('festvue_data_' + currentInstId);
             
             if (cachedData && (!urlInst || urlInst.trim().toUpperCase() === savedInstId)) {
@@ -293,37 +305,28 @@
                 document.getElementById('dispFestName').innerText = "Loading...";
             }
             
-            fetchData(false, urlChest);
+            fetchData(true, urlChest);
+            
+            setInterval(() => {
+                fetchData(false, null);
+            }, 20000); 
         };
 
         // ==========================================
-        // 2. BACKGROUND FETCHING
+        // 2. BACKGROUND FETCHING & SWR CACHING
         // ==========================================
-        function fetchData(isRefresh = false, autoSearchChest = null) {
+        function fetchData(showLoader = false, autoSearchChest = null) {
             if(!currentInstId) return;
             const refreshBtn = document.getElementById('refreshBtn');
             
-            if(isRefresh && refreshBtn) {
-                refreshBtn.disabled = true;
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin" style="color:var(--primary);"></i>';
-                refreshBtn.style.opacity = '0.5';
-            }
+            // 1. ക്യാഷ് ചെക്കിംഗ്: പഴയ ഡാറ്റ ഉണ്ടെങ്കിൽ 0 സെക്കൻഡിൽ കാണിക്കുക
+            let cachedDataStr = localStorage.getItem('festvue_data_' + currentInstId);
             
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    localStorage.setItem("festvue_public_instId", currentInstId);
-                    localStorage.setItem("festvue_data_" + currentInstId, JSON.stringify(data.data));
-                    localStorage.setItem("festvue_inst_" + currentInstId, data.institutionName);
-                    
-                    globalDbData = data.data || {};
-                    festConfig.inst = data.institutionName;
-                    document.getElementById('dispInstName').innerText = data.institutionName;
-                    
+            if (cachedDataStr && cachedDataStr !== "undefined") {
+                try {
+                    globalDbData = JSON.parse(cachedDataStr);
+                    festConfig.inst = localStorage.getItem('festvue_inst_' + currentInstId) || "Institution Name";
+                    document.getElementById('dispInstName').innerText = festConfig.inst;
                     processData();
                     populateFilterDropdowns();
                     
@@ -331,6 +334,51 @@
                         document.getElementById('searchInput').value = autoSearchChest;
                         document.querySelectorAll('.nav-item')[2].click(); 
                         document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                        autoSearchChest = null; // ഒരു തവണ ഓട്ടോ സെർച്ച് ചെയ്താൽ പിന്നെ ഒഴിവാക്കുന്നു
+                    }
+                } catch(e) {
+                    console.error("Cache parsing error", e);
+                    if (showLoader) document.getElementById('globalLoader').style.display = 'flex';
+                }
+            } else if (showLoader) {
+                // ക്യാഷ് ഇല്ലെങ്കിൽ ലോഡർ കാണിക്കുക (ആദ്യ ലോഗിൻ)
+                document.getElementById('globalLoader').style.display = 'flex';
+            }
+
+            if(showLoader && refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin" style="color:var(--primary);"></i>';
+                refreshBtn.style.opacity = '0.5';
+            }
+            
+            // 2. ബാക്ക്ഗ്രൗണ്ടിൽ പുതിയ ഡാറ്റ എടുക്കുന്നു
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    let newDataStr = JSON.stringify(data.data);
+                    
+                    // 3. ഡെൽറ്റ ചെക്ക്: പഴയതിനേക്കാൾ മാറ്റമുണ്ടെങ്കിൽ മാത്രം UI അപ്ഡേറ്റ് ചെയ്യുക
+                    if (cachedDataStr !== newDataStr) {
+                        localStorage.setItem("festvue_public_instId", currentInstId);
+                        localStorage.setItem("festvue_data_" + currentInstId, newDataStr);
+                        localStorage.setItem("festvue_inst_" + currentInstId, data.institutionName);
+                        
+                        globalDbData = data.data || {};
+                        festConfig.inst = data.institutionName;
+                        document.getElementById('dispInstName').innerText = data.institutionName;
+                        
+                        processData();
+                        populateFilterDropdowns();
+                        
+                        if(autoSearchChest) {
+                            document.getElementById('searchInput').value = autoSearchChest;
+                            document.querySelectorAll('.nav-item')[2].click(); 
+                            document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                        }
                     }
                 } else {
                     alert(data.message || "Invalid Institution ID.");
@@ -339,9 +387,10 @@
                 }
             })
             .catch(err => {
-                console.log("Network error:", err);
+                console.error("Background sync failed:", err);
             })
             .finally(() => {
+                if (showLoader) document.getElementById('globalLoader').style.display = 'none';
                 if(refreshBtn) {
                     refreshBtn.disabled = false;
                     refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
