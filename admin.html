@@ -665,6 +665,9 @@
                     updateDashboardStats();
                     renderTable();
                     renderPendingApprovals();
+                if(document.getElementById('codeEventSelect').value) {
+                        fetchEventCodes();
+                    }
                 } else { alert("Failed to load data: " + data.message); }
             });
         }
@@ -760,7 +763,7 @@
             let catHtml = "", groupHtml = "", classHtml = "", rawClassHtml = "", judgeHtml = ""; 
             if(document.getElementById('customPointsContainer')) document.getElementById('customPointsContainer').innerHTML = ""; 
             
-            judges.forEach(j => { judgeHtml += `<li class="list-item"><span><i class="fas fa-user"></i> <b>${getVal(j,0)}</b></span><button onclick="deleteRow('Judges', ${j.rowIndex})" style="background:none; border:none; color:#ff5a5f; cursor:pointer;"><i class="fas fa-trash"></i></button></li>`; });
+            judges.forEach(j => { judgeHtml += `<li class="list-item"><span><i class="fas fa-user"></i> <b>${getVal(j,0)}</b> <small style="color:var(--muted); margin-left:8px;">(Password: <b>${getVal(j,1)}</b>)</small></span><button onclick="deleteRow('Judges', ${j.rowIndex})" style="background:none; border:none; color:#ff5a5f; cursor:pointer;"><i class="fas fa-trash"></i></button></li>`; });
             if(document.getElementById('judgeList')) document.getElementById('judgeList').innerHTML = judgeHtml || "<p style='color:#64748b; font-size:0.9rem;'>No Judges Added.</p>";
 
             if(document.getElementById('titlesContainer')) document.getElementById('titlesContainer').innerHTML = ""; 
@@ -899,7 +902,8 @@
         }
 
         async function generateCodes() {
-            const evCode = document.getElementById('codeEventSelect').value; const regs = (globalDbData.Registrations || []).filter(r => getVal(r,0) === evCode);
+            const evCode = document.getElementById('codeEventSelect').value; 
+            const regs = (globalDbData.Registrations || []).filter(r => getVal(r,0) === evCode);
             if(regs.length === 0) { alert("No students registered for this event!"); return; }
             if(!confirm("Generate truly random letters for these students? Existing codes (if any) will be appended.")) return;
             
@@ -913,10 +917,32 @@
             let rowsToSave = [];
             chestNos.forEach((chest, idx) => { rowsToSave.push([evCode, selectedLetters[idx], chest]); });
             
-            const btn = document.getElementById('generateCodeBtn'); btn.innerHTML = "Generating..."; btn.disabled = true;
-            try { let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) });
-                if((await res.json()).status === "success") { alert("Random Codes Generated!"); loadDropdownData(); setTimeout(fetchEventCodes, 1000); }
-            } catch(e) {} finally { btn.innerHTML = "Generate Codes"; btn.disabled = false; }
+            const btn = document.getElementById('generateCodeBtn'); 
+            btn.innerHTML = "Generating..."; 
+            btn.disabled = true;
+            
+            try { 
+                let res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) 
+                });
+                let data = await res.json();
+                if(data.status === "success") { 
+                    alert("Random Codes Generated!"); 
+                    
+                    if(!globalDbData.CodeLetters) globalDbData.CodeLetters = [];
+                    rowsToSave.forEach(row => {
+                        globalDbData.CodeLetters.push({ 0: row[0], 1: row[1], 2: row[2], rowIndex: globalDbData.CodeLetters.length + 2 });
+                    });
+
+                    fetchEventCodes(); 
+                }
+            } catch(e) {
+                alert("Error generating codes.");
+            } finally { 
+                btn.innerHTML = "Generate Codes"; 
+                btn.disabled = false; 
+            }
         }
 
         function printEventCodes() {
