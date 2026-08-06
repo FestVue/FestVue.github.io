@@ -673,7 +673,7 @@
         }
 
         // ==========================================
-        // 6. SEARCH & WHATSAPP SHARE
+        // 6. SEARCH & WHATSAPP SHARE & CERTIFICATES
         // ==========================================
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -718,7 +718,6 @@
                 }
             });
 
-            // WHATSAPP SHARE TEXT CONFIG
             let currentUrl = window.location.href.split('?')[0];
             let directLink = `${currentUrl}?inst=${currentInstId}&chest=${q}`;
             let shareText = `*${festConfig.name} - Participant Info*\n\n👤 Name: ${name}\n🔢 Chest No: ${q}\n🏠 Group: ${grp}\n\n*Events & Results:*\n`;
@@ -734,7 +733,7 @@
                     const evName = ev ? getVal(ev,1) : evCode;
                     const isGroup = ev && getVal(ev,4).toString().trim().toLowerCase() === 'group';
                     
-                    let medalBadge = ""; let posText = "";
+                    let medalBadge = ""; let posText = ""; let certBtnHtml = "";
                     
                     const evResults = results.filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,3) !== "Pending");
                     
@@ -748,6 +747,11 @@
                             if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
                                 won = true;
                                 const pos = getVal(resRow,2);
+                                let posValueText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
+                                
+                                // സർട്ടിഫിക്കറ്റ് ഡൗൺലോഡ് ബട്ടൺ (വിജയിച്ച ഇവന്റുകൾക്ക് മാത്രം)
+                                certBtnHtml = `<button onclick="downloadCertificate('${evCode}', '${posValueText}')" class="auth-btn" style="background:#b45309; padding: 6px 12px; font-size:0.8rem; margin: 8px 0 0 0; width:100%;"><i class="fas fa-award"></i> Download Certificate</button>`;
+                                
                                 if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
                                 else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "2nd"}); }
                                 else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "3rd"}); }
@@ -761,9 +765,12 @@
                     
                     const groupBadge = isGroup ? `<span style="font-size:0.7rem; background:var(--bg); padding:2px 5px; border-radius:4px; border:1px solid var(--border); color:var(--muted); margin-left:5px;">Group</span>` : "";
                     
-                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--input-bg); border-radius:6px; border:1px solid var(--border);">
-                                <div style="font-size:0.95rem; font-weight:500; color:var(--text);">${evName} ${groupBadge}</div>
-                                <div>${medalBadge}</div>
+                    html += `<div style="padding:10px; background:var(--input-bg); border-radius:6px; border:1px solid var(--border);">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="font-size:0.95rem; font-weight:500; color:var(--text);">${evName} ${groupBadge}</div>
+                                    <div>${medalBadge}</div>
+                                </div>
+                                ${certBtnHtml}
                              </div>`;
                     shareText += `🔸 ${evName} - ${posText}\n`;
                 });
@@ -807,7 +814,112 @@
         }
 
         // ==========================================
-        // 7. POSTER GENERATION (Dynamic Vertical Alignment)
+        // 7. CERTIFICATE GENERATION & DOWNLOAD
+        // ==========================================
+        function downloadCertificate(evCode, posText) {
+            const events = globalDbData.Events || [];
+            const settings = globalDbData.Settings || [];
+            
+            // Get Authority Label & Custom Template from Settings
+            let authorityLabel = "Authorized Signatory";
+            let certTemplateStr = "";
+            let festDate = new Date();
+            
+            settings.forEach(row => {
+                const type = getVal(row, 0).toString().toUpperCase();
+                const key = getVal(row, 1).toString().toUpperCase();
+                const val = getVal(row, 2);
+                if (type === "CONFIG") {
+                    if (key === "AUTHORITY") authorityLabel = val || authorityLabel;
+                    if (key === "CERT_TEMPLATE") certTemplateStr = val || "";
+                    if (key === "DATE" && val) festDate = new Date(val);
+                }
+            });
+            
+            const dateStr = String(festDate.getDate()).padStart(2, '0') + "-" + String(festDate.getMonth() + 1).padStart(2, '0') + "-" + festDate.getFullYear();
+            
+            const eventItem = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase());
+            const evName = eventItem ? getVal(eventItem, 1) : evCode;
+            
+            let dynamicText = certTemplateStr
+                .replace(/\n/g, '<br>')
+                .replace(/\[NAME\]/g, `<div class="student-name">${currentSearchStudent.name}</div>`)
+                .replace(/\[CHEST\]/g, `<b>${currentSearchStudent.chest}</b>`)
+                .replace(/\[CLASS\]/g, `<b>${currentSearchStudent.cls}</b>`)
+                .replace(/\[GROUP\]/g, `<b>${currentSearchStudent.grp}</b>`)
+                .replace(/\[EVENT\]/g, `<b>${evName}</b>`)
+                .replace(/\[POSITION\]/g, `<b>${posText}</b>`);
+
+            let printWindow = window.open('', '_blank');
+            let htmlContent = `<html><head><title>Download Certificate</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+                @page { size: A4 landscape; margin: 0; }
+                body { margin: 0; background: #fff; -webkit-print-color-adjust: exact; }
+                .cert-page { width: 297mm; height: 210mm; position: relative; background-color: #fcfbf9; overflow: hidden; box-sizing: border-box; }
+                .cert-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+                .cert-content { position: relative; z-index: 1; padding: 22mm 28mm; width: 100%; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box; }
+                .text-wrapper { width: 62%; }
+                .header-inst { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+                .header-fest { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; }
+                .cert-title { font-family: 'Playfair Display', serif; font-size: 3.4rem; font-weight: 700; color: #0b132b; line-height: 1.1; letter-spacing: 1px; margin: 10px 0 15px 0; }
+                .student-name { font-family: 'Bebas Neue', sans-serif; font-size: 4.8rem; color: #C5A059; line-height: 1.1; margin: 10px 0 15px 0; white-space: normal; word-break: keep-all; overflow-wrap: break-word; text-shadow: 1px 1px 2px rgba(0,0,0,0.03); letter-spacing: 2px; }
+                .main-text { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.8; color: #475569; max-width: 95%; font-weight: 500; }
+                .main-text b { color: #0b132b; font-weight: 700; }
+                .footer-row { display: flex; justify-content: space-between; width: 75%; margin-top: 45px; }
+                .sig-box { text-align: left; }
+                .sig-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+                .sig-line { border-top: 1.5px solid #C5A059; width: 220px; }
+            </style></head><body>
+            <div class="cert-page">
+                <svg class="cert-bg" viewBox="0 0 1122 793" preserveAspectRatio="none">
+                    <rect width="1122" height="793" fill="#fcfbf9" />
+                    <!-- Outer & Inner Gold Borders -->
+                    <polyline points="684,35 35,35 35,758 866,758" fill="none" stroke="#D4AF37" stroke-width="3" />
+                    <polyline points="686,45 45,45 45,748 863,748" fill="none" stroke="#D4AF37" stroke-width="1.2" />
+                    <!-- Dark Navy Angles -->
+                    <polygon points="700,0 1122,0 1122,793 900,793" fill="#0b132b" />
+                    <!-- Thick Gold Diagonal Line -->
+                    <polygon points="675,0 700,0 900,793 875,793" fill="#D4AF37" />
+                    <!-- Detailed Vector Gold Laurel Wreath Seal -->
+                    <g transform="translate(865, 80) scale(1.15)">
+                         <polygon points="35,80 20,130 50,110 80,130 65,80" fill="#C5A059" />
+                         <polygon points="35,80 20,130 50,110" fill="#b38a42" opacity="0.4" />
+                         <circle cx="50" cy="50" r="38" fill="#D4AF37" />
+                         <circle cx="50" cy="50" r="32" fill="#0b132b" />
+                         <circle cx="50" cy="50" r="28" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="3 3" />
+                         <path d="M50,25 L55,40 L70,40 L58,49 L62,64 L50,55 L38,64 L42,49 L30,40 L45,40 Z" fill="#D4AF37"/>
+                    </g>
+                </svg>
+                <div class="cert-content">
+                    <div class="text-wrapper">
+                        <div class="header-inst">${festConfig.inst}</div>
+                        <div class="header-fest">${festConfig.name}</div>
+                        <div class="cert-title">CERTIFICATE OF<br>MERIT</div>
+                        <div class="main-text">${dynamicText}</div>
+                    </div>
+                    <div class="footer-row">
+                        <div class="sig-box">
+                            <div class="sig-name">${authorityLabel}</div>
+                            <div class="sig-line"></div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-name">${dateStr}</div>
+                            <div class="sig-line"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </body></html>`;
+            
+            printWindow.document.write(htmlContent); 
+            printWindow.document.close(); 
+            // Trigger print dialog after fonts are loaded
+            printWindow.setTimeout(function() { printWindow.print(); }, 800);
+        }
+
+        // ==========================================
+        // 8. POSTER GENERATION (Dynamic Vertical Alignment)
         // ==========================================
         let cropper;
 
