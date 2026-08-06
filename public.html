@@ -6,7 +6,7 @@
     <title>FestVue - Public Results</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#046A38">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1022,8 +1022,37 @@
             const canvas = document.getElementById('posterCanvas');
             const ctx = canvas.getContext('2d');
             
-            const W = 1080, H = 1440, CX = 540;
+            const W = 1080;
+            const CX = 540;
+            
+            // 1. ഡൈനാമിക് ഹൈറ്റ് കാൽക്കുലേഷൻ (Dynamic Height & Clean Spacing)
+            let totalWins = currentSearchWins.length;
+            let yGap = 75; // ഓരോ റിസൾട്ടും തമ്മിലുള്ള അകലം (ശ്വാസം ലഭിക്കാൻ കൂട്ടി)
+            let boxH = 54; // ബോക്സിന്റെ വീതി
+            let boxR = 27; // ബോക്സിന്റെ റൗണ്ട്
+            let fSize = 26; // അക്ഷരങ്ങളുടെ വലുപ്പം
+            
+            let listTotalHeight = totalWins * yGap;
+            let baseListY = 1100; // റിസൾട്ട് ലിസ്റ്റ് തുടങ്ങുന്ന സ്ഥലം (താഴേക്ക് നീക്കി)
+            let requiredH = baseListY + listTotalHeight + 130; // ഫൂട്ടറിനുള്ള സ്പേസ് കൂടി ഉൾപ്പെടുത്തി
+            
+            let H = Math.max(1440, requiredH); // കുറഞ്ഞത് 1440px, കൂടിയാൽ തനിയെ വർദ്ധിക്കും
+            
+            let startY = 0;
+            if (H === 1440) {
+                // 5 പരിപാടിയിൽ താഴെയാണെങ്കിൽ ആ ഒഴിവുള്ള സ്ഥലത്തിന്റെ നടുവിലായി സെറ്റ് ചെയ്യുന്നു
+                let availableSpace = 1440 - baseListY - 80;
+                startY = baseListY + (availableSpace - listTotalHeight) / 2 + (boxH / 2);
+            } else {
+                // കൂടുതൽ ഉണ്ടെങ്കിൽ കൃത്യമായ അകലത്തിൽ താഴേക്ക് പോകുന്നു
+                startY = baseListY + (boxH / 2);
+            }
+            
+            // ക്യാൻവാസിന്റെ പുതിയ വലിപ്പം അപ്ലൈ ചെയ്യുന്നു
+            canvas.width = W;
+            canvas.height = H;
 
+            // 2. ബാക്ക്ഗ്രൗണ്ടും കളറുകളും
             const bg = ctx.createLinearGradient(0, 0, W, H);
             bg.addColorStop(0, "#1B1035");
             bg.addColorStop(0.55, "#2C1657");
@@ -1036,18 +1065,21 @@
             blob1.addColorStop(1, "rgba(255,201,74,0)");
             ctx.fillStyle = blob1; ctx.fillRect(0, 0, W, H);
 
-            const blob2 = ctx.createRadialGradient(940, 1200, 20, 940, 1200, 340);
+            // താഴത്തെ വെളിച്ചം ക്യാൻവാസിന്റെ അടിയിലേക്ക് ഫിക്സ് ചെയ്യുന്നു
+            const blob2 = ctx.createRadialGradient(940, H - 240, 20, 940, H - 240, 340);
             blob2.addColorStop(0, "rgba(74,222,222,0.15)");
             blob2.addColorStop(1, "rgba(74,222,222,0)");
             ctx.fillStyle = blob2; ctx.fillRect(0, 0, W, H);
 
-            drawConfetti(ctx, W, H);
+            drawConfetti(ctx, W, 1440); // Confetti മുകൾഭാഗത്ത് മാത്രം മതി
 
+            // 3. പുറത്തുള്ള വെള്ള ബോർഡർ (പുതിയ H-ലേക്ക് നീളും)
             ctx.strokeStyle = "rgba(255,255,255,0.25)";
             ctx.lineWidth = 2;
             roundRect(ctx, 26, 26, W - 52, H - 52, 28);
             ctx.stroke();
 
+            // 4. മുകളിലെ ടെക്സ്റ്റുകൾ
             ctx.save();
             ctx.fillStyle = "#FFC94A";
             roundRect(ctx, 70, 62, 46, 46, 12);
@@ -1068,7 +1100,7 @@
             ctx.font = "500 18px 'Poppins', sans-serif";
             ctx.fillText("Achievement Certificate", W - 70, 92);
 
-            // 1. പരിപാടിയുടെ പേര് (Fest Name) - (Y: 200)
+            // പുതിയ ഓർഡറും അകലവും: Fest Name ➔ Description ➔ Congratulations
             const headGrad = ctx.createLinearGradient(CX - 380, 0, CX + 380, 0);
             headGrad.addColorStop(0, "#FFC94A");
             headGrad.addColorStop(0.5, "#FF9F5A");
@@ -1076,21 +1108,20 @@
             ctx.textAlign = "center";
             ctx.fillStyle = headGrad;
             ctx.font = "900 78px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
-            ctx.fillText(festConfig.name.toUpperCase(), CX, 200, 960);
+            ctx.fillText(festConfig.name.toUpperCase(), CX, 220, 960);
 
-            // 2. ഡിസ്ക്രിപ്ഷൻ (Description) - പേരിനു താഴെ (Y: 250)
             if(festConfig.desc) {
                 ctx.fillStyle = "rgba(255,255,255,0.85)";
                 ctx.font = "600 24px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
-                ctx.fillText(festConfig.desc.toUpperCase(), CX, 250, 900);
+                ctx.fillText(festConfig.desc.toUpperCase(), CX, 270, 900);
             }
 
-            // 3. Congratulations - ഫോട്ടോയ്ക്ക് തൊട്ടുമുകളിൽ (Y: 340)
             ctx.fillStyle = "#FFC94A";
             ctx.font = "50px 'Pacifico', cursive";
-            ctx.fillText("Congratulations", CX, 340);
+            ctx.fillText("Congratulations", CX, 360);
 
-            const PY = 610, PR = 200;
+            // 5. ഫോട്ടോ & ബാർ ഡിസൈൻ (താഴേക്ക് നീക്കി: PY 610-ൽ നിന്ന് 650 ആക്കി)
+            const PY = 650, PR = 200;
 
             ring(ctx, CX, PY, PR + 34, 2, "#ffffff", 0.18);
             ring(ctx, CX, PY, PR + 22, 1.5, "#FFC94A", 0.5);
@@ -1134,10 +1165,12 @@
             ctx.font = "900 30px 'Poppins', sans-serif";
             ctx.fillText("🏆", CX + PR * 0.68, PY + PR * 0.68 + 11);
 
+            // കുട്ടിയുടെ പേര്
             ctx.fillStyle = "#ffffff";
             ctx.font = "800 54px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
             ctx.fillText(currentSearchStudent.name.toUpperCase(), CX, PY + PR + 80, 960);
 
+            // ചെസ്റ്റ് നമ്പർ ബാർ
             const barY = PY + PR + 110, barH = 65;
             ctx.save();
             ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 8;
@@ -1150,23 +1183,8 @@
             ctx.font = "700 26px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
             ctx.fillText(`CHEST NO. ${currentSearchStudent.chest}   •   ${currentSearchStudent.grp}`, CX, barY + 42, 600);
 
-            let maxWins = currentSearchWins.length > 5 ? 5 : currentSearchWins.length;
-            const winsToShow = currentSearchWins.slice(0, maxWins);
-            
-            let yGap = 65, fSize = 28, boxH = 52, boxR = 26;
-            
-            if (maxWins >= 4) {
-                yGap = 55; fSize = 25; boxH = 46; boxR = 23;
-            }
-
-            let totalWinsHeight = (maxWins * yGap);
-            if (currentSearchWins.length > maxWins) {
-                totalWinsHeight += 30; 
-            }
-
-            let startY = 995 + (380 - totalWinsHeight) / 2 + (boxH / 2);
-
-            winsToShow.forEach(win => {
+            // 6. റിസൾട്ടുകൾ പ്രിന്റ് ചെയ്യുന്നു (ലിമിറ്റ് ഇല്ലാതെ, ക്ലീൻ സ്പേസിങ്ങോടെ)
+            currentSearchWins.forEach(win => {
                 const label = `${win.event} — ${win.pos} Place`;
                 ctx.font = `600 ${fSize}px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif`;
                 const pw = Math.min(ctx.measureText(label).width + 100, 900);
@@ -1184,16 +1202,12 @@
                 startY += yGap; 
             });
 
-            if (currentSearchWins.length > maxWins) {
-                ctx.font = "italic 500 24px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
-                ctx.fillStyle = "rgba(255,255,255,0.65)";
-                ctx.fillText(`+ ${currentSearchWins.length - maxWins} more wins`, CX, startY);
-            }
-
+            // 7. ഫൂട്ടർ ടെക്സ്റ്റ്
             ctx.fillStyle = "rgba(255,255,255,0.45)";
             ctx.font = "500 20px 'Poppins', sans-serif";
             ctx.fillText("Generated with FestVue Results Platform", CX, H - 45);
 
+            // Output to screen
             const imgData = canvas.toDataURL("image/png");
             document.getElementById('canvasPreview').src = imgData;
 
