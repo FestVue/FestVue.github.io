@@ -16,7 +16,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
         
-        /* Toast Notification */
         .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 500; z-index: 9999; transition: 0.4s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; }
         .toast.success { background: #10B981; }
         .toast.error { background: #EF4444; }
@@ -29,9 +28,9 @@
         .logo span { color: var(--accent); }
         .subtitle { text-align: center; color: var(--muted); font-weight: 500; margin-bottom: 25px; }
         
-        .input-group { margin-bottom: 15px; }
+        .input-group { margin-bottom: 15px; width: 100%; }
         .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase;}
-        .input-group input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-group input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; background: var(--card); color: var(--text); }
         .input-group input:focus { border-color: var(--primary); }
         
         .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
@@ -47,11 +46,12 @@
         .icon-btn { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
         .icon-btn:hover { color: var(--primary); }
 
-        .container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .container { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box select, .search-box input { flex-grow: 1; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1rem; outline: none; }
-        .search-box button { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+        /* Fixed Search Box & Border Breaking Issue */
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; box-sizing: border-box; flex-wrap: wrap; }
+        .search-box select, .search-box input { flex-grow: 1; min-width: 200px; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1rem; outline: none; background: var(--card); color: var(--text); box-sizing: border-box; }
+        .search-box button { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
 
         .section-title { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         
@@ -82,16 +82,14 @@
         .pc-rank select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; font-weight: 600; color: var(--text); outline: none; background: var(--bg); appearance: none; cursor: pointer; }
         .pc-rank select:focus { border-color: var(--primary); }
         
-        /* Brought Remarks back */
         .pc-remarks { flex-grow: 1; width: 100%; }
-        .pc-remarks input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: var(--bg); }
+        .pc-remarks input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text); }
         .pc-remarks input:focus { border-color: var(--primary); background: var(--card); }
 
         .tie-badge { display: none; font-size: 0.75rem; background: #FEE2E2; color: #EF4444; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-top: 5px; text-align: center; }
 
         .submit-section { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 30px; text-align: center; }
         .validation-msg { color: #EF4444; font-size: 0.9rem; font-weight: 500; margin-bottom: 15px; display: none; }
-        
     </style>
 </head>
 <body>
@@ -138,6 +136,7 @@
         <div class="container">
             <h3 class="section-title"><i class="fas fa-search"></i> Select Event to Judge</h3>
             <div class="search-box">
+                <input type="text" id="eventSearchInput" placeholder="Type event name or code to search..." oninput="filterEvents()">
                 <select id="eventSelect">
                     <option value="">-- Choose an Event --</option>
                 </select>
@@ -167,9 +166,7 @@
                 <div class="jh-meta"><span id="judgeEvCode">CODE</span> • <span id="judgeEvCat">Category</span> • <span id="judgeTotalPart">0 Participants</span></div>
             </div>
 
-            <div id="participantsContainer">
-                <!-- Participant Cards will be generated here dynamically -->
-            </div>
+            <div id="participantsContainer"></div>
 
             <div class="submit-section">
                 <div class="validation-msg" id="valMsg"><i class="fas fa-exclamation-triangle"></i> You must assign positions to at least 5 participants.</div>
@@ -180,9 +177,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURATION & STATE
-        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         
         let currentState = {
@@ -192,13 +186,26 @@
             password: localStorage.getItem('fv_judge_pass') || "", 
             dbData: null,
             currentEventCode: null,
-            participants: []
+            participants: [],
+            allActiveEvents: []
         };
 
         window.onload = () => {
             if(currentState.instId && currentState.username && currentState.password) {
                 document.getElementById('instId').value = currentState.instId;
                 document.getElementById('username').value = currentState.username;
+                // Instantly load dashboard using cached data if available, then sync in background
+                let cached = localStorage.getItem('fv_judge_cache');
+                if(cached) {
+                    try {
+                        currentState.dbData = JSON.parse(cached);
+                        document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
+                        document.getElementById('dashInstName').innerText = localStorage.getItem('fv_judge_instname') || "Institution";
+                        buildDashboard();
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('dashboardScreen').style.display = 'block';
+                    } catch(e) {}
+                }
                 fetchDataSilent(false); 
             }
         };
@@ -210,9 +217,6 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // ==========================================
-        // 2. AUTHENTICATION & DATA FETCH
-        // ==========================================
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const inst = document.getElementById('instId').value.trim().toUpperCase();
@@ -239,6 +243,8 @@
                     localStorage.setItem('fv_judge_user', user);
                     localStorage.setItem('fv_judge_pass', pass);
                     localStorage.setItem('fv_judge_name', currentState.name);
+                    localStorage.setItem('fv_judge_instname', data.institutionName);
+                    localStorage.setItem('fv_judge_cache', JSON.stringify(data.data));
                     
                     document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
                     document.getElementById('dashInstName').innerText = data.institutionName;
@@ -256,16 +262,9 @@
             .finally(() => { btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Login'; btn.disabled = false; });
         });
 
-        // isManual=true if triggered by the refresh button
         function fetchDataSilent(isManual = false) {
             const btn = document.getElementById(isManual ? 'refreshBtn' : 'loginBtn');
-            if(isManual) {
-                btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
-                btn.disabled = true;
-            } else {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resuming...';
-                btn.disabled = true;
-            }
+            if(isManual) { btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>'; btn.disabled = true; }
             
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -275,6 +274,7 @@
             .then(data => {
                 if(data.status === "success") {
                     currentState.dbData = data.data;
+                    localStorage.setItem('fv_judge_cache', JSON.stringify(data.data));
                     document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
                     document.getElementById('dashInstName').innerText = data.institutionName;
                     
@@ -287,49 +287,43 @@
                         showToast("Data Refreshed Successfully!");
                     }
                 } else {
-                    if(!isManual) logout(); 
+                    if(!isManual && !currentState.dbData) logout(); 
                 }
             })
             .finally(() => { 
-                if(isManual) {
-                    btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
-                    btn.disabled = false;
-                } else {
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Login'; 
-                    btn.disabled = false; 
-                }
+                if(isManual) { btn.innerHTML = '<i class="fas fa-sync-alt"></i>'; btn.disabled = false; }
             });
         }
 
         function logout() {
-            localStorage.removeItem('fv_judge_inst'); localStorage.removeItem('fv_judge_user'); localStorage.removeItem('fv_judge_name'); localStorage.removeItem('fv_judge_pass');
+            localStorage.clear();
             document.getElementById('password').value = "";
             document.getElementById('dashboardScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
         }
 
         // ==========================================
-        // 3. DASHBOARD (EVENTS & HISTORY)
+        // DASHBOARD & EVENT FILTERING (With Category & Gender)
         // ==========================================
         function buildDashboard() {
             const events = currentState.dbData.Events || [];
             const results = currentState.dbData.Results || [];
             const regs = currentState.dbData.Registrations || [];
             
-            let evOptions = '<option value="">-- Search / Select Event --</option>';
-            let activeEvents = [];
-            
+            currentState.allActiveEvents = [];
             const regEvCodes = [...new Set(regs.slice(1).map(r => r[0] ? r[0].toString().toUpperCase() : ""))];
             
             for(let i=1; i<events.length; i++) {
                 const evCode = events[i][0] ? events[i][0].toString().toUpperCase() : "";
                 const evName = events[i][1] || "";
+                const evCat = events[i][2] || "";
+                const evGen = events[i][3] || "";
+                
                 if(evCode && regEvCodes.includes(evCode)) {
-                    activeEvents.push({code: evCode, name: evName});
-                    evOptions += `<option value="${evCode}">${evName} (${evCode})</option>`;
+                    currentState.allActiveEvents.push({code: evCode, name: evName, category: evCat, gender: evGen});
                 }
             }
-            document.getElementById('eventSelect').innerHTML = evOptions;
+            renderEventDropdown(currentState.allActiveEvents);
 
             let historyHtml = "";
             let groupedResults = {};
@@ -337,8 +331,6 @@
             for(let i=1; i<results.length; i++) {
                 const r = results[i];
                 const evCode = r[0] ? r[0].toString().toUpperCase() : "";
-                
-                // Judge details is now in Col E (index 4)
                 const submitter = r[4] ? r[4].toString() : ""; 
                 
                 if(submitter.includes(currentState.name)) {
@@ -350,27 +342,45 @@
             for(let evCode in groupedResults) {
                 const status = groupedResults[evCode].status;
                 const badgeClass = status.toLowerCase() === 'approved' ? 'status-approved' : 'status-pending';
-                const evName = activeEvents.find(e => e.code === evCode)?.name || evCode;
+                const evObj = currentState.allActiveEvents.find(e => e.code === evCode);
+                const evDisplay = evObj ? `${evObj.name} (${evObj.category} - ${evObj.gender})` : evCode;
                 
                 historyHtml += `
                     <div class="event-card">
                         <div class="ec-details">
-                            <h3>${evName}</h3>
+                            <h3>${evDisplay}</h3>
                             <div><span class="ec-badge">${evCode}</span> <span class="ec-status ${badgeClass}">${status}</span></div>
                         </div>
                         <button class="btn-edit" onclick="startJudging('${evCode}')"><i class="fas fa-edit"></i> Edit</button>
                     </div>`;
             }
 
-            if(historyHtml) {
-                document.getElementById('historyContainer').innerHTML = historyHtml;
-            } else {
-                document.getElementById('historyContainer').innerHTML = `<div style="text-align:center; padding: 30px; color: var(--muted); font-size: 0.9rem;">No results submitted yet.</div>`;
-            }
+            document.getElementById('historyContainer').innerHTML = historyHtml || `<div style="text-align:center; padding: 30px; color: var(--muted); font-size: 0.9rem;">No results submitted yet.</div>`;
+        }
+
+        function renderEventDropdown(eventsList) {
+            let evOptions = '<option value="">-- Choose an Event --</option>';
+            eventsList.forEach(ev => {
+                evOptions += `<option value="${ev.code}">${ev.name} [${ev.category} - ${ev.gender}] (${ev.code})</option>`;
+            });
+            document.getElementById('eventSelect').innerHTML = evOptions;
+        }
+
+        function filterEvents() {
+            const query = document.getElementById('eventSearchInput').value.trim().toLowerCase();
+            if(!query) { renderEventDropdown(currentState.allActiveEvents); return; }
+            
+            const filtered = currentState.allActiveEvents.filter(ev => 
+                ev.name.toLowerCase().includes(query) || 
+                ev.code.toLowerCase().includes(query) || 
+                ev.category.toLowerCase().includes(query) || 
+                ev.gender.toLowerCase().includes(query)
+            );
+            renderEventDropdown(filtered);
         }
 
         // ==========================================
-        // 4. JUDGING INTERFACE
+        // JUDGING INTERFACE (SECRET CODE HIDING CHEST NO)
         // ==========================================
         function startJudging(preSelectedCode = null) {
             const evCode = preSelectedCode || document.getElementById('eventSelect').value;
@@ -379,30 +389,44 @@
             currentState.currentEventCode = evCode;
             
             const events = currentState.dbData.Events || [];
-            let evDetails = ["", "Unknown Event", "General"];
+            let evDetails = ["", "Unknown Event", "General", "Common"];
             for(let i=1; i<events.length; i++) {
                 if(events[i][0] && events[i][0].toString().toUpperCase() === evCode) { evDetails = events[i]; break; }
             }
 
             const regs = currentState.dbData.Registrations || [];
+            const codeLetters = currentState.dbData.CodeLetters || [];
             let participants = [];
             
             const regHeaders = regs[0] || [];
-            let evCodeIdx = 0, chestIdx = 1, secCodeIdx = -1;
-            regHeaders.forEach((h, i) => {
-                if(h && h.toString().toLowerCase().includes("secret")) secCodeIdx = i;
-            });
-
+            let evCodeIdx = 0, chestIdx = 1;
+            
             for(let i=1; i<regs.length; i++) {
                 if(regs[i][evCodeIdx] && regs[i][evCodeIdx].toString().toUpperCase() === evCode) {
                     let chest = regs[i][chestIdx] ? regs[i][chestIdx].toString().toUpperCase() : "";
-                    let secret = secCodeIdx !== -1 && regs[i][secCodeIdx] ? regs[i][secCodeIdx].toString() : "";
-                    if(chest) participants.push({ chest: chest, secret: secret, existingPos: "", existingRemarks: "" });
+                    
+                    // Check if Code Letter exists for this chest in this event
+                    let secretCode = "";
+                    for(let c=1; c<codeLetters.length; c++) {
+                        if(codeLetters[c][0] && codeLetters[c][0].toString().toUpperCase() === evCode &&
+                           codeLetters[c][2] && codeLetters[c][2].toString().toUpperCase() === chest) {
+                            secretCode = codeLetters[c][1].toString(); // Code Letter
+                            break;
+                        }
+                    }
+
+                    if(chest) {
+                        participants.push({ 
+                            chest: chest, 
+                            secret: secretCode, // Will be empty string if not generated
+                            existingPos: "", 
+                            existingRemarks: "" 
+                        });
+                    }
                 }
             }
 
             if(participants.length === 0) { showToast("No participants registered for this event.", "error"); return; }
-
             currentState.participants = participants;
 
             const results = currentState.dbData.Results || [];
@@ -410,7 +434,6 @@
                 if(results[i][0] && results[i][0].toString().toUpperCase() === evCode) {
                     let rChest = results[i][1].toString().toUpperCase();
                     let rPos = results[i][2];
-                    // Updated Col G mapping for remarks (Index 6)
                     let rRemarks = results[i][6] || "";
                     
                     let pMatch = participants.find(p => p.chest === rChest);
@@ -420,7 +443,7 @@
 
             document.getElementById('judgeEvName').innerText = evDetails[1];
             document.getElementById('judgeEvCode').innerText = evCode;
-            document.getElementById('judgeEvCat').innerText = evDetails[2];
+            document.getElementById('judgeEvCat').innerText = `${evDetails[2]} • ${evDetails[3]}`;
             document.getElementById('judgeTotalPart').innerText = `${participants.length} Participants`;
 
             let pHTML = "";
@@ -433,11 +456,12 @@
             }
             optHtml += `<option value="DQ">Disqualified (DQ)</option>`;
 
+            // Sort participants by secret code if available, otherwise chest
             participants.sort((a,b) => (a.secret || a.chest).localeCompare(b.secret || b.chest));
 
             participants.forEach((p, idx) => {
-                const displayId = p.secret ? p.secret : p.chest;
-                const labelId = p.secret ? "Secret Code" : "Chest No";
+                // CRITICAL RULE: If Secret Code exists, show ONLY Code Letter. Hide Chest No completely!
+                const displayId = p.secret ? `Code: ${p.secret}` : `Chest No: ${p.chest}`;
                 
                 let specificOptHtml = optHtml;
                 if(p.existingPos) {
@@ -447,7 +471,10 @@
                 pHTML += `
                     <div class="participant-card" data-chest="${p.chest}">
                         <div class="pc-header">
-                            <div><div class="pc-label">${labelId}</div><div class="pc-code">${displayId}</div></div>
+                            <div>
+                                <div class="pc-label">${p.secret ? 'Secret Code' : 'Chest Number'}</div>
+                                <div class="pc-code">${displayId}</div>
+                            </div>
                             <div class="tie-badge" id="tie-${idx}">Tie Warning!</div>
                         </div>
                         <div class="pc-body">
@@ -478,9 +505,6 @@
             currentState.currentEventCode = null;
         }
 
-        // ==========================================
-        // 5. VALIDATION & SUBMISSION
-        // ==========================================
         function checkTies() {
             const selects = document.querySelectorAll('.rank-select');
             const badges = document.querySelectorAll('.tie-badge');
@@ -493,7 +517,6 @@
 
             selects.forEach((s, i) => {
                 const val = s.value;
-                // Only show tie warning for actual ranked positions (1, 2, 3...)
                 if(val && val !== "DQ" && counts[val] > 1) {
                     badges[i].style.display = 'block';
                 } else {
@@ -507,7 +530,7 @@
             const cards = document.querySelectorAll('.participant-card');
             
             let finalResults = [];
-            let rankedCount = 0; // Number of assigned positions excluding DQ
+            let rankedCount = 0;
 
             cards.forEach(card => {
                 const chest = card.getAttribute('data-chest');
@@ -520,10 +543,7 @@
                 }
             });
 
-            // VALIDATION: Top 5 Rule
-            // A judge MUST assign at least min(5, participants) valid positions
             const requiredPosCount = Math.min(5, currentState.participants.length);
-            
             if(rankedCount < requiredPosCount) {
                 const vMsg = document.getElementById('valMsg');
                 vMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> You must assign positions to at least ${requiredPosCount} participants!`;
@@ -560,7 +580,6 @@
             .catch(err => showToast("Network Error!", "error"))
             .finally(() => { btn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Final Results'; btn.disabled = false; });
         }
-
     </script>
 </body>
 </html>
