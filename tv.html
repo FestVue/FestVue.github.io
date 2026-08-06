@@ -551,32 +551,49 @@
             }
 
             currentSlideIndex = 0;
-            document.getElementById('carouselContainer').innerHTML = resultSlidesArray[currentSlideIndex];
-            document.getElementById('carouselContainer').firstElementChild.classList.add('active');
+            const container = document.getElementById('carouselContainer');
+            container.innerHTML = resultSlidesArray[currentSlideIndex];
+            
+            // Safety Check: ആദ്യത്തെ സ്ലൈഡ് ഉണ്ടെങ്കിൽ മാത്രം active ക്ലാസ്സ് നൽകുക
+            if (container.firstElementChild) {
+                container.firstElementChild.classList.add('active');
+            }
 
             if(carouselInterval) clearInterval(carouselInterval);
             
             carouselInterval = setInterval(() => {
                 if(resultSlidesArray.length <= 1) {
-                    document.getElementById('carouselContainer').innerHTML = resultSlidesArray[0];
-                    document.getElementById('carouselContainer').firstElementChild.style.display = 'flex';
+                    container.innerHTML = resultSlidesArray[0];
+                    if (container.firstElementChild) {
+                        container.firstElementChild.style.display = 'flex';
+                        container.firstElementChild.classList.add('active'); // നിലനിർത്താൻ
+                    }
                     return; 
                 }
 
-                const container = document.getElementById('carouselContainer');
                 const oldSlide = container.firstElementChild;
                 
-                oldSlide.classList.remove('active');
-                oldSlide.classList.add('exit');
+                // Safety Check: പഴയ സ്ലൈഡ് ഉണ്ടെങ്കിൽ മാത്രം അതിനെ exit ആക്കുക
+                if (oldSlide) {
+                    oldSlide.classList.remove('active');
+                    oldSlide.classList.add('exit');
+                }
 
                 currentSlideIndex = (currentSlideIndex + 1) % resultSlidesArray.length;
                 const newSlide = document.createElement('div');
                 newSlide.innerHTML = resultSlidesArray[currentSlideIndex];
                 const newSlideContent = newSlide.firstElementChild;
-                newSlideContent.classList.add('active');
-
-                container.appendChild(newSlideContent);
-                setTimeout(() => { if(oldSlide && oldSlide.parentNode) oldSlide.remove(); }, 800);
+                
+                // Safety Check: പുതിയ സ്ലൈഡ് ഉണ്ടെങ്കിൽ മാത്രം ചേർക്കുക
+                if (newSlideContent) {
+                    newSlideContent.classList.add('active');
+                    container.appendChild(newSlideContent);
+                }
+                
+                // പഴയ സ്ലൈഡ് ഡിലീറ്റ് ചെയ്യുക
+                setTimeout(() => { 
+                    if(oldSlide && oldSlide.parentNode) oldSlide.remove(); 
+                }, 800);
 
             }, 10000);
         }
