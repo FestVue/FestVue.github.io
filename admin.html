@@ -83,9 +83,22 @@
             .hub-link-card { flex-direction: column; align-items: flex-start; gap: 15px; }
             .hub-actions { width: 100%; justify-content: space-between; }
         }
+
+        /* Global Loader */
+        .global-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(253, 251, 247, 0.9); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        body.dark-mode .global-loader { background: rgba(15, 23, 42, 0.9); }
+        .spinner { font-size: 3rem; color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <!-- Global Loader -->
+    <div id="globalLoader" class="global-loader">
+        <i class="fas fa-circle-notch spinner"></i>
+        <h3 style="color: var(--primary);">Syncing Live Data...</h3>
+        <p style="color: var(--text); opacity: 0.7; font-size: 0.9rem;">Please wait a moment</p>
+    </div>
+
     <div id="loginView">
         <div class="login-card">
             <div class="logo-section">
@@ -608,7 +621,7 @@
                         document.getElementById('loginView').style.display = 'none';
                         document.getElementById('dashboardView').style.display = 'flex';
                         document.getElementById('instNameDisplay').innerText = data.institutionName;
-                        loadDropdownData();
+                        loadDropdownData(true);
                         restoreTab();
                     }, 1000);
                 } else { msg.style.color = "red"; msg.innerText = data.message; btn.innerHTML = originalText; btn.disabled = false; }
@@ -652,23 +665,58 @@
         }
 
         // ==========================================
-        // 2. DATA LOADING & POPULATION
+        // 2. DATA LOADING & POPULATION (CACHED & LIVE)
         // ==========================================
-        function loadDropdownData() {
+        function loadDropdownData(showLoader = false) {
             if(!targetSheetId) return;
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId }) })
-            .then(res => res.json()).then(data => {
-                if(data.status === "success") {
-                    globalDbData = data.data || {};
+
+            // 1. ആദ്യം ക്യാഷിൽ (SessionStorage) ഡാറ്റ ഉണ്ടോ എന്ന് നോക്കുന്നു
+            let cachedDataStr = sessionStorage.getItem('fv_admin_cache_' + targetSheetId);
+            
+            // ERROR FIX: "undefined" എന്ന വാക്ക് വരുന്നുണ്ടോ എന്ന് ചെക്ക് ചെയ്യുന്നു
+            if (cachedDataStr && cachedDataStr !== "undefined") {
+                try {
+                    globalDbData = JSON.parse(cachedDataStr);
                     populateDropdowns();
                     renderSettingsLists();
                     updateDashboardStats();
                     renderTable();
                     renderPendingApprovals();
-                if(document.getElementById('codeEventSelect').value) {
-                        fetchEventCodes();
+                    if(document.getElementById('codeEventSelect').value) fetchEventCodes();
+                } catch(e) {
+                    console.error("Cache parsing error", e);
+                    if (showLoader) document.getElementById('globalLoader').style.display = 'flex';
+                }
+            } else if (showLoader) {
+                // ക്യാഷിൽ ഇല്ലെങ്കിൽ (ആദ്യമായി ലോഗിൻ ചെയ്യുമ്പോൾ) ലോഡർ കാണിക്കുന്നു
+                document.getElementById('globalLoader').style.display = 'flex';
+            }
+
+            // 2. ബാക്ക്ഗ്രൗണ്ടിൽ ഗൂഗിൾ സ്ക്രിപ്റ്റിൽ നിന്നും ലേറ്റസ്റ്റ് ഡാറ്റ സൈലന്റ് ആയി എടുക്കുന്നു
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId }) })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    let newDataStr = JSON.stringify(data.data);
+                    
+                    // 3. ഡെൽറ്റ ചെക്ക്: പഴയ ഡാറ്റയും പുതിയ ഡാറ്റയും തമ്മിൽ വ്യത്യാസമുണ്ടെങ്കിൽ മാത്രം UI അപ്ഡേറ്റ് ചെയ്യുന്നു
+                    if (cachedDataStr !== newDataStr) {
+                        sessionStorage.setItem('fv_admin_cache_' + targetSheetId, newDataStr);
+                        globalDbData = data.data || {};
+                        populateDropdowns();
+                        renderSettingsLists();
+                        updateDashboardStats();
+                        renderTable();
+                        renderPendingApprovals();
+                        if(document.getElementById('codeEventSelect').value) fetchEventCodes();
                     }
-                } else { alert("Failed to load data: " + data.message); }
+                }
+                // ഡാറ്റ വന്നു കഴിഞ്ഞാൽ ലോഡർ ഓഫ് ചെയ്യുന്നു
+                if (showLoader) document.getElementById('globalLoader').style.display = 'none';
+            })
+            .catch(err => {
+                if (showLoader) document.getElementById('globalLoader').style.display = 'none';
+                console.error("Background sync failed", err);
             });
         }
 
@@ -1770,8 +1818,15 @@
                 document.getElementById('loginView').style.display = 'none';
                 document.getElementById('dashboardView').style.display = 'flex';
                 document.getElementById('instNameDisplay').innerText = sessionStorage.getItem("instName") || "Dashboard";
-                loadDropdownData();
+                
+                // പേജ് റീഫ്രഷ് ചെയ്യുമ്പോൾ ലോഡർ കാണിക്കാതെ സൈലന്റ് ആയി ലോഡ് ചെയ്യുന്നു
+                loadDropdownData(false);
                 restoreTab();
+                
+                // ഓരോ 20 സെക്കൻഡിലും സൈലന്റ് ആയി അഡ്മിൻ പാനൽ ലേറ്റസ്റ്റ് ഡാറ്റ ഫെച്ച് ചെയ്യും (Live Sync)
+                setInterval(() => {
+                    loadDropdownData(false);
+                }, 20000); 
             }
         };
     </script>
