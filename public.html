@@ -1066,24 +1066,27 @@
             ctx.font = "500 18px 'Poppins', sans-serif";
             ctx.fillText("Achievement Certificate", W - 70, 92);
 
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#FFC94A";
-            ctx.font = "50px 'Pacifico', cursive";
-            ctx.fillText("Congratulations", CX, 200);
-
+            // 1. പരിപാടിയുടെ പേര് (Fest Name) - (Y: 200)
             const headGrad = ctx.createLinearGradient(CX - 380, 0, CX + 380, 0);
             headGrad.addColorStop(0, "#FFC94A");
             headGrad.addColorStop(0.5, "#FF9F5A");
             headGrad.addColorStop(1, "#FF6B6B");
+            ctx.textAlign = "center";
             ctx.fillStyle = headGrad;
             ctx.font = "900 78px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
-            ctx.fillText(festConfig.name.toUpperCase(), CX, 290, 960);
+            ctx.fillText(festConfig.name.toUpperCase(), CX, 200, 960);
 
+            // 2. ഡിസ്ക്രിപ്ഷൻ (Description) - പേരിനു താഴെ (Y: 250)
             if(festConfig.desc) {
                 ctx.fillStyle = "rgba(255,255,255,0.85)";
                 ctx.font = "600 24px 'Poppins', 'Anek Malayalam', 'Cairo', sans-serif";
-                ctx.fillText(festConfig.desc.toUpperCase(), CX, 340, 900);
+                ctx.fillText(festConfig.desc.toUpperCase(), CX, 250, 900);
             }
+
+            // 3. Congratulations - ഫോട്ടോയ്ക്ക് തൊട്ടുമുകളിൽ (Y: 340)
+            ctx.fillStyle = "#FFC94A";
+            ctx.font = "50px 'Pacifico', cursive";
+            ctx.fillText("Congratulations", CX, 340);
 
             const PY = 610, PR = 200;
 
