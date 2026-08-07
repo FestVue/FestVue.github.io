@@ -830,7 +830,17 @@
             let catHtml = "", groupHtml = "", classHtml = "", rawClassHtml = "", judgeHtml = ""; 
             if(document.getElementById('customPointsContainer')) document.getElementById('customPointsContainer').innerHTML = ""; 
             
-            judges.forEach(j => { judgeHtml += `<li class="list-item"><span><i class="fas fa-user"></i> <b>${getVal(j,0)}</b> <small style="color:var(--muted); margin-left:8px;">(Password: <b>${getVal(j,1)}</b>)</small></span><button onclick="deleteRow('Judges', ${j.rowIndex})" style="background:none; border:none; color:#ff5a5f; cursor:pointer;"><i class="fas fa-trash"></i></button></li>`; });
+            judges.forEach(j => { 
+                let uName = getVal(j,0).toString().replace(/'/g, "\\'");
+                let uPass = getVal(j,1).toString().replace(/'/g, "\\'");
+                judgeHtml += `<li class="list-item">
+                    <span><i class="fas fa-user"></i> <b>${getVal(j,0)}</b> <small style="color:var(--muted); margin-left:8px;">(Password: <b>${getVal(j,1)}</b>)</small></span>
+                    <div style="display:flex; gap:15px;">
+                        <button onclick="editJudge(${j.rowIndex}, '${uName}', '${uPass}')" style="background:none; border:none; color:#3b82f6; cursor:pointer;" title="Edit Judge"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteRow('Judges', ${j.rowIndex})" style="background:none; border:none; color:#ff5a5f; cursor:pointer;" title="Delete Judge"><i class="fas fa-trash"></i></button>
+                    </div>
+                </li>`; 
+            });
             if(document.getElementById('judgeList')) document.getElementById('judgeList').innerHTML = judgeHtml || "<p style='color:#64748b; font-size:0.9rem;'>No Judges Added.</p>";
 
             if(document.getElementById('titlesContainer')) document.getElementById('titlesContainer').innerHTML = ""; 
@@ -1830,6 +1840,44 @@
                 htmlContent += `</div>`;
             }
             htmlContent += `</body></html>`; printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.setTimeout(function() { printWindow.print(); }, 600);
+        }
+
+        // ==========================================
+        // EDIT JUDGE DETAILS
+        // ==========================================
+        async function editJudge(rowIndex, oldUsername, oldPassword) {
+            // പുതിയ വിവരങ്ങൾ ചോദിക്കുന്നു
+            let newUsername = prompt("Edit Username:", oldUsername);
+            if (newUsername === null || newUsername.trim() === "") return; 
+            
+            let newPassword = prompt("Edit Password:", oldPassword);
+            if (newPassword === null || newPassword.trim() === "") return; 
+
+            // മാറ്റങ്ങൾ ഒന്നുമില്ലെങ്കിൽ ഒന്നും ചെയ്യേണ്ടതില്ല
+            if (newUsername.trim() === oldUsername && newPassword.trim() === oldPassword) return;
+
+            // ലോഡർ കാണിക്കുന്നു
+            document.getElementById('globalLoader').style.display = 'flex';
+            const loaderText = document.querySelector('#globalLoader h3');
+            if(loaderText) loaderText.innerText = "Updating Judge...";
+
+            try {
+                // പഴയ ഡാറ്റ മായ്ച്ചു കളയുന്നു
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "Judges", rowIndex: rowIndex }) });
+                
+                // പുതിയ ഡാറ്റ ആഡ് ചെയ്യുന്നു
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Judges", rowData: [newUsername.trim(), newPassword.trim()] }) });
+                
+                // ലിസ്റ്റ് അപ്ഡേറ്റ് ചെയ്യുന്നു
+                loadDropdownData(false, true);
+                alert("Judge details updated successfully!");
+            } catch(e) {
+                alert("Error updating judge. Please try again.");
+            } finally {
+                // ലോഡർ പഴയപടിയാക്കുന്നു
+                document.getElementById('globalLoader').style.display = 'none';
+                if(loaderText) loaderText.innerText = "Syncing Live Data..."; 
+            }
         }
 
         window.onload = function() {
