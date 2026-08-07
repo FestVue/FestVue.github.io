@@ -746,12 +746,14 @@
                         let won = false;
                         evResults.forEach(resRow => {
                             const resChest = getVal(resRow,1).toString().trim().toUpperCase();
-                            if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
+                            const pos = getVal(resRow,2); // ആദ്യം പൊസിഷൻ എന്താണെന്ന് എടുക്കുന്നു
+                            
+                            // കുട്ടിയുടെ പേരുണ്ടെന്നും, ഒപ്പം 1, 2, 3 ഇതിലേതെങ്കിലും സ്ഥാനം ഉണ്ടെന്നും ഉറപ്പുവരുത്തുന്നു
+                            if((resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) && (pos == 1 || pos == 2 || pos == 3)) {
                                 won = true;
-                                const pos = getVal(resRow,2);
                                 let posValueText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
                                 
-                                // സർട്ടിഫിക്കറ്റ് ഡൗൺലോഡ് ബട്ടൺ (വിജയിച്ച ഇവന്റുകൾക്ക് മാത്രം)
+                                // സർട്ടിഫിക്കറ്റ് ഡൗൺലോഡ് ബട്ടൺ
                                 certBtnHtml = `<button onclick="downloadCertificate('${evCode}', '${posValueText}')" class="auth-btn" style="background:#b45309; padding: 6px 12px; font-size:0.8rem; margin: 8px 0 0 0; width:100%;"><i class="fas fa-award"></i> Download Certificate</button>`;
                                 
                                 if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
@@ -759,9 +761,11 @@
                                 else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "3rd"}); }
                             }
                         });
+                        
                         if(!won) {
                             medalBadge = `<span style="font-size:0.8rem; color:var(--muted);">Participant</span>`;
                             posText = "Participant";
+                            certBtnHtml = ""; // ജയിച്ചിട്ടില്ലെങ്കിൽ സർട്ടിഫിക്കറ്റ് ബട്ടൺ കാണിക്കില്ല എന്ന് ഉറപ്പുവരുത്തുന്നു
                         }
                     }
                     
