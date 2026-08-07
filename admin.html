@@ -138,6 +138,7 @@
                 <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <div class="header-actions">
                     <span id="instNameDisplay" style="font-weight: 600; color: var(--primary);">Dashboard</span>
+                    <button class="theme-toggle" id="refreshBtn" onclick="loadDropdownData(false, true)" title="Sync Data" style="color: var(--primary);"><i class="fas fa-sync-alt"></i></button>
                     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
                 </div>
             </header>
@@ -667,39 +668,46 @@
         // ==========================================
         // 2. DATA LOADING & POPULATION (CACHED & LIVE)
         // ==========================================
-        function loadDropdownData(showLoader = false) {
+        function loadDropdownData(showLoader = false, isManualSync = false) {
             if(!targetSheetId) return;
 
-            // 1. ആദ്യം ക്യാഷിൽ (SessionStorage) ഡാറ്റ ഉണ്ടോ എന്ന് നോക്കുന്നു
+            // റിഫ്രഷ് ഐക്കൺ കറക്കാൻ തുടങ്ങുന്നു
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                refreshBtn.style.opacity = '0.5';
+            }
+
             let cachedDataStr = sessionStorage.getItem('fv_admin_cache_' + targetSheetId);
             
-            // ERROR FIX: "undefined" എന്ന വാക്ക് വരുന്നുണ്ടോ എന്ന് ചെക്ക് ചെയ്യുന്നു
             if (cachedDataStr && cachedDataStr !== "undefined") {
                 try {
                     globalDbData = JSON.parse(cachedDataStr);
-                    populateDropdowns();
-                    renderSettingsLists();
-                    updateDashboardStats();
-                    renderTable();
-                    renderPendingApprovals();
-                    if(document.getElementById('codeEventSelect').value) fetchEventCodes();
+                    // Manual Sync ആണെങ്കിൽ എല്ലാ തവണയും UI വരയ്ക്കേണ്ടതില്ല (മാറ്റമുണ്ടെങ്കിൽ മാത്രം വരയ്ക്കും)
+                    if (!isManualSync) {
+                        populateDropdowns();
+                        renderSettingsLists();
+                        updateDashboardStats();
+                        renderTable();
+                        renderPendingApprovals();
+                        if(document.getElementById('codeEventSelect').value) fetchEventCodes();
+                    }
                 } catch(e) {
                     console.error("Cache parsing error", e);
                     if (showLoader) document.getElementById('globalLoader').style.display = 'flex';
                 }
             } else if (showLoader) {
-                // ക്യാഷിൽ ഇല്ലെങ്കിൽ (ആദ്യമായി ലോഗിൻ ചെയ്യുമ്പോൾ) ലോഡർ കാണിക്കുന്നു
                 document.getElementById('globalLoader').style.display = 'flex';
             }
 
-            // 2. ബാക്ക്ഗ്രൗണ്ടിൽ ഗൂഗിൾ സ്ക്രിപ്റ്റിൽ നിന്നും ലേറ്റസ്റ്റ് ഡാറ്റ സൈലന്റ് ആയി എടുക്കുന്നു
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId }) })
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
                     let newDataStr = JSON.stringify(data.data);
                     
-                    // 3. ഡെൽറ്റ ചെക്ക്: പഴയ ഡാറ്റയും പുതിയ ഡാറ്റയും തമ്മിൽ വ്യത്യാസമുണ്ടെങ്കിൽ മാത്രം UI അപ്ഡേറ്റ് ചെയ്യുന്നു
+                    // ഡെൽറ്റ ചെക്ക്: വ്യത്യാസമുണ്ടെങ്കിൽ മാത്രം അപ്ഡേറ്റ് ചെയ്യുന്നു
                     if (cachedDataStr !== newDataStr) {
                         sessionStorage.setItem('fv_admin_cache_' + targetSheetId, newDataStr);
                         globalDbData = data.data || {};
@@ -711,11 +719,22 @@
                         if(document.getElementById('codeEventSelect').value) fetchEventCodes();
                     }
                 }
-                // ഡാറ്റ വന്നു കഴിഞ്ഞാൽ ലോഡർ ഓഫ് ചെയ്യുന്നു
+                
+                // ലോഡറും ഐക്കണും പഴയപടിയാക്കുന്നു
                 if (showLoader) document.getElementById('globalLoader').style.display = 'none';
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    refreshBtn.style.opacity = '1';
+                }
             })
             .catch(err => {
                 if (showLoader) document.getElementById('globalLoader').style.display = 'none';
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    refreshBtn.style.opacity = '1';
+                }
                 console.error("Background sync failed", err);
             });
         }
