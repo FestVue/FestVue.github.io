@@ -295,7 +295,7 @@
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3><i class="fas fa-qrcode"></i> Generate Secret Codes</h3>
+                            <h3><i class="fas fa-qrcode"></i> Generate & Print Code Letters</h3>
                             <button type="button" onclick="printEventCodes()" class="primary-btn" style="background: var(--accent); color:var(--text); padding: 8px 15px;"><i class="fas fa-print"></i> Print</button>
                         </div>
                         <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;">Randomly shuffle registered students/teams and assign random letters.</p>
@@ -1039,21 +1039,142 @@
         }
 
         function printEventCodes() {
-            const evCode = document.getElementById('codeEventSelect').value; if(!evCode) { alert("Select an event first!"); return; }
-            const existingCodes = (globalDbData.CodeLetters || []).filter(c => getVal(c,0) === evCode).sort((a,b) => getVal(a,1).localeCompare(getVal(b,1)));
-            if(existingCodes.length === 0) { alert("No codes generated to print!"); return; }
-            const ev = (globalDbData.Events||[]).find(e => getVal(e,0)===evCode); 
-            let evName = evCode;
-            if(ev) {
-                let cat = getVal(ev, 2) || "";
-                let gen = getVal(ev, 3) || "";
-                evName = `${getVal(ev, 1)} [${cat} - ${gen}]`;
+            const evCodeInput = document.getElementById('codeEventSelect').value;
+            const allEvents = globalDbData.Events || [];
+            const allRegs = globalDbData.Registrations || [];
+            const allCodes = globalDbData.CodeLetters || [];
+            const instName = sessionStorage.getItem("instName") || "Institution Name";
+            const festName = document.getElementById('confFestName') ? document.getElementById('confFestName').value : "FESTIVAL NAME";
+            
+            let targetEvents = [];
+            
+            // 1. പരിപാടി സെലക്ട് ചെയ്തിട്ടുണ്ടോ അതോ Bulk Download ആണോ എന്ന് നോക്കുന്നു
+            if (evCodeInput) {
+                targetEvents = allEvents.filter(e => getVal(e,0) === evCodeInput);
+                if (targetEvents.length === 0) { alert("Event not found!"); return; }
+            } else {
+                if(!confirm("No event selected. Do you want to Bulk Print mark sheets for ALL events?")) return;
+                targetEvents = [...allEvents];
+                // ഓർഡർ മാറ്റുന്നു: ആദ്യം Stage, പിന്നെ Off-Stage
+                targetEvents.sort((a,b) => {
+                    const mA = getVal(a,5).toString().trim();
+                    const mB = getVal(b,5).toString().trim();
+                    if(mA === 'Stage' && mB !== 'Stage') return -1;
+                    if(mA !== 'Stage' && mB === 'Stage') return 1;
+                    return 0;
+                });
             }
-
+            
+            let sheetsHtmlArray = [];
+            const ROWS_PER_PAGE = 22; // ഫുൾ A4 പേജിൽ ഉൾക്കൊള്ളാവുന്ന വരികളുടെ എണ്ണം (വായിക്കാൻ എളുപ്പമുള്ള സ്പേസിങ്ങോടെ)
+            
+            // 2. ഓരോ പരിപാടിയും പ്രോസസ്സ് ചെയ്യുന്നു
+            targetEvents.forEach(ev => {
+                const evCode = getVal(ev, 0);
+                const evName = getVal(ev, 1);
+                const cat = getVal(ev, 2) || "";
+                const gen = getVal(ev, 3) || "";
+                const fullEvName = `${evName} [${cat} - ${gen}]`;
+                
+                // ആ പരിപാടിയുടെ രജിസ്ട്രേഷനുകൾ എടുക്കുന്നു
+                const regs = allRegs.filter(r => getVal(r,0).toString().toUpperCase() === evCode.toString().toUpperCase());
+                if (regs.length === 0) return; 
+                
+                // കോഡുകൾ മാപ്പ് ചെയ്യുന്നു
+                let participants = regs.map(r => {
+                    const chest = getVal(r,1).toString().toUpperCase();
+                    const codeRow = allCodes.find(c => getVal(c,0).toString().toUpperCase() === evCode.toString().toUpperCase() && getVal(c,2).toString().toUpperCase() === chest);
+                    const code = codeRow ? getVal(codeRow,1).toString().toUpperCase() : ""; 
+                    return { chest, code };
+                });
+                
+                // അടുക്കുന്നു (ആദ്യം കോഡ് വെച്ച്, കോഡ് ഇല്ലെങ്കിൽ ചെസ്റ്റ് നമ്പർ വെച്ച്)
+                participants.sort((a,b) => {
+                    if(a.code && b.code) return a.code.localeCompare(b.code);
+                    if(a.code && !b.code) return -1;
+                    if(!a.code && b.code) return 1;
+                    return a.chest.localeCompare(b.chest);
+                });
+                
+                // വരികളെ ഭാഗങ്ങളാക്കുന്നു (ഓരോ പേജിലേക്കും)
+                for (let i = 0; i < participants.length; i += ROWS_PER_PAGE) {
+                    const chunk = participants.slice(i, i + ROWS_PER_PAGE);
+                    const isLastChunk = (i + ROWS_PER_PAGE) >= participants.length;
+                    
+                    let tableRows = "";
+                    chunk.forEach((p, idx) => {
+                        tableRows += `<tr>
+                            <td>${i + idx + 1}</td>
+                            <td style="font-weight:bold; font-size:16px;">${p.code}</td>
+                            <td style="font-size:15px;">${p.chest}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>`;
+                    });
+                    
+                    // ഫുൾ A4 പേജിനുള്ള ഡിസൈൻ
+                    let sheetHtml = `
+                    <div class="mark-sheet">
+                        <div class="sheet-header">
+                            <div class="inst-name">${instName}</div>
+                            <div class="fest-name">${festName}</div>
+                            <div class="sheet-title">MARK SHEET</div>
+                        </div>
+                        <div class="event-details">Event: <b>${fullEvName}</b> <span style="float:right;">Code: <b>${evCode}</b></span></div>
+                        <table class="sheet-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:10%;">S.I NO</th>
+                                    <th style="width:20%;">Code Letter</th>
+                                    <th style="width:20%;">CHEST NO</th>
+                                    <th style="width:20%;">Mark</th>
+                                    <th style="width:30%;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                        ${isLastChunk ? '<div class="sheet-footer">Name and Signature<br>___________________________</div>' : ''}
+                    </div>`;
+                    
+                    sheetsHtmlArray.push(sheetHtml);
+                }
+            });
+            
+            if (sheetsHtmlArray.length === 0) {
+                alert("No registrations found to print!");
+                return;
+            }
+            
+            // 3. ഫുൾ A4 Portrait പ്രിൻ്റ് ഡിസൈൻ
+            let printContent = `<html><head><title>Mark Sheets</title><style>
+                @page { size: A4 portrait; margin: 0; }
+                body { margin: 0; font-family: 'Helvetica', 'Arial', sans-serif; background: #fff; -webkit-print-color-adjust: exact; }
+                .mark-sheet { width: 210mm; height: 297mm; padding: 20mm 15mm; box-sizing: border-box; position: relative; page-break-after: always; }
+                .sheet-header { text-align: center; margin-bottom: 20px; }
+                .inst-name { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; color: #000; }
+                .fest-name { font-size: 18px; margin-bottom: 8px; color: #333; font-weight: 600; }
+                .sheet-title { font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 15px; color: #000; }
+                .event-details { font-size: 16px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #f9f9f9; color: #000; }
+                .sheet-table { width: 100%; border-collapse: collapse; font-size: 15px; color: #000; }
+                .sheet-table th, .sheet-table td { border: 1px solid #000; padding: 10px 8px; text-align: center; }
+                .sheet-table th { background: #eaeaea; font-weight: bold; }
+                .sheet-table td { height: 32px; } /* കൂടുതൽ ഗ്യാപ്പ് നൽകുന്നു */
+                .sheet-footer { position: absolute; bottom: 25mm; right: 20mm; font-size: 16px; font-weight: bold; text-align: center; color: #000; line-height: 1.5; }
+            </style></head><body>`;
+            
+            // എല്ലാ പേജുകളും ചേർക്കുന്നു
+            sheetsHtmlArray.forEach(sheet => {
+                printContent += sheet;
+            });
+            
+            printContent += `</body></html>`;
+            
             let printWindow = window.open('', '_blank');
-            let htmlContent = `<html><head><title>Print Codes</title><style>body{font-family:sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #000; padding:10px; text-align:left;} th{background:#eee;} h2{text-align:center;}</style></head><body><h2>Judges Code Sheet<br><small style="font-weight:normal; color:#555;">Event: ${evName} (${evCode})</small></h2><table><tr><th>Secret Code</th><th>Chest No (Hidden for Judges)</th></tr>`;
-            existingCodes.forEach(c => { htmlContent += `<tr><td style="font-size:1.5rem; font-weight:bold;">${getVal(c,1)}</td><td style="font-size:1.2rem;">${getVal(c,2)}</td></tr>`; });
-            htmlContent += `</table></body></html>`; printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.setTimeout(() => printWindow.print(), 500);
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.setTimeout(() => printWindow.print(), 800);
         }
 
         // ==========================================
