@@ -773,7 +773,23 @@
             if(document.getElementById('mapCategorySelect')) document.getElementById('mapCategorySelect').innerHTML = categoryOptionsHTML; 
             if(document.getElementById('printChestClassSelect')) document.getElementById('printChestClassSelect').innerHTML = printClassOptions;
 
-            events.forEach(ev => { const code = getVal(ev, 0); if(code) eventOptions += `<option value="${code}">${code} - ${getVal(ev, 1)}</option>`; });
+            events.forEach(ev => { 
+                const code = getVal(ev, 0); 
+                const name = getVal(ev, 1);
+                const category = getVal(ev, 2) || "";
+                const gender = getVal(ev, 3) || "";
+                
+                // കാറ്റഗറിയും ജെൻഡറും ഉണ്ടെങ്കിൽ അത് ബ്രാക്കറ്റിൽ ചേർക്കുന്നു
+                let extraInfo = "";
+                if (category || gender) {
+                    extraInfo = ` [${category} - ${gender}]`;
+                }
+                
+                if(code) {
+                    eventOptions += `<option value="${code}">${code} - ${name}${extraInfo}</option>`; 
+                }
+            });
+            
             if(document.getElementById('regEventSelect')) document.getElementById('regEventSelect').innerHTML = eventOptions; 
             if(document.getElementById('resEventSelect')) document.getElementById('resEventSelect').innerHTML = eventOptions;
             if(document.getElementById('codeEventSelect')) document.getElementById('codeEventSelect').innerHTML = eventOptions; 
@@ -1026,7 +1042,13 @@
             const evCode = document.getElementById('codeEventSelect').value; if(!evCode) { alert("Select an event first!"); return; }
             const existingCodes = (globalDbData.CodeLetters || []).filter(c => getVal(c,0) === evCode).sort((a,b) => getVal(a,1).localeCompare(getVal(b,1)));
             if(existingCodes.length === 0) { alert("No codes generated to print!"); return; }
-            const ev = (globalDbData.Events||[]).find(e => getVal(e,0)===evCode); const evName = ev ? getVal(ev,1) : evCode;
+            const ev = (globalDbData.Events||[]).find(e => getVal(e,0)===evCode); 
+            let evName = evCode;
+            if(ev) {
+                let cat = getVal(ev, 2) || "";
+                let gen = getVal(ev, 3) || "";
+                evName = `${getVal(ev, 1)} [${cat} - ${gen}]`;
+            }
 
             let printWindow = window.open('', '_blank');
             let htmlContent = `<html><head><title>Print Codes</title><style>body{font-family:sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #000; padding:10px; text-align:left;} th{background:#eee;} h2{text-align:center;}</style></head><body><h2>Judges Code Sheet<br><small style="font-weight:normal; color:#555;">Event: ${evName} (${evCode})</small></h2><table><tr><th>Secret Code</th><th>Chest No (Hidden for Judges)</th></tr>`;
@@ -1049,7 +1071,13 @@
 
             let html = "";
             Object.keys(grouped).forEach(evCode => {
-                const evDetails = events.find(e => getVal(e,0)===evCode); const evName = evDetails ? getVal(evDetails, 1) : evCode;
+                const evDetails = events.find(e => getVal(e,0)===evCode); 
+                let evName = evCode;
+                if(evDetails) {
+                    let cat = getVal(evDetails, 2) || "";
+                    let gen = getVal(evDetails, 3) || "";
+                    evName = `${getVal(evDetails, 1)} [${cat} - ${gen}]`;
+                }
                 const sampleRow = grouped[evCode][0]; const judgeName = getVal(sampleRow, 4) || "Unknown Judge"; const time = getVal(sampleRow, 5) || "N/A";
 
                 html += `<div style="border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:var(--card-bg);">`;
@@ -1479,17 +1507,26 @@
         function getMappedData(dataType) {
             if(!globalDbData) return [];
             const rawData = globalDbData[dataType] || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
+            
+            // പരിപാടിയുടെ പൂർണ്ണ വിവരങ്ങൾ എടുക്കാനുള്ള ഫംഗ്ഷൻ
+            const getFullEvName = (evCode) => {
+                const ev = events.find(e => getVal(e, 0) == evCode);
+                if(!ev) return evCode;
+                const cat = getVal(ev, 2) || "";
+                const gen = getVal(ev, 3) || "";
+                return `${getVal(ev, 1)} [${cat} - ${gen}]`;
+            };
+
             if(dataType === "Registrations") {
                 return rawData.map(row => {
-                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); const ev = events.find(e => getVal(e, 0) == getVal(row, 0));
-                    // Check if it's a team and formatting
+                    const st = students.find(s => getVal(s, 0) == getVal(row, 1));
                     const teamMembers = getVal(row, 2) ? " + Team" : "";
-                    return { rowIndex: row.rowIndex, "Event": ev ? getVal(ev, 1) : getVal(row, 0), "Chest No (Capt)": getVal(row, 1), "Name": st ? getVal(st, 1) + teamMembers : "Unknown", "Class": st ? getVal(st, 3) : "", "Category": st ? getVal(st, 4) : "", "Group": st ? getVal(st, 5) : "" };
+                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Chest No (Capt)": getVal(row, 1), "Name": st ? getVal(st, 1) + teamMembers : "Unknown", "Class": st ? getVal(st, 3) : "", "Category": st ? getVal(st, 4) : "", "Group": st ? getVal(st, 5) : "" };
                 });
             } else if(dataType === "Results") {
                 return rawData.map(row => {
-                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); const ev = events.find(e => getVal(e, 0) == getVal(row, 0)); const pos = getVal(row, 2);
-                    return { rowIndex: row.rowIndex, "Event": ev ? getVal(ev, 1) : getVal(row, 0), "Position": pos == 1 ? "1st Place" : pos == 2 ? "2nd Place" : "3rd Place", "Student": st ? getVal(st, 1) : getVal(row, 1), "Status": getVal(row, 3) || "Approved" };
+                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); const pos = getVal(row, 2);
+                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Position": pos == 1 ? "1st Place" : pos == 2 ? "2nd Place" : "3rd Place", "Student": st ? getVal(st, 1) : getVal(row, 1), "Status": getVal(row, 3) || "Approved" };
                 });
             }
             return rawData;
