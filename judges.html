@@ -171,7 +171,7 @@
             <div id="participantsContainer"></div>
 
             <div class="submit-section">
-                <div class="validation-msg" id="valMsg"><i class="fas fa-exclamation-triangle"></i> You must assign positions to at least 5 participants.</div>
+                <div class="validation-msg" id="valMsg"><i class="fas fa-exclamation-triangle"></i> You must assign at least one position to submit!</div>
                 <button class="btn-main" id="submitResultBtn" onclick="submitResults()"><i class="fas fa-check-circle"></i> Submit Final Results</button>
                 <p style="font-size: 0.8rem; color: var(--muted); margin-top: 10px;">Results will be sent to Admin for approval.</p>
             </div>
@@ -539,16 +539,16 @@
                 const pos = card.querySelector('.rank-select').value;
                 const remarks = card.querySelector('.remark-input').value.trim();
                 
-                if(pos) {
-                    finalResults.push({ chest: chest, pos: pos, remarks: remarks });
-                    if(pos !== "DQ") rankedCount++;
+                finalResults.push({ chest: chest, pos: pos, remarks: remarks });
+                
+                if(pos && pos !== "DQ") {
+                    rankedCount++;
                 }
             });
 
-            const requiredPosCount = Math.min(5, currentState.participants.length);
-            if(rankedCount < requiredPosCount) {
+            if(rankedCount === 0) {
                 const vMsg = document.getElementById('valMsg');
-                vMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> You must assign positions to at least ${requiredPosCount} participants!`;
+                vMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> You must assign at least one position to submit!`;
                 vMsg.style.display = 'block';
                 window.scrollTo(0, document.body.scrollHeight);
                 return;
