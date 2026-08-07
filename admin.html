@@ -2044,9 +2044,14 @@
                 document.getElementById('dashboardView').style.display = 'flex';
                 document.getElementById('instNameDisplay').innerText = sessionStorage.getItem("instName") || "Dashboard";
                 
-                // പേജ് റീഫ്രഷ് ചെയ്യുമ്പോൾ ലോഡർ കാണിക്കാതെ സൈലന്റ് ആയി ലോഡ് ചെയ്യുന്നു
                 loadDropdownData(false);
                 restoreTab();
+                
+                // ഓരോ 20 സെക്കൻഡിലും ബാക്ക്ഗ്രൗണ്ടിൽ പുതിയ ഡാറ്റ വന്നിട്ടുണ്ടോ എന്ന് സിസ്റ്റം തനിയെ നോക്കും
+                // പുതിയ മാറ്റങ്ങൾ ഉണ്ടെങ്കിൽ മാത്രം അത് സ്ക്രീനിൽ അപ്ഡേറ്റ് ചെയ്യും
+                setInterval(() => {
+                    loadDropdownData(false, true); 
+                }, 20000); 
             }
         };
     </script>
