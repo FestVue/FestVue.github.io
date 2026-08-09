@@ -1655,7 +1655,7 @@
             if(!globalDbData) return [];
             const rawData = globalDbData[dataType] || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
             
-            // പരിപാടിയുടെ പൂർണ്ണ വിവരങ്ങൾ എടുക്കാനുള്ള ഫംഗ്ഷൻ
+            // പരിപാടിയുടെ പൂർണ്ണ വിവരങ്ങൾ (Name + Category + Gender) എടുക്കാനുള്ള ഫംഗ്ഷൻ
             const getFullEvName = (evCode) => {
                 const ev = events.find(e => getVal(e, 0) == evCode);
                 if(!ev) return evCode;
@@ -1678,15 +1678,24 @@
             } else if(dataType === "PendingReg") {
                 const registeredCodes = (globalDbData.Registrations || []).map(r => getVal(r,0).toString().trim().toUpperCase());
                 return events.filter(ev => !registeredCodes.includes(getVal(ev,0).toString().trim().toUpperCase()))
-                             .map((ev, idx) => ({ rowIndex: idx, "Event Code": getVal(ev,0), "Event Name": getVal(ev,1), "Category": getVal(ev,2), "Type": getVal(ev,4) }));
+                             .map((ev, idx) => ({ 
+                                 rowIndex: idx, 
+                                 "Event Code": getVal(ev,0), 
+                                 "Event Details": getFullEvName(getVal(ev,0)), // ഇവിടെ നമ്മൾ മുഴുവൻ പേരും നൽകി 
+                                 "Type": getVal(ev,4) 
+                             }));
             } else if(dataType === "PendingRes") {
                 const publishedCodes = (globalDbData.Results || []).filter(r => getVal(r,3) !== "Pending").map(r => getVal(r,0).toString().trim().toUpperCase());
                 return events.filter(ev => !publishedCodes.includes(getVal(ev,0).toString().trim().toUpperCase()))
-                             .map((ev, idx) => ({ rowIndex: idx, "Event Code": getVal(ev,0), "Event Name": getVal(ev,1), "Category": getVal(ev,2), "Type": getVal(ev,4) }));
+                             .map((ev, idx) => ({ 
+                                 rowIndex: idx, 
+                                 "Event Code": getVal(ev,0), 
+                                 "Event Details": getFullEvName(getVal(ev,0)), // ഇവിടെ നമ്മൾ മുഴുവൻ പേരും നൽകി
+                                 "Type": getVal(ev,4) 
+                             }));
             }
             return rawData;
         }
-
         function renderTable() {
             const dataType = document.getElementById('reportDataType').value; const table = document.getElementById('dataTable'); const mappedData = getMappedData(dataType);
             if(mappedData.length === 0) { table.innerHTML = "<tr><td style='padding:20px; color:#64748b;'>No data available.</td></tr>"; return; }
