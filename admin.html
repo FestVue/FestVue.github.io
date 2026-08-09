@@ -106,6 +106,10 @@
         .select2-results__option--selected { background-color: var(--primary) !important; color: white !important; }
         .select2-results__option--highlighted.select2-results__option--selectable { background-color: rgba(4, 106, 56, 0.1) !important; color: var(--text) !important; }
     </style>
+    <!-- PDF & Excel Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <!-- Global Loader -->
@@ -180,6 +184,16 @@
                             <div id="individualScorers"><p style="color: #64748b;">Configure titles in Settings.</p></div>
                         </div>
                     </div>
+
+                    <!-- REPORTS & EXPORTS SECTION -->
+            <div class="card" style="margin-bottom: 25px; text-align: center; background: linear-gradient(135deg, rgba(4,106,56,0.05), rgba(4,106,56,0.1)); border: 1px solid var(--primary);">
+                <h3 style="margin-bottom: 15px; color: var(--primary); font-size: 1.2rem;"><i class="fas fa-file-export"></i> Comprehensive Reports</h3>
+                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">Download full Fest data or generate PDF lists for Prize Distribution.</p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="auth-btn" onclick="downloadCompleteExcel()" style="width: auto; margin: 0; background: #107c41;"><i class="fas fa-file-excel"></i> Full Excel Report</button>
+                    <button class="auth-btn" onclick="downloadPrizePDF()" style="width: auto; margin: 0; background: #b30b00;"><i class="fas fa-file-pdf"></i> Prize Distribution PDF</button>
+                </div>
+            </div>
 
                     <div class="card">
                         <div class="card-header">
@@ -2255,6 +2269,149 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
             });
 
         }, 20000); // ഓരോ 20 സെക്കൻഡിലും സിങ്ക് ആവും
+
+        // ==========================================
+        // EXPORT: EXCEL & PDF GENERATORS
+        // ==========================================
+
+        function downloadCompleteExcel() {
+            if(!globalDbData || !globalDbData.Students) return alert("Data not loaded yet! Please wait.");
+            
+            const students = globalDbData.Students || []; const events = globalDbData.Events || [];
+            const regs = globalDbData.Registrations || []; const results = globalDbData.Results || [];
+            const settings = globalDbData.Settings || []; const bonus = globalDbData.Bonus || [];
+            
+            // പോയിന്റ് സെറ്റിംഗ്സ് എടുക്കുന്നു
+            let defaultPts = {1:5, 2:3, 3:1}; let customPts = {};
+            settings.forEach(row => {
+                const k = getVal(row,1); const v = getVal(row,2);
+                if(k === "PTS_DEFAULT" && v) { const p = v.split(','); defaultPts = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; } 
+                else if(k.startsWith("PTS_EV_") && v) { const evC = k.replace("PTS_EV_", ""); const p = v.split(','); customPts[evC] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
+            });
+
+            // 1. STUDENTS TAB
+            let stData = [];
+            students.forEach(st => {
+                const chest = getVal(st,0).toString().toUpperCase(); const name = getVal(st,1);
+                let regEvents = []; let wonPositions = []; let indScore = 0;
+
+                regs.forEach(r => {
+                    const eCode = getVal(r,0).toString().toUpperCase(); const capt = getVal(r,1).toString().toUpperCase();
+                    if(capt === chest || JSON.stringify(r).toUpperCase().includes(chest)) {
+                        const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
+                        if(ev) regEvents.push(getVal(ev,1));
+                    }
+                });
+
+                results.forEach(r => {
+                    if(getVal(r,3) === "Pending") return;
+                    const eCode = getVal(r,0).toString().toUpperCase(); const rChest = getVal(r,1).toString().toUpperCase(); const pos = parseInt(getVal(r,2));
+                    const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
+
+                    if(ev) {
+                        const isGroup = getVal(ev,4).toString().toLowerCase() === 'group';
+                        const isGeneral = (getVal(ev,2).toString().toLowerCase() === "general" || getVal(ev,2).toString().toLowerCase() === "common");
+                        
+                        let won = false;
+                        if(rChest === chest) won = true;
+                        else if(isGroup) {
+                           const regRow = regs.find(rg => getVal(rg,0).toString().toUpperCase()===eCode && getVal(rg,1).toString().toUpperCase()===rChest);
+                           if(regRow && JSON.stringify(regRow).toUpperCase().includes(chest)) won = true;
+                        }
+
+                        if(won) {
+                            wonPositions.push(`${getVal(ev,1)} (${pos === 1 ? '1st' : pos === 2 ? '2nd' : '3rd'})`);
+                            if(!isGroup && !isGeneral) {
+                                const pMap = customPts[eCode] || defaultPts;
+                                indScore += (pMap[pos] || 0);
+                            }
+                        }
+                    }
+                });
+
+                stData.push({ "Chest No": chest, "Name": name, "Gender": getVal(st,2), "Class": getVal(st,3), "Category": getVal(st,4), "Group": getVal(st,5), "Participated Events": regEvents.join(", "), "Secured Positions": wonPositions.join(", "), "Total Individual Score": indScore });
+            });
+            // ആൽഫബെറ്റിക് ഓർഡറിൽ അടുക്കുന്നു
+            stData.sort((a,b) => a.Name.localeCompare(b.Name));
+
+            // 2. GROUPS TAB
+            let gpDataMap = {};
+            students.forEach(st => { const grp = getVal(st,5); if(grp && !gpDataMap[grp]) gpDataMap[grp] = 0; });
+            
+            results.forEach(r => {
+                 if(getVal(r,3) === "Pending") return;
+                 const eCode = getVal(r,0).toString().toUpperCase(); const rChest = getVal(r,1).toString().toUpperCase(); const pos = parseInt(getVal(r,2));
+                 const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
+                 if(ev) {
+                     const st = students.find(s => getVal(s,0).toString().toUpperCase() === rChest);
+                     if(st) { const grp = getVal(st,5); const pMap = customPts[eCode] || defaultPts; if(grp) gpDataMap[grp] = (gpDataMap[grp] || 0) + (pMap[pos] || 0); }
+                 }
+            });
+            bonus.forEach(b => { const grp = getVal(b,0); const p = parseInt(getVal(b,1)); if(grp && p) gpDataMap[grp] = (gpDataMap[grp] || 0) + p; });
+
+            let gpData = Object.keys(gpDataMap).map(g => ({ "Group Name": g, "Total Score": gpDataMap[g] })).sort((a,b) => b["Total Score"] - a["Total Score"]);
+
+            // എക്സൽ ജനറേറ്റ് ചെയ്യുന്നു
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(stData), "Students Data");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gpData), "Group Leaderboard");
+            XLSX.writeFile(wb, "FestVue_Comprehensive_Data.xlsx");
+        }
+
+        function downloadPrizePDF() {
+            if(!globalDbData || !globalDbData.Events) return alert("Data not loaded yet!");
+            
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
+            const instName = sessionStorage.getItem("instName") || "Institution";
+            const festName = document.getElementById('confFestName') ? document.getElementById('confFestName').value : "Fest";
+
+            const events = globalDbData.Events || []; const results = globalDbData.Results || []; const students = globalDbData.Students || [];
+            
+            // കാറ്റഗറി അടിസ്ഥാനത്തിൽ തിരിക്കുന്നു
+            let categories = {};
+            events.forEach(ev => { const cat = getVal(ev,2) || "General"; if(!categories[cat]) categories[cat] = []; categories[cat].push(ev); });
+
+            let yPos = 20;
+            doc.setFontSize(18); doc.setFont("helvetica", "bold"); doc.text(`${instName}`, 105, yPos, { align: 'center' });
+            yPos += 8; doc.setFontSize(14); doc.text(`${festName} - Prize Distribution Report`, 105, yPos, { align: 'center' });
+            yPos += 12;
+
+            for (const [catName, catEvents] of Object.entries(categories)) {
+                let eventsWithResults = catEvents.filter(ev => { const eCode = getVal(ev,0).toString().toUpperCase(); return results.some(r => getVal(r,0).toString().toUpperCase() === eCode && getVal(r,3) !== "Pending"); });
+                if(eventsWithResults.length === 0) continue;
+
+                if (yPos > 260) { doc.addPage(); yPos = 20; }
+                doc.setFontSize(12); doc.setTextColor(255, 255, 255); doc.setFillColor(4, 106, 56); doc.rect(14, yPos-5, 182, 7, 'F');
+                doc.text(`Category: ${catName.toUpperCase()}`, 105, yPos, { align: 'center' }); yPos += 8; doc.setTextColor(0, 0, 0);
+
+                let tableData = [];
+                eventsWithResults.forEach(ev => {
+                    const eCode = getVal(ev,0).toString().toUpperCase(); const eName = getVal(ev,1);
+                    const isGroup = getVal(ev,4).toString().toLowerCase() === 'group';
+                    const evResults = results.filter(r => getVal(r,0).toString().toUpperCase() === eCode && getVal(r,3) !== "Pending");
+                    evResults.sort((a,b) => parseInt(getVal(a,2)) - parseInt(getVal(b,2)));
+
+                    evResults.forEach(r => {
+                        const pos = parseInt(getVal(r,2)); const chest = getVal(r,1).toString().toUpperCase();
+                        let wName = "Unknown", wCls = "-", wGrp = "-";
+                        const st = students.find(s => getVal(s,0).toString().toUpperCase() === chest);
+                        if(st) { wName = getVal(st,1); wCls = getVal(st,3); wGrp = getVal(st,5); if(isGroup) wName += " & Team"; }
+                        
+                        let posStr = pos === 1 ? "1st" : pos === 2 ? "2nd" : "3rd";
+                        tableData.push([eName, posStr, wName, wCls, wGrp, chest]);
+                    });
+                });
+
+                doc.autoTable({
+                    startY: yPos, head: [['Event Name', 'Position', 'Student / Team Name', 'Class', 'Group', 'Chest No']],
+                    body: tableData, theme: 'grid', styles: { fontSize: 9, cellPadding: 2 },
+                    headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+                    columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 15 }, 2: { cellWidth: 50 } }, margin: { left: 14, right: 14 }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+            doc.save(`Prize_Distribution_${festName.replace(/\s+/g, '_')}.pdf`);
+        }
     </script>
 </body>
 </html>
