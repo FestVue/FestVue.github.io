@@ -93,6 +93,22 @@
         .submit-section { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 30px; text-align: center; }
         .validation-msg { color: #EF4444; font-size: 0.9rem; font-weight: 500; margin-bottom: 15px; display: none; }
     </style>
+
+    <!-- Searchable Dropdown Library (Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Select2 Theme overrides for Judges Portal */
+        .select2-container { flex-grow: 1; min-width: 250px; }
+        .select2-container .select2-selection--single { height: 48px; border: 2px solid var(--primary); border-radius: 8px; background-color: var(--card); }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 48px; color: var(--text); padding-left: 15px; font-size: 1rem; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 46px; }
+        .select2-dropdown { background-color: var(--card); border-color: var(--primary); }
+        .select2-search__field { background-color: var(--bg); color: var(--text); border: 1px solid var(--primary) !important; border-radius: 4px; padding: 10px; outline: none; }
+        .select2-results__option--selected { background-color: var(--primary) !important; color: white !important; }
+        .select2-results__option--highlighted.select2-results__option--selectable { background-color: rgba(4, 106, 56, 0.1) !important; color: var(--text) !important; }
+    </style>
 </head>
 <body>
 
@@ -138,8 +154,7 @@
         <div class="container">
             <h3 class="section-title"><i class="fas fa-search"></i> Select Event to Judge</h3>
             <div class="search-box">
-                <input type="text" id="eventSearchInput" placeholder="Type event name or code to search..." oninput="filterEvents()">
-                <select id="eventSelect">
+                <select id="eventSelect" style="width: 100%;">
                     <option value="">-- Choose an Event --</option>
                 </select>
                 <button onclick="startJudging()"><i class="fas fa-gavel"></i> Judge</button>
@@ -365,7 +380,16 @@
             eventsList.forEach(ev => {
                 evOptions += `<option value="${ev.code}">${ev.name} [${ev.category} - ${ev.gender}] (${ev.code})</option>`;
             });
-            document.getElementById('eventSelect').innerHTML = evOptions;
+            const selectEl = document.getElementById('eventSelect');
+            selectEl.innerHTML = evOptions;
+            
+            // Initialize Searchable Dropdown (Select2)
+            if(window.jQuery && $.fn.select2) {
+                $(selectEl).select2({
+                    placeholder: "-- Search and Choose Event --",
+                    width: 'resolve'
+                });
+            }
         }
 
         function filterEvents() {
