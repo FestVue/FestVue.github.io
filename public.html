@@ -695,10 +695,36 @@
             currentSearchStudent = { name: name, chest: q, cls: cls, grp: grp };
             currentSearchWins = [];
 
+            // 1. കാൽക്കുലേറ്റ് ഇൻഡിവിജ്വൽ സ്കോർ (ഗ്രൂപ്പും ജനറലും ഒഴികെ)
+            let individualTotal = 0;
+            results.forEach(resRow => {
+                if(getVal(resRow, 3) === "Pending") return;
+                const rChest = getVal(resRow, 1).toString().trim().toUpperCase();
+                if(rChest === q) {
+                    const evCode = getVal(resRow, 0).toString().trim().toUpperCase();
+                    const pos = parseInt(getVal(resRow, 2));
+                    const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
+                    
+                    if(evDetails) {
+                        const evCat = getVal(evDetails, 2).toString().trim().toLowerCase();
+                        const isGroup = getVal(evDetails, 4).toString().trim().toLowerCase() === "group";
+                        const isGeneral = (evCat === "general" || evCat === "common" || evCat === "all");
+                        
+                        // ഇൻഡിവിജ്വൽ ആണെങ്കിൽ മാത്രം പോയിന്റ് കൂട്ടുന്നു
+                        if(!isGroup && !isGeneral) {
+                            const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                            individualTotal += (ptsMap[pos] || 0);
+                        }
+                    }
+                }
+            });
+
+            // 2. പ്രൊഫൈൽ ഹെഡർ ഡിസൈൻ (ഇൻഡിവിജ്വൽ സ്കോർ ഉൾപ്പെടെ)
             let html = `<div class="card" style="margin-top:10px;">
                             <div class="profile-head">
                                 <div class="profile-name">${name}</div>
                                 <div class="profile-tags">
+                                    <span class="tag" style="background:var(--primary); color:white; border-color:var(--primary);"><i class="fas fa-star"></i> ${individualTotal} Pts</span>
                                     <span class="tag">#${q}</span>
                                     <span class="tag"><i class="fas fa-layer-group"></i> ${grp}</span>
                                     <span class="tag"><i class="fas fa-tag"></i> ${cat}</span>
@@ -722,7 +748,7 @@
 
             let currentUrl = window.location.href.split('?')[0];
             let directLink = `${currentUrl}?inst=${currentInstId}&chest=${q}`;
-            let shareText = `*${festConfig.name} - Participant Info*\n\n👤 Name: ${name}\n🔢 Chest No: ${q}\n🏠 Group: ${grp}\n\n*Events & Results:*\n`;
+            let shareText = `*${festConfig.name} - Participant Info*\n\n👤 Name: ${name}\n🔢 Chest No: ${q}\n🏠 Group: ${grp}\n🌟 Indv. Score: ${individualTotal} Pts\n\n*Events & Results:*\n`;
 
             if(stEvents.length === 0) {
                 html += `<div style="text-align:center; color:var(--muted); padding:10px 0;">No events registered.</div></div>`;
@@ -746,14 +772,12 @@
                         let won = false;
                         evResults.forEach(resRow => {
                             const resChest = getVal(resRow,1).toString().trim().toUpperCase();
-                            const pos = getVal(resRow,2); // ആദ്യം പൊസിഷൻ എന്താണെന്ന് എടുക്കുന്നു
+                            const pos = getVal(resRow,2); 
                             
-                            // കുട്ടിയുടെ പേരുണ്ടെന്നും, ഒപ്പം 1, 2, 3 ഇതിലേതെങ്കിലും സ്ഥാനം ഉണ്ടെന്നും ഉറപ്പുവരുത്തുന്നു
                             if((resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) && (pos == 1 || pos == 2 || pos == 3)) {
                                 won = true;
                                 let posValueText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
                                 
-                                // സർട്ടിഫിക്കറ്റ് ഡൗൺലോഡ് ബട്ടൺ
                                 certBtnHtml = `<button onclick="downloadCertificate('${evCode}', '${posValueText}')" class="auth-btn" style="background:#b45309; padding: 6px 12px; font-size:0.8rem; margin: 8px 0 0 0; width:100%;"><i class="fas fa-award"></i> Download Certificate</button>`;
                                 
                                 if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
@@ -765,7 +789,7 @@
                         if(!won) {
                             medalBadge = `<span style="font-size:0.8rem; color:var(--muted);">Participant</span>`;
                             posText = "Participant";
-                            certBtnHtml = ""; // ജയിച്ചിട്ടില്ലെങ്കിൽ സർട്ടിഫിക്കറ്റ് ബട്ടൺ കാണിക്കില്ല എന്ന് ഉറപ്പുവരുത്തുന്നു
+                            certBtnHtml = "";
                         }
                     }
                     
