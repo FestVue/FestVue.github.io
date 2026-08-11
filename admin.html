@@ -517,9 +517,15 @@
                                 <div class="input-group"><label>2nd Place</label><input type="number" id="defP2" value="3" required></div>
                                 <div class="input-group"><label>3rd Place</label><input type="number" id="defP3" value="1" required></div>
                             </div>
+                            
+                            <h4 style="margin-bottom: 10px; opacity:0.8; font-size: 0.95rem;">Exceptional Categories (Custom Points)</h4>
+                            <div id="customCategoryPointsContainer" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom:10px;"></div>
+                            
                             <h4 style="margin-bottom: 10px; opacity:0.8; font-size: 0.95rem;">Exceptional Events (Custom Points)</h4>
                             <div id="customPointsContainer"></div>
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                                <button type="button" onclick="addCustomCategoryPointRow()" class="primary-btn" style="background: #3b82f6; color:white;">+ Add Category</button>
                                 <button type="button" onclick="addCustomPointRow()" class="primary-btn" style="background: var(--accent); color:var(--text);">+ Add Event</button>
                                 <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Points System</button>
                             </div>
@@ -909,7 +915,8 @@
             const settings = globalDbData.Settings || []; const judges = globalDbData.Judges || [];
             let catHtml = "", groupHtml = "", classHtml = "", rawClassHtml = "", judgeHtml = ""; 
             if(document.getElementById('customPointsContainer')) document.getElementById('customPointsContainer').innerHTML = ""; 
-            
+            if(document.getElementById('customCategoryPointsContainer')) document.getElementById('customCategoryPointsContainer').innerHTML = "";
+
             judges.forEach(j => { 
                 let uName = getVal(j,0).toString().replace(/'/g, "\\'");
                 let uPass = getVal(j,1).toString().replace(/'/g, "\\'");
@@ -955,19 +962,22 @@
                 }
                 
                 if (type === 'POINTS') {
-                    const evCode = val1.toString().toUpperCase(); const pts = val2 ? val2.toString().split(',') : [];
-                    if (evCode === 'DEFAULT') { 
+                    const key = val1.toString().toUpperCase(); const pts = val2 ? val2.toString().split(',') : [];
+                    if (key === 'DEFAULT') { 
                         if(document.getElementById('defP1')) document.getElementById('defP1').value = pts[0] || 0; 
                         if(document.getElementById('defP2')) document.getElementById('defP2').value = pts[1] || 0; 
                         if(document.getElementById('defP3')) document.getElementById('defP3').value = pts[2] || 0;
-                    } else { addCustomPointRow(evCode, pts[0]||0, pts[1]||0, pts[2]||0); }
+                    } else if (key.startsWith('CAT_')) { 
+                        addCustomCategoryPointRow(key.replace('CAT_', ''), pts[0]||0, pts[1]||0, pts[2]||0); 
+                    } else { 
+                        addCustomPointRow(key, pts[0]||0, pts[1]||0, pts[2]||0); 
+                    }
                 }
-            });
 
             if(document.getElementById('categoryList')) document.getElementById('categoryList').innerHTML = catHtml || "<p style='font-size:0.9rem;'>No categories.</p>"; 
             if(document.getElementById('groupList')) document.getElementById('groupList').innerHTML = groupHtml || "<p style='font-size:0.9rem;'>No groups.</p>"; 
             if(document.getElementById('rawClassList')) document.getElementById('rawClassList').innerHTML = rawClassHtml || "<p style='font-size:0.9rem;'>No classes.</p>"; 
-            if(document.getElementById('classList')) document.getElementById('classList').innerHTML = classHtml || "<p style='font-size:0.9rem;'>No mapping.</p>";
+            if(document.getElementById('classList')) document.getElementById('classList').innerHTML = classHtml || "<p style='font-size:0.9rem;'>No mapping.</p>"; })
         }
 
         async function saveMultipleConfigs(configs, btnElement) {
@@ -1014,6 +1024,18 @@
             e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button'));
         });
 
+        function addCustomCategoryPointRow(catCode = "", p1 = 10, p2 = 7, p3 = 5) {
+            const container = document.getElementById('customCategoryPointsContainer'); 
+            const div = document.createElement('div'); div.className = 'form-grid custom-cat-point-row'; div.style.marginBottom = '10px';
+            
+            // കാറ്റഗറി ഡ്രോപ്പ്ഡൗൺ ഉണ്ടാക്കുന്നു
+            let optionsHtml = categoryOptionsHTML;
+            if(catCode) optionsHtml = optionsHtml.replace(`value="${catCode}"`, `value="${catCode}" selected`);
+
+            div.innerHTML = `<div class="input-group" style="margin:0;"><select class="ccp-cat" required>${optionsHtml}</select></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p1" value="${p1}" required></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p2" value="${p2}" required></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p3" value="${p3}" required></div><button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:10px; border-radius:6px;"><i class="fas fa-trash"></i></button>`;
+            container.appendChild(div);
+        }
+
         function addCustomPointRow(evCode = "", p1 = 10, p2 = 7, p3 = 5) {
             const container = document.getElementById('customPointsContainer'); const div = document.createElement('div'); div.className = 'form-grid custom-point-row'; div.style.marginBottom = '10px';
             div.innerHTML = `<div class="input-group" style="margin:0;"><input type="text" class="cp-code" placeholder="Code" value="${evCode}" required style="text-transform:uppercase;"></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p1" value="${p1}" required></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p2" value="${p2}" required></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p3" value="${p3}" required></div><button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:10px; border-radius:6px;"><i class="fas fa-trash"></i></button>`;
@@ -1024,7 +1046,18 @@
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]'); const oText = btn.innerHTML; btn.innerHTML = 'Saving...'; btn.disabled = true;
             let pointsData = [ ["POINTS", "DEFAULT", `${document.getElementById('defP1').value},${document.getElementById('defP2').value},${document.getElementById('defP3').value}`] ];
-            document.querySelectorAll('.custom-point-row').forEach(row => { pointsData.push(["POINTS", row.querySelector('.cp-code').value.toUpperCase(), `${row.querySelector('.cp-p1').value},${row.querySelector('.cp-p2').value},${row.querySelector('.cp-p3').value}`]); });
+            
+            // കാറ്റഗറി പോയിൻ്റുകൾ സേവ് ചെയ്യുന്നു
+            document.querySelectorAll('.custom-cat-point-row').forEach(row => { 
+                const cat = row.querySelector('.ccp-cat').value.toUpperCase();
+                if(cat) pointsData.push(["POINTS", "CAT_" + cat, `${row.querySelector('.ccp-p1').value},${row.querySelector('.ccp-p2').value},${row.querySelector('.ccp-p3').value}`]); 
+            });
+
+            // ഇവൻ്റ് പോയിൻ്റുകൾ സേവ് ചെയ്യുന്നു
+            document.querySelectorAll('.custom-point-row').forEach(row => { 
+                pointsData.push(["POINTS", row.querySelector('.cp-code').value.toUpperCase(), `${row.querySelector('.cp-p1').value},${row.querySelector('.cp-p2').value},${row.querySelector('.cp-p3').value}`]); 
+            });
+
             try { let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "savePointsConfig", targetSheetId: targetSheetId, pointsData: pointsData }) });
                 if((await res.json()).status === "success") { alert("Points Configuration saved!"); loadDropdownData(); }
             } catch(err) {} finally { btn.innerHTML = oText; btn.disabled = false; }
@@ -2017,13 +2050,15 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
             const settings = globalDbData.Settings || []; const bonus = globalDbData.Bonus || [];
             
-            let defaultPoints = { 1: 5, 2: 3, 3: 1 }; let customPoints = {};
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 }; let customPoints = {}; let customCatPoints = {};
             
             settings.forEach(row => {
                 if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
-                    const evCode = getVal(row, 1).toString().toUpperCase(); const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    const key = getVal(row, 1).toString().toUpperCase(); const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
                     const pts = rawVal ? rawVal.split(',') : []; const p1 = parseInt(pts[0]) || 0; const p2 = parseInt(pts[1]) || 0; const p3 = parseInt(pts[2]) || 0;
-                    if (evCode === "DEFAULT") { defaultPoints = { 1: p1, 2: p2, 3: p3 }; } else { customPoints[evCode] = { 1: p1, 2: p2, 3: p3 }; }
+                    if (key === "DEFAULT") { defaultPoints = { 1: p1, 2: p2, 3: p3 }; } 
+                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: p1, 2: p2, 3: p3 }; }
+                    else { customPoints[key] = { 1: p1, 2: p2, 3: p3 }; }
                 }
             });
 
@@ -2034,15 +2069,23 @@
             results.forEach(res => {
                 if(getVal(res, 3) === "Pending") return; 
                 const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1); const position = parseInt(getVal(res, 2)); 
-                const ptsMap = customPoints[evCode] || defaultPoints; const points = ptsMap[position] || 0;
+                
+                // ഒന്നാമത്തെ ഡിക്ലറേഷൻ മാത്രം നിലനിർത്തി
+                const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+                const isGeneralCat = (evCategory === "GENERAL" || evCategory === "COMMON" || evCategory === "ALL");
+                const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage";
+
+                // മുൻഗണനാ ക്രമം (Priority Rule: Event > Category > Default)
+                let ptsMap = defaultPoints;
+                if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
+                if (customPoints[evCode]) ptsMap = customPoints[evCode];
+
+                const points = ptsMap[position] || 0;
                 
                 if(!chestNo || points === 0) return;
-                const st = students.find(s => getVal(s, 0) == chestNo); const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
-                
-                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
-                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
-                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
-                const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage"; // Stage or Off-Stage
+                const st = students.find(s => getVal(s, 0) == chestNo); 
 
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
 
@@ -2458,11 +2501,15 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
             const settings = globalDbData.Settings || []; const bonus = globalDbData.Bonus || [];
             
             // പോയിന്റ് സെറ്റിംഗ്സ് എടുക്കുന്നു
-            let defaultPts = {1:5, 2:3, 3:1}; let customPts = {};
+            let defaultPts = {1:5, 2:3, 3:1}; let customPts = {}; let customCatPts = {};
             settings.forEach(row => {
-                const k = getVal(row,1); const v = getVal(row,2);
-                if(k === "PTS_DEFAULT" && v) { const p = v.split(','); defaultPts = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; } 
-                else if(k.startsWith("PTS_EV_") && v) { const evC = k.replace("PTS_EV_", ""); const p = v.split(','); customPts[evC] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
+                if(getVal(row,0).toString().toUpperCase() === "POINTS") {
+                    const k = getVal(row,1).toString().toUpperCase(); const v = getVal(row,2);
+                    const p = v ? v.split(',') : [];
+                    if(k === "DEFAULT") { defaultPts = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; } 
+                    else if(k.startsWith("CAT_")) { customCatPts[k.replace("CAT_", "")] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
+                    else { customPts[k] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
+                }
             });
 
             // 1. STUDENTS TAB
@@ -2498,7 +2545,11 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
                         if(won) {
                             wonPositions.push(`${getVal(ev,1)} (${pos === 1 ? '1st' : pos === 2 ? '2nd' : '3rd'})`);
                             if(!isGroup && !isGeneral) {
-                                const pMap = customPts[eCode] || defaultPts;
+                                const evCategory = ev ? getVal(ev, 2).toString().trim().toUpperCase() : "";
+                                let pMap = defaultPts;
+                                if(customCatPts[evCategory]) pMap = customCatPts[evCategory];
+                                if(customPts[eCode]) pMap = customPts[eCode];
+                                
                                 indScore += (pMap[pos] || 0);
                             }
                         }
@@ -2520,7 +2571,16 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
                  const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
                  if(ev) {
                      const st = students.find(s => getVal(s,0).toString().toUpperCase() === rChest);
-                     if(st) { const grp = getVal(st,5); const pMap = customPts[eCode] || defaultPts; if(grp) gpDataMap[grp] = (gpDataMap[grp] || 0) + (pMap[pos] || 0); }
+                     if(st) { 
+                         const grp = getVal(st,5); 
+                         const evCategory = getVal(ev, 2).toString().trim().toUpperCase();
+                         
+                         let pMap = defaultPts;
+                         if(customCatPts[evCategory]) pMap = customCatPts[evCategory];
+                         if(customPts[eCode]) pMap = customPts[eCode];
+                         
+                         if(grp) gpDataMap[grp] = (gpDataMap[grp] || 0) + (pMap[pos] || 0); 
+                     }
                  }
             });
             bonus.forEach(b => { const grp = getVal(b,0); const p = parseInt(getVal(b,1)); if(grp && p) gpDataMap[grp] = (gpDataMap[grp] || 0) + p; });
