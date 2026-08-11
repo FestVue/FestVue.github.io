@@ -374,7 +374,9 @@
                 
                 if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
                 if (type === "CONFIG" && val1.toString().toUpperCase().startsWith("TITLE_") && val2) {
-                    const p = val2.split('|'); festConfig.titles.push({ name: p[0], gender: p[1], mode: p[2] });
+                    const p = val2.split('|'); 
+                    // ഇവിടെയാണ് category വിട്ടുപോയിരുന്നത്, അത് പരിഹരിച്ചു!
+                    festConfig.titles.push({ name: p[0], gender: p[1] || "All", mode: p[2] || "All", category: p[3] || "All" });
                 }
                 if (type === "POINTS") {
                     const evCode = val1.toString().toUpperCase(); 
@@ -391,7 +393,10 @@
             if(!isInitialLoad) { leftPane.style.opacity = '0.1'; }
             
             setTimeout(() => {
-                renderStandingsAndScorers();
+                try {
+                    renderStandingsAndScorers();
+                } catch(e) { console.error("Render Error:", e); } // എറർ വന്നാലും പാനൽ പഴയപടിയാകാൻ try-catch നൽകി
+                
                 if(!isInitialLoad) { leftPane.style.opacity = '1'; }
             }, isInitialLoad ? 0 : 400);
 
@@ -404,6 +409,20 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
+            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് എടുക്കുന്നു
+            const settings = globalDbData.Settings || [];
+            let customCatPoints = {};
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const key = getVal(row, 1).toString().toUpperCase(); 
+                    const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    if (key.startsWith("CAT_")) { 
+                        const pts = rawVal ? rawVal.split(',') : []; 
+                        customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    }
+                }
+            });
+
             let groupPoints = {}; let studentPoints = {}; let processedGroupEvents = {}; 
             
             bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
@@ -411,16 +430,23 @@
             results.forEach(res => {
                 if(getVal(res,3) === "Pending") return;
                 const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
-                const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                
+                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
+                
+                // മുൻഗണനാ ക്രമം (Priority Rule: Event > Category > Default)
+                let ptsMap = festConfig.defaultPts;
+                if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
+                if (festConfig.customPts[evCode]) ptsMap = festConfig.customPts[evCode];
+
                 const points = ptsMap[position] || 0;
+                
                 if(!chestNo || points === 0) return;
 
                 const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
-                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
                 
-                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
                 const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
-                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+                const isGeneralCat = (evCategory === "GENERAL" || evCategory === "COMMON" || evCategory === "ALL");
                 const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage"; 
 
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
@@ -438,12 +464,13 @@
                     }
 
                     if (!skipIndividualPoints) {
-                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), events: [] };
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), category: getVal(st,4), events: [] };
                         studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
                     }
                 }
             });
 
+            // ഗ്രൂപ്പ് ലീഡർബോർഡ്
             const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
             let gHtml = "";
             if(sortedGroups.length === 0) {
@@ -462,6 +489,7 @@
             }
             document.getElementById('groupStandingsBox').innerHTML = gHtml;
 
+            // TOP SCORERS (100% Safe from undefined errors)
             let sHtml = "";
             const colorThemes = ["#D4AF37", "#10B981", "#3B82F6", "#8B5CF6"];
 
@@ -470,10 +498,19 @@
                 let maxPoints = 0; let topStudent = null;
                 
                 Object.values(studentPoints).forEach(st => {
-                    let isGenderMatch = (titleDef.gender === "All" || titleDef.gender.toLowerCase() === st.gender);
-                    if(!isGenderMatch) return;
+                    let tGen = titleDef.gender || "All";
+                    let tCat = titleDef.category || "All";
+                    let tMode = titleDef.mode || "All";
+
+                    let isGenderMatch = (tGen === "All" || tGen.toLowerCase() === (st.gender || ""));
+                    let isCategoryMatch = (tCat === "All" || tCat.toUpperCase() === (st.category || "").toUpperCase());
+                    
+                    if(!isGenderMatch || !isCategoryMatch) return;
+                    
                     let stTotal = 0;
-                    st.events.forEach(ev => { if(titleDef.mode === "All" || titleDef.mode === ev.mode) stTotal += ev.points; });
+                    st.events.forEach(ev => { 
+                        if(tMode === "All" || tMode === ev.mode) { stTotal += ev.points; }
+                    });
                     
                     if(stTotal > 0 && stTotal > maxPoints) { maxPoints = stTotal; topStudent = st; }
                 });
