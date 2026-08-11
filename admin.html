@@ -350,9 +350,15 @@
 
                 <!-- 6. MANAGE RESULTS -->
                 <section id="manageResults" class="page-section">
-                    <div class="card" style="border-left: 4px solid var(--accent);">
-                        <div class="card-header"><h3><i class="fas fa-clock"></i> Pending Approvals (From Judges)</h3></div>
-                        <div id="pendingResultsContainer"><p style="color: var(--text);">Loading pending results...</p></div>
+                    <!-- 1. Pending Approvals Accordion (Open by default) -->
+                    <div class="card accordion-card active" style="border-left: 4px solid var(--accent);" onclick="this.classList.toggle('active')">
+                        <div class="accordion-header">
+                            <h3><i class="fas fa-clock" style="color: var(--accent);"></i> Pending Approvals</h3>
+                            <i class="fas fa-chevron-down accordion-icon"></i>
+                        </div>
+                        <div class="accordion-body" onclick="event.stopPropagation()">
+                            <div id="pendingResultsContainer"><p style="color: var(--text);">Loading pending results...</p></div>
+                        </div>
                     </div>
 
                     <div class="card">
@@ -360,10 +366,10 @@
                         <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Publishing results manually here will overwrite any existing or pending judge results for the selected event.</p>
                         <form id="resultForm">
                             <div style="margin-bottom: 15px;">
-    <label style="font-size: 0.85rem; color: #64748b; cursor: pointer;">
-        <input type="checkbox" id="hidePublishedEv" onchange="populateDropdowns()"> Hide already published events
-    </label>
-</div>
+                               <label style="font-size: 0.85rem; color: #64748b; cursor: pointer;">
+                               <input type="checkbox" id="hidePublishedEv" onchange="populateDropdowns()"> Hide already published events
+                               </label>
+                            </div>
                             <div class="input-group" style="max-width: 300px;"><label>Select Event</label><select id="resEventSelect" required><option value="">-- Choose Event --</option></select></div>
                             <div class="form-grid">
                                 <div class="input-group">
@@ -464,137 +470,228 @@
 
                 <!-- 8. SETTINGS: GENERAL -->
                 <section id="settingsGeneral" class="page-section">
-                    <div class="card">
-                        <div class="card-header"><h3><i class="fas fa-globe"></i> Global Parameters</h3></div>
-                        <form id="globalConfigForm">
-                            <div class="form-grid">
-                                <div class="input-group"><label>Fest Name</label><input type="text" id="confFestName" required></div>
-                                <div class="input-group"><label>Fest Description</label><input type="text" id="confFestDesc" required></div>
-                                <div class="input-group"><label>Authority Label</label><input type="text" id="confAuthority" required></div>
-                                <div class="input-group"><label>Date</label><input type="date" id="confDate" required></div>
+                    <div style="display:flex; flex-direction:column;">
+                        
+                        <!-- 1. Global Parameters Accordion (Open by default) -->
+                        <div class="card accordion-card active" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-globe" style="color: #3b82f6;"></i> Global Parameters</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
                             </div>
-                            <div class="input-group">
-                                <label>Certificate Text Template</label>
-                                <textarea id="confCertTemplate" rows="3" required></textarea>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <form id="globalConfigForm">
+                                    <div class="form-grid">
+                                        <div class="input-group"><label>Fest Name</label><input type="text" id="confFestName" required></div>
+                                        <div class="input-group"><label>Fest Description</label><input type="text" id="confFestDesc" required></div>
+                                        <div class="input-group"><label>Authority Label</label><input type="text" id="confAuthority" required></div>
+                                        <div class="input-group"><label>Date</label><input type="date" id="confDate" required></div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Certificate Text Template</label>
+                                        <textarea id="confCertTemplate" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Global Config</button>
+                                </form>
                             </div>
-                            <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Global Config</button>
-                        </form>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h3><i class="fas fa-medal"></i> Top Scorer Titles</h3>
-                            <button type="button" onclick="addTitleRow()" class="primary-btn" style="background:var(--accent); color:var(--text); padding:5px 12px; font-size:0.85rem;"><i class="fas fa-plus"></i> Add Title</button>
                         </div>
-                        <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Configure up to 4 titles. Set filters to 'All' if not needed.</p>
-                        <form id="titlesConfigForm">
-                            <div id="titlesContainer"></div>
-                            <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Titles</button>
-                        </form>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header"><h3><i class="fas fa-ban"></i> Event Limits</h3></div>
-                        <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Limit individual events per student. <b>Set to 0 for Unlimited.</b> Group & General events are excluded.</p>
-                        <form id="limitsConfigForm">
-                            <div class="form-grid">
-                                <div class="input-group"><label>Max Stage Events / Student</label><input type="number" id="confLimitStage" value="0" required></div>
-                                <div class="input-group"><label>Max Off-Stage Events / Student</label><input type="number" id="confLimitOff" value="0" required></div>
+                        
+                        <!-- 2. Top Scorer Titles Accordion (Collapsed) -->
+                        <div class="card accordion-card" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-medal" style="color: var(--accent);"></i> Top Scorer Titles</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
                             </div>
-                            <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Limits</button>
-                        </form>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Configure titles for top scorers. Set filters to 'All' if not needed.</p>
+                                
+                                <form id="titlesConfigForm">
+                                    <div id="titlesContainer"></div>
+                                    
+                                    <!-- Add ബട്ടണും Save ബട്ടണും ഒരുമിച്ചാക്കിയ ഭാഗം -->
+                                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                                        <button type="button" onclick="addTitleRow()" class="primary-btn" style="background:var(--accent); color:var(--text); padding: 8px 15px; font-size: 0.9rem;"><i class="fas fa-plus"></i> Add Title</button>
+                                        <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Titles</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 3. Event Limits Accordion (Collapsed) -->
+                        <div class="card accordion-card" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-ban" style="color: #ef4444;"></i> Event Limits</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Limit individual events per student. <b>Set to 0 for Unlimited.</b> Group & General events are excluded.</p>
+                                <form id="limitsConfigForm">
+                                    <div class="form-grid">
+                                        <div class="input-group"><label>Max Stage Events / Student</label><input type="number" id="confLimitStage" value="0" required></div>
+                                        <div class="input-group"><label>Max Off-Stage Events / Student</label><input type="number" id="confLimitOff" value="0" required></div>
+                                    </div>
+                                    <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Limits</button>
+                                </form>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
 
                 <!-- 9. SETTINGS: POINTS -->
+                <style>
+                    /* Custom CSS for Points Settings Responsiveness & Floating Button */
+                    .point-row-grid { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; }
+                    .sticky-save-bar { position: sticky; bottom: 0; background: var(--card-bg); padding: 15px 0; z-index: 50; border-top: 1px dashed var(--primary); margin-top: 20px; box-shadow: 0 -10px 20px rgba(0,0,0,0.02); }
+                    @media (max-width: 768px) {
+                        .point-row-grid { grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; }
+                        .point-row-grid .event-sel-group { grid-column: span 4; }
+                    }
+                </style>
+
                 <section id="settingsPoints" class="page-section">
-                    <div class="card">
+                    <div class="card" style="padding-bottom: 0; position: relative;">
                         <div class="card-header"><h3><i class="fas fa-star"></i> Points System Configuration</h3></div>
                         <p style="font-size:0.85rem; color:var(--muted); margin-bottom:20px;">Set the points awarded for 1st, 2nd, and 3rd places. Event-specific points override Category points, which override Default points.</p>
                         
                         <form id="pointsConfigForm">
                             
-                            <!-- 1. Default Points Box -->
-                            <div style="background: rgba(4, 106, 56, 0.05); border: 1px solid var(--primary); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                                <h4 style="margin-bottom: 15px; color: var(--primary); font-size: 1rem;"><i class="fas fa-check-circle"></i> 1. Default Points (Normal Events)</h4>
-                                <div class="form-grid">
-                                    <div class="input-group" style="margin:0;"><label>1st Place</label><input type="number" id="defP1" value="5" required></div>
-                                    <div class="input-group" style="margin:0;"><label>2nd Place</label><input type="number" id="defP2" value="3" required></div>
-                                    <div class="input-group" style="margin:0;"><label>3rd Place</label><input type="number" id="defP3" value="1" required></div>
+                            <!-- 1. Default Points Accordion (Open by default) -->
+                            <div class="accordion-card active" style="background: rgba(4, 106, 56, 0.03); border-color: rgba(4, 106, 56, 0.2); border-radius: 8px; margin-bottom: 20px;" onclick="this.classList.toggle('active')">
+                                <div class="accordion-header">
+                                    <h4 style="margin: 0; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> 1. Default Points (Normal)</h4>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
+                                </div>
+                                <div class="accordion-body" onclick="event.stopPropagation()">
+                                    <div class="form-grid">
+                                        <div class="input-group" style="margin:0;"><label>1st Place</label><input type="number" id="defP1" value="5" required></div>
+                                        <div class="input-group" style="margin:0;"><label>2nd Place</label><input type="number" id="defP2" value="3" required></div>
+                                        <div class="input-group" style="margin:0;"><label>3rd Place</label><input type="number" id="defP3" value="1" required></div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- 2. Category Points Box -->
-                            <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #3b82f6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:10px; border-bottom: 1px dashed #3b82f6; padding-bottom: 10px;">
-                                    <h4 style="color: #3b82f6; font-size: 1rem; margin:0;"><i class="fas fa-tags"></i> 2. Exceptional Categories</h4>
-                                    <!-- Add button moved here! -->
-                                    <button type="button" onclick="addCustomCategoryPointRow()" class="primary-btn" style="background: #3b82f6; color:white; padding: 6px 12px; font-size: 0.85rem;"><i class="fas fa-plus"></i> Add Category</button>
+                            <!-- 2. Category Points Accordion (Collapsed by default) -->
+                            <div class="accordion-card" style="background: rgba(59, 130, 246, 0.03); border-color: rgba(59, 130, 246, 0.2); border-radius: 8px; margin-bottom: 20px;" onclick="this.classList.toggle('active')">
+                                <div class="accordion-header">
+                                    <h4 style="margin: 0; color: #3b82f6; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-tags"></i> 2. Exceptional Categories</h4>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
                                 </div>
-                                <div id="customCategoryPointsContainer"></div>
+                                <div class="accordion-body" onclick="event.stopPropagation()">
+                                    <div id="customCategoryPointsContainer"></div>
+                                    <button type="button" onclick="addCustomCategoryPointRow()" class="primary-btn" style="background: #3b82f6; color:white; padding: 8px 15px; font-size: 0.9rem; margin-top: 5px;"><i class="fas fa-plus"></i> Add Category Rule</button>
+                                </div>
                             </div>
                             
-                            <!-- 3. Event Points Box -->
-                            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:10px; border-bottom: 1px dashed var(--accent); padding-bottom: 10px;">
-                                    <h4 style="color: #b45309; font-size: 1rem; margin:0;"><i class="fas fa-calendar-alt"></i> 3. Exceptional Events</h4>
-                                    <!-- Add button moved here! -->
-                                    <button type="button" onclick="addCustomPointRow()" class="primary-btn" style="background: var(--accent); color:var(--text); padding: 6px 12px; font-size: 0.85rem;"><i class="fas fa-plus"></i> Add Event</button>
+                            <!-- 3. Event Points Accordion (Collapsed by default) -->
+                            <div class="accordion-card" style="background: rgba(212, 175, 55, 0.05); border-color: rgba(212, 175, 55, 0.2); border-radius: 8px; margin-bottom: 20px;" onclick="this.classList.toggle('active')">
+                                <div class="accordion-header">
+                                    <h4 style="margin: 0; color: #b45309; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-calendar-alt"></i> 3. Exceptional Events</h4>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
                                 </div>
-                                <div id="customPointsContainer"></div>
+                                <div class="accordion-body" onclick="event.stopPropagation()">
+                                    <div id="customPointsContainer"></div>
+                                    <button type="button" onclick="addCustomPointRow()" class="primary-btn" style="background: var(--accent); color:var(--text); padding: 8px 15px; font-size: 0.9rem; margin-top: 5px;"><i class="fas fa-plus"></i> Add Event Rule</button>
+                                </div>
                             </div>
                             
-                            <button type="submit" class="primary-btn" style="width:100%; font-size:1.1rem; padding:14px; margin-top:10px;"><i class="fas fa-save"></i> Save All Point Settings</button>
+                            <!-- Floating Save Button -->
+                            <div class="sticky-save-bar">
+                                <button type="submit" class="primary-btn" style="width:100%; font-size:1.1rem; padding:14px; box-shadow: 0 4px 15px rgba(4, 106, 56, 0.3);"><i class="fas fa-save"></i> Save All Point Settings</button>
+                            </div>
                         </form>
                     </div>
                 </section>
 
                 <!-- 10. SETTINGS: CLASS & CATEGORY -->
+                <style>
+                    /* Accordion Design for Settings */
+                    .accordion-card { padding: 18px 25px; cursor: pointer; transition: 0.3s; margin-bottom: 12px; border: 1px solid var(--border); }
+                    .accordion-card:hover { background-color: rgba(4, 106, 56, 0.02); }
+                    .accordion-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin: 0; user-select: none; }
+                    .accordion-header h3 { margin: 0; color: var(--text); font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+                    .accordion-icon { color: var(--primary); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 1.2rem; }
+                    .accordion-body { display: none; margin-top: 15px; padding-top: 20px; border-top: 1px dashed var(--border); cursor: default; }
+                    
+                    /* Active State Styles */
+                    .accordion-card.active { border-color: var(--primary); background-color: var(--card-bg); box-shadow: 0 4px 15px rgba(4, 106, 56, 0.05); }
+                    .accordion-card.active .accordion-body { display: block; animation: fadeIn 0.4s ease; }
+                    .accordion-card.active .accordion-icon { transform: rotate(180deg); }
+                </style>
+
                 <section id="settingsClass" class="page-section">
-                    <div class="settings-grid">
-                        <div class="card">
-                            <div class="card-header"><h3>Groups</h3></div>
-                            <form id="groupForm" style="display:flex; gap:10px; margin-bottom:15px;">
-                                <input type="text" id="newGroupInput" placeholder="New Group" required style="text-transform: uppercase; flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
-                                <button type="submit" class="primary-btn"><i class="fas fa-plus"></i></button>
-                            </form>
-                            <ul id="groupList" style="list-style: none;"></ul>
+                    <div style="display:flex; flex-direction:column;">
+                        
+                        <!-- 1. Groups Accordion (Opened by default -> added 'active' class) -->
+                        <div class="card accordion-card active" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-users" style="color:var(--primary);"></i> Groups</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <form id="groupForm" style="display:flex; gap:10px; margin-bottom:15px;">
+                                    <input type="text" id="newGroupInput" placeholder="New Group" required style="text-transform: uppercase; flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+                                    <button type="submit" class="primary-btn"><i class="fas fa-plus"></i></button>
+                                </form>
+                                <ul id="groupList" style="list-style: none;"></ul>
+                            </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header"><h3>Categories & Gender</h3></div>
-                            <form id="categoryForm" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                                <input type="text" id="newCategoryInput" placeholder="Category Name" required style="text-transform: uppercase; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
-                                <select id="newCategoryGender" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
-                                    <option value="Common">Common (All)</option>
-                                    <option value="Boys">Boys Only</option>
-                                    <option value="Girls">Girls Only</option>
-                                </select>
-                                <button type="submit" class="primary-btn"><i class="fas fa-plus"></i> Add Category</button>
-                            </form>
-                            <ul id="categoryList" style="list-style: none;"></ul>
+
+                        <!-- 2. Categories & Gender Accordion -->
+                        <div class="card accordion-card" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-tags" style="color:#3b82f6;"></i> Categories & Gender</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <form id="categoryForm" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                                    <input type="text" id="newCategoryInput" placeholder="Category Name" required style="text-transform: uppercase; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+                                    <select id="newCategoryGender" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+                                        <option value="Common">Common (All)</option>
+                                        <option value="Boys">Boys Only</option>
+                                        <option value="Girls">Girls Only</option>
+                                    </select>
+                                    <button type="submit" class="primary-btn"><i class="fas fa-plus"></i> Add Category</button>
+                                </form>
+                                <ul id="categoryList" style="list-style: none;"></ul>
+                            </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header"><h3>Add Classes</h3></div>
-                            <form id="rawClassForm" style="display:flex; gap:10px; margin-bottom:15px;">
-                                <input type="text" id="onlyRawClassInput" placeholder="Class Name (e.g. 10A)" required style="text-transform: uppercase; flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
-                                <button type="submit" class="primary-btn"><i class="fas fa-plus"></i></button>
-                            </form>
-                            <ul id="rawClassList" style="list-style: none;"></ul>
+
+                        <!-- 3. Add Classes Accordion -->
+                        <div class="card accordion-card" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-graduation-cap" style="color:#f59e0b;"></i> Add Classes</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <form id="rawClassForm" style="display:flex; gap:10px; margin-bottom:15px;">
+                                    <input type="text" id="onlyRawClassInput" placeholder="Class Name (e.g. 10A)" required style="text-transform: uppercase; flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+                                    <button type="submit" class="primary-btn"><i class="fas fa-plus"></i></button>
+                                </form>
+                                <ul id="rawClassList" style="list-style: none;"></ul>
+                            </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header"><h3>Map Class to Category</h3></div>
-                            <form id="classForm" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                                <select id="mapClassSelect" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);"><option value="">Select Class</option></select>
-                                <select id="mapCategorySelect" class="st-category" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);"><option value="">Select Category</option></select>
-                                <select id="mapGenderSelect" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
-                                    <option value="COMMON">All Students (Common)</option>
-                                    <option value="BOYS">Boys Only</option>
-                                    <option value="GIRLS">Girls Only</option>
-                                </select>
-                                <button type="submit" class="primary-btn"><i class="fas fa-link"></i> Map Class</button>
-                            </form>
-                            <ul id="classList" style="list-style: none;"></ul>
+
+                        <!-- 4. Map Class to Category Accordion -->
+                        <div class="card accordion-card" onclick="this.classList.toggle('active')">
+                            <div class="accordion-header">
+                                <h3><i class="fas fa-link" style="color:var(--accent);"></i> Map Class to Category</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" onclick="event.stopPropagation()">
+                                <form id="classForm" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                                    <select id="mapClassSelect" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);"><option value="">Select Class</option></select>
+                                    <select id="mapCategorySelect" class="st-category" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);"><option value="">Select Category</option></select>
+                                    <select id="mapGenderSelect" required style="padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+                                        <option value="COMMON">All Students (Common)</option>
+                                        <option value="BOYS">Boys Only</option>
+                                        <option value="GIRLS">Girls Only</option>
+                                    </select>
+                                    <button type="submit" class="primary-btn"><i class="fas fa-link"></i> Map Class</button>
+                                </form>
+                                <ul id="classList" style="list-style: none;"></ul>
+                            </div>
                         </div>
+
                     </div>
                 </section>
 
@@ -883,6 +980,23 @@
             }
         }
 
+        function getEventSelectOptions(selectedCode) {
+            let options = '<option value="">-- Search & Select Event --</option>';
+            const events = globalDbData.Events || [];
+            events.forEach(ev => {
+                const code = getVal(ev, 0);
+                const name = getVal(ev, 1);
+                const cat = getVal(ev, 2) || "";
+                const gen = getVal(ev, 3) || "";
+                const extra = (cat || gen) ? ` [${cat} - ${gen}]` : "";
+                if(code) {
+                    const sel = (code.toString().toUpperCase() === selectedCode.toString().toUpperCase()) ? "selected" : "";
+                    options += `<option value="${code}" ${sel}>${code} - ${name}${extra}</option>`;
+                }
+            });
+            return options;
+        }
+
         function autoSelectCategory(select) { 
             const row = select.closest('.student-row'); 
             if (row) {
@@ -1042,20 +1156,50 @@
 
         function addCustomCategoryPointRow(catCode = "", p1 = 10, p2 = 7, p3 = 5) {
             const container = document.getElementById('customCategoryPointsContainer'); 
-            const div = document.createElement('div'); div.className = 'form-grid custom-cat-point-row'; div.style.marginBottom = '10px';
+            const div = document.createElement('div'); 
+            div.className = 'point-row-grid custom-cat-point-row'; 
+            div.style.marginBottom = '15px'; div.style.background = 'var(--bg)'; div.style.padding = '12px'; div.style.borderRadius = '8px'; div.style.border = '1px solid var(--border)';
             
-            // കാറ്റഗറി ഡ്രോപ്പ്ഡൗൺ ഉണ്ടാക്കുന്നു
             let optionsHtml = categoryOptionsHTML;
             if(catCode) optionsHtml = optionsHtml.replace(`value="${catCode}"`, `value="${catCode}" selected`);
 
-            div.innerHTML = `<div class="input-group" style="margin:0;"><select class="ccp-cat" required>${optionsHtml}</select></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p1" value="${p1}" required></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p2" value="${p2}" required></div><div class="input-group" style="margin:0;"><input type="number" class="ccp-p3" value="${p3}" required></div><button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:10px; border-radius:6px;"><i class="fas fa-trash"></i></button>`;
+            div.innerHTML = `
+                <div class="input-group event-sel-group" style="margin:0;">
+                    <label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">Select Category</label>
+                    <select class="ccp-cat" required style="width:100%;">${optionsHtml}</select>
+                </div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">1st Pts</label><input type="number" class="ccp-p1" value="${p1}" required></div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">2nd Pts</label><input type="number" class="ccp-p2" value="${p2}" required></div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">3rd Pts</label><input type="number" class="ccp-p3" value="${p3}" required></div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 15px; border-radius:6px; height:45px;"><i class="fas fa-trash"></i></button>
+            `;
             container.appendChild(div);
         }
 
         function addCustomPointRow(evCode = "", p1 = 10, p2 = 7, p3 = 5) {
-            const container = document.getElementById('customPointsContainer'); const div = document.createElement('div'); div.className = 'form-grid custom-point-row'; div.style.marginBottom = '10px';
-            div.innerHTML = `<div class="input-group" style="margin:0;"><input type="text" class="cp-code" placeholder="Code" value="${evCode}" required style="text-transform:uppercase;"></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p1" value="${p1}" required></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p2" value="${p2}" required></div><div class="input-group" style="margin:0;"><input type="number" class="cp-p3" value="${p3}" required></div><button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:10px; border-radius:6px;"><i class="fas fa-trash"></i></button>`;
+            const container = document.getElementById('customPointsContainer'); 
+            const div = document.createElement('div'); 
+            div.className = 'point-row-grid custom-point-row'; 
+            div.style.marginBottom = '15px'; div.style.background = 'var(--bg)'; div.style.padding = '12px'; div.style.borderRadius = '8px'; div.style.border = '1px solid var(--border)';
+            
+            div.innerHTML = `
+                <div class="input-group event-sel-group" style="margin:0;">
+                    <label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">Search & Select Event</label>
+                    <select class="cp-code select2-dynamic" required style="width:100%;">
+                        ${getEventSelectOptions(evCode)}
+                    </select>
+                </div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">1st Pts</label><input type="number" class="cp-p1" value="${p1}" required></div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">2nd Pts</label><input type="number" class="cp-p2" value="${p2}" required></div>
+                <div class="input-group" style="margin:0;"><label style="font-size:0.8rem; margin-bottom:5px; color:var(--muted);">3rd Pts</label><input type="number" class="cp-p3" value="${p3}" required></div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 15px; border-radius:6px; height:45px;"><i class="fas fa-trash"></i></button>
+            `;
             container.appendChild(div);
+
+            // പുതിയതായി ആഡ് ചെയ്യുന്ന ഡ്രോപ്പ്ഡൗണിൽ Select2 സെർച്ച് ആക്റ്റീവ് ആക്കുന്നു
+            if(window.jQuery && $.fn.select2) {
+                $(div.querySelector('.select2-dynamic')).select2();
+            }
         }
 
         if(document.getElementById('pointsConfigForm')) document.getElementById('pointsConfigForm').addEventListener('submit', async function(e) {
