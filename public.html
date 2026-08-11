@@ -492,6 +492,20 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
+            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് എടുക്കുന്നു
+            const settings = globalDbData.Settings || [];
+            let customCatPoints = {};
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const key = getVal(row, 1).toString().toUpperCase(); 
+                    const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    if (key.startsWith("CAT_")) { 
+                        const pts = rawVal ? rawVal.split(',') : []; 
+                        customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    }
+                }
+            });
+
             let groupPoints = {}; let studentPoints = {}; let processedGroupEvents = {}; 
             
             bonus.forEach(b => { const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0; if(grp) groupPoints[grp] = (groupPoints[grp] || 0) + pts; });
@@ -499,16 +513,23 @@
             results.forEach(res => {
                 if(getVal(res,3) === "Pending") return;
                 const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
-                const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                
+                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
+                
+                // മുൻഗണനാ ക്രമം (Priority Rule: Event > Category > Default)
+                let ptsMap = festConfig.defaultPts;
+                if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
+                if (festConfig.customPts[evCode]) ptsMap = festConfig.customPts[evCode];
+
                 const points = ptsMap[position] || 0;
+                
                 if(!chestNo || points === 0) return;
 
                 const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
-                const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
                 
-                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toLowerCase() : "";
                 const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
-                const isGeneralCat = (evCategory === "general" || evCategory === "common" || evCategory === "all");
+                const isGeneralCat = (evCategory === "GENERAL" || evCategory === "COMMON" || evCategory === "ALL");
                 const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage"; 
 
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
@@ -526,7 +547,7 @@
                     }
 
                     if (!skipIndividualPoints) {
-                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), events: [] };
+                        if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), category: getVal(st,4), events: [] };
                         studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
                     }
                 }
@@ -546,6 +567,7 @@
             }
             document.getElementById('leaderboardContainer').innerHTML = groupHTML;
 
+            // TOP SCORERS (100% Safe from undefined errors)
             let topHTML = "";
             const colorThemes = [
                 { bg: "rgba(212, 175, 55, 0.05)", border: "#D4AF37", text: "#b45309" }, 
@@ -559,12 +581,18 @@
                 let maxPoints = 0; let topStudents = [];
                 
                 Object.values(studentPoints).forEach(st => {
-                    let isGenderMatch = (titleDef.gender === "All" || titleDef.gender.toLowerCase() === st.gender);
-                    if(!isGenderMatch) return;
+                    let tGen = titleDef.gender || "All";
+                    let tCat = titleDef.category || "All";
+                    let tMode = titleDef.mode || "All";
+
+                    let isGenderMatch = (tGen === "All" || tGen.toLowerCase() === (st.gender || ""));
+                    let isCategoryMatch = (tCat === "All" || tCat.toUpperCase() === (st.category || "").toUpperCase());
+                    
+                    if(!isGenderMatch || !isCategoryMatch) return;
                     
                     let stTotal = 0;
                     st.events.forEach(ev => {
-                        if(titleDef.mode === "All" || titleDef.mode === ev.mode) { stTotal += ev.points; }
+                        if(tMode === "All" || tMode === ev.mode) { stTotal += ev.points; }
                     });
                     
                     if(stTotal > 0) {
@@ -576,8 +604,8 @@
                 const theme = colorThemes[tIdx % 4];
                 if(topStudents.length > 0) {
                     topHTML += `<div class="scorer-card" style="background:${theme.bg}; border-left-color:${theme.border};">`;
-                    topHTML += `<div class="scorer-title" style="color:${theme.text};">${titleDef.name} <span class="scorer-pts">${maxPoints} Pts</span></div>`;
-                    topStudents.forEach(ts => { topHTML += `<div style="font-weight: 500;">${ts.name} <span style="color:var(--muted); font-size:0.85rem;">(${ts.group})</span></div>`; });
+                    topHTML += `<div class="scorer-title" style="color:${theme.text};">${titleDef.name} <span class="scorer-pts" style="float:right; font-weight:800; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:4px;">${maxPoints} Pts</span></div>`;
+                    topStudents.forEach(ts => { topHTML += `<div style="font-weight: 500; font-size:1.05rem; margin-top:4px;">${ts.name} <span style="color:var(--muted); font-size:0.85rem;">(${ts.group} - Cls ${ts.class})</span></div>`; });
                     topHTML += `</div>`;
                 }
             });
@@ -677,11 +705,15 @@
         // ==========================================
         // 6. SEARCH & WHATSAPP SHARE & CERTIFICATES
         // ==========================================
+        // ==========================================
+        // 6. SEARCH & WHATSAPP SHARE & CERTIFICATES
+        // ==========================================
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const q = document.getElementById('searchInput').value.trim().toUpperCase();
             const students = globalDbData.Students || []; const events = globalDbData.Events || []; 
             const regs = globalDbData.Registrations || []; const results = globalDbData.Results || [];
+            const settings = globalDbData.Settings || []; // കാറ്റഗറി പോയിന്റിന് വേണ്ടി സെറ്റിംഗ്സ് എടുത്തു
             const container = document.getElementById('searchResultContainer');
             
             const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === q);
@@ -695,6 +727,18 @@
             currentSearchStudent = { name: name, chest: q, cls: cls, grp: grp };
             currentSearchWins = [];
 
+            // കാറ്റഗറി പോയിന്റ് ഉൾപ്പെടെ പുതിയ പോയിന്റ് സിസ്റ്റം സെറ്റ് ചെയ്യുന്നു
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 }; let customPoints = {}; let customCatPoints = {};
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const key = getVal(row, 1).toString().toUpperCase(); const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    const pts = rawVal ? rawVal.split(',') : []; const p1 = parseInt(pts[0]) || 0; const p2 = parseInt(pts[1]) || 0; const p3 = parseInt(pts[2]) || 0;
+                    if (key === "DEFAULT") { defaultPoints = { 1: p1, 2: p2, 3: p3 }; } 
+                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: p1, 2: p2, 3: p3 }; }
+                    else { customPoints[key] = { 1: p1, 2: p2, 3: p3 }; }
+                }
+            });
+
             // 1. കാൽക്കുലേറ്റ് ഇൻഡിവിജ്വൽ സ്കോർ (ഗ്രൂപ്പും ജനറലും ഒഴികെ)
             let individualTotal = 0;
             results.forEach(resRow => {
@@ -706,20 +750,23 @@
                     const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
                     
                     if(evDetails) {
-                        const evCat = getVal(evDetails, 2).toString().trim().toLowerCase();
+                        const evCat = getVal(evDetails, 2).toString().trim().toUpperCase();
                         const isGroup = getVal(evDetails, 4).toString().trim().toLowerCase() === "group";
-                        const isGeneral = (evCat === "general" || evCat === "common" || evCat === "all");
+                        const isGeneral = (evCat === "GENERAL" || evCat === "COMMON" || evCat === "ALL");
                         
-                        // ഇൻഡിവിജ്വൽ ആണെങ്കിൽ മാത്രം പോയിന്റ് കൂട്ടുന്നു
+                        // ഇൻഡിവിജ്വൽ ആണെങ്കിൽ മാത്രം പോയിന്റ് കൂട്ടുന്നു (Event > Category > Default മുൻഗണനയിൽ)
                         if(!isGroup && !isGeneral) {
-                            const ptsMap = festConfig.customPts[evCode] || festConfig.defaultPts; 
+                            let ptsMap = defaultPoints;
+                            if (customCatPoints[evCat]) ptsMap = customCatPoints[evCat];
+                            if (customPoints[evCode]) ptsMap = customPoints[evCode];
+                            
                             individualTotal += (ptsMap[pos] || 0);
                         }
                     }
                 }
             });
 
-            // 2. പ്രൊഫൈൽ ഹെഡർ ഡിസൈൻ (ഇൻഡിവിജ്വൽ സ്കോർ ഉൾപ്പെടെ)
+            // 2. പ്രൊഫൈൽ ഹെഡർ ഡിസൈൻ (കൃത്യമായ ഇൻഡിവിജ്വൽ സ്കോർ ഉൾപ്പെടെ)
             let html = `<div class="card" style="margin-top:10px;">
                             <div class="profile-head">
                                 <div class="profile-name">${name}</div>
