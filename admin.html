@@ -1054,57 +1054,233 @@
         // 4. JUDGES CODES GENERATION
         // ==========================================
         function fetchEventCodes() {
-            const evCode = document.getElementById('codeEventSelect').value; const container = document.getElementById('codeTableContainer'); const btn = document.getElementById('generateCodeBtn');
-            if(!evCode) { container.innerHTML = "<p>Select an event to view codes.</p>"; btn.style.display = "none"; return; }
-            const existingCodes = (globalDbData.CodeLetters || []).filter(c => getVal(c,0) === evCode);
-            if(existingCodes.length > 0) {
-                btn.style.display = "none"; let html = `<table><thead><tr><th>Secret Code</th><th>Chest No</th><th>Student Name</th></tr></thead><tbody>`;
-                existingCodes.forEach(c => { const chest = getVal(c,2); const st = (globalDbData.Students||[]).find(s => getVal(s,0) == chest); html += `<tr><td style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${getVal(c,1)}</td><td>${chest}</td><td>${st ? getVal(st,1) : 'Unknown'}</td></tr>`; });
-                html += `</tbody></table>`; container.innerHTML = html;
-            } else { container.innerHTML = `<p style="color:#ef4444;">No codes generated for this event yet.</p>`; btn.style.display = "inline-flex"; }
+            const evCode = document.getElementById('codeEventSelect').value;
+            const existing = (globalDbData.CodeLetters||[]).filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase());
+            const students = globalDbData.Students || [];
+            
+            const btnGen = document.querySelector('button[onclick="generateCodes()"]');
+            const btnPrint = document.querySelector('button[onclick="printEventCodes()"]');
+            
+            // സിങ്ക് വാണിംഗ് കാണിക്കാനുള്ള സ്ഥലം 
+            let syncWarning = document.getElementById('printSyncWarning');
+            if(!syncWarning && btnPrint) {
+                syncWarning = document.createElement('span');
+                syncWarning.id = 'printSyncWarning';
+                syncWarning.style.fontSize = '0.85rem';
+                syncWarning.style.color = '#ef4444';
+                syncWarning.style.fontWeight = 'bold';
+                syncWarning.style.marginLeft = '10px';
+                syncWarning.style.display = 'none'; 
+                syncWarning.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing live data... Please wait to print.';
+                btnPrint.insertAdjacentElement('afterend', syncWarning);
+            }
+            
+            let previewArea = document.getElementById('codePreviewArea');
+            if(!previewArea && btnPrint) {
+                previewArea = document.createElement('div');
+                previewArea.id = 'codePreviewArea';
+                previewArea.style.width = '100%';
+                if(syncWarning) syncWarning.insertAdjacentElement('afterend', previewArea);
+                else btnPrint.insertAdjacentElement('afterend', previewArea);
+            }
+            
+            if(!evCode) {
+                // ഇവൻ്റ് സെലക്ട് ചെയ്തില്ലെങ്കിൽ (അതായത് Bulk Print മോഡിൽ) ജനറേറ്റ് ബട്ടൺ മാത്രം ഹൈഡ് ചെയ്യുന്നു
+                if(btnGen) btnGen.style.display = 'none';
+                if(btnPrint) btnPrint.style.display = 'inline-block'; // ബൾക്ക് പ്രിൻ്റ് ബട്ടൺ കാണിക്കുന്നു
+                if(previewArea) previewArea.innerHTML = '';
+                return;
+            }
+            
+            if(existing.length > 0) {
+                if(btnGen) {
+                    btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes';
+                    btnGen.style.background = '#ef4444'; 
+                    btnGen.style.display = 'inline-block';
+                    btnGen.setAttribute('data-regen', 'true');
+                }
+                if(btnPrint) btnPrint.style.display = 'inline-block';
+                
+                let sortedCodes = [...existing].sort((a,b) => getVal(a,1).toString().localeCompare(getVal(b,1).toString()));
+                
+                let tableHtml = `
+                <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:15px; max-height:350px; overflow-y:auto; margin-top:20px;">
+                    <h4 style="margin-bottom:12px; color:var(--text); font-size:1rem;"><i class="fas fa-list"></i> Generated Codes Preview</h4>
+                    <table style="width:100%; border-collapse:collapse; font-size:0.9rem; text-align:left;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border); color:var(--muted);">
+                                <th style="padding:8px;">Code Letter</th>
+                                <th style="padding:8px;">Chest No</th>
+                                <th style="padding:8px;">Student / Team Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                sortedCodes.forEach(r => {
+                    const codeLetter = getVal(r,1); const chestNo = getVal(r,2);
+                    const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chestNo.toString().trim().toUpperCase());
+                    const stName = st ? getVal(st,1) : "Unknown";
+                    
+                    tableHtml += `
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <td style="padding:8px; font-weight:bold; color:var(--primary); font-size:1.1rem;">${codeLetter}</td>
+                            <td style="padding:8px;">${chestNo}</td>
+                            <td style="padding:8px;">${stName}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `</tbody></table></div>`;
+                if(previewArea) previewArea.innerHTML = tableHtml;
+                
+            } else {
+                if(btnGen) {
+                    btnGen.innerHTML = '<i class="fas fa-key"></i> Generate Codes';
+                    btnGen.style.background = 'var(--primary)'; 
+                    btnGen.style.display = 'inline-block';
+                    btnGen.setAttribute('data-regen', 'false');
+                }
+                // കോഡുകൾ ജനറേറ്റ് ചെയ്യാത്ത ഇവന്റ് ആണെങ്കിൽ പ്രിൻ്റ് ബട്ടണും വാണിംഗും ഹൈഡ് ചെയ്യുന്നു
+                if(btnPrint) btnPrint.style.display = 'none';
+                if(syncWarning) syncWarning.style.display = 'none'; 
+                if(previewArea) previewArea.innerHTML = '<div style="padding:20px; margin-top:20px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:8px;">No codes generated yet for this event. Click Generate.</div>';
+            }
         }
 
         async function generateCodes() {
-            const evCode = document.getElementById('codeEventSelect').value; 
-            const regs = (globalDbData.Registrations || []).filter(r => getVal(r,0) === evCode);
-            if(regs.length === 0) { alert("No students registered for this event!"); return; }
-            if(!confirm("Generate truly random letters for these students? Existing codes (if any) will be appended.")) return;
+            const evCode = document.getElementById('codeEventSelect').value;
+            if(!evCode) return alert("Please select an event!");
+
+            const btnGen = document.querySelector('button[onclick="generateCodes()"]');
             
-            let chestNos = regs.map(r => getVal(r,1));
-            let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-            let selectedLetters = [];
+            if(btnGen && btnGen.getAttribute('data-regen') === 'true') {
+                if(!confirm("⚠️ WARNING: Regenerating codes will REPLACE all existing code letters for this event.\n\nOnly do this if new students were added or changes were made.\n\nDo you want to proceed?")) {
+                    return; 
+                }
+            }
+
+            const regs = globalDbData.Registrations || [];
+            const evRegs = regs.filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode.toUpperCase());
             
-            for(let i=0; i<chestNos.length; i++) { selectedLetters.push(i < 26 ? alphabet[i] : `A${alphabet[i-26]}`); }
-            for (let i = selectedLetters.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [selectedLetters[i], selectedLetters[j]] = [selectedLetters[j], selectedLetters[i]]; }
+            if(evRegs.length === 0) {
+                alert("No registrations found for this event! Cannot generate codes.");
+                return;
+            }
+
+            const oText = btnGen ? btnGen.innerHTML : "Generating...";
+            if(btnGen) { btnGen.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btnGen.disabled = true; }
             
-            let rowsToSave = [];
-            chestNos.forEach((chest, idx) => { rowsToSave.push([evCode, selectedLetters[idx], chest]); });
-            
-            const btn = document.getElementById('generateCodeBtn'); 
-            btn.innerHTML = "Generating..."; 
-            btn.disabled = true;
-            
-            try { 
+            // ഓട്ടോ-സിങ്ക് വന്ന് പ്രിവ്യൂ മായ്ക്കാതിരിക്കാൻ ഒരു ലോക്ക് വെക്കുന്നു
+            window.isGeneratingCodes = true;
+
+            try {
+                // 1. ഈ പരിപാടിയിലെ കുട്ടികളുടെ ചെസ്റ്റ് നമ്പറുകൾ എടുക്കുന്നു
+                let chestNos = evRegs.map(r => getVal(r, 1).toString().trim().toUpperCase());
+                chestNos = [...new Set(chestNos)]; 
+                
+                // 2. ചെസ്റ്റ് നമ്പറുകളെ റാൻഡം ആയി ഷഫിൾ ചെയ്യുന്നു
+                chestNos.sort(() => Math.random() - 0.5);
+
+                // 3. പുതിയ കോഡുകൾ നിർമ്മിക്കുന്നു
+                let rowsToSave = [];
+                let localMemoryToSave = [];
+                let maxRowIndex = 0;
+                
+                if (globalDbData.CodeLetters && globalDbData.CodeLetters.length > 0) {
+                    maxRowIndex = Math.max(...globalDbData.CodeLetters.map(r => parseInt(r.rowIndex) || 0));
+                }
+
+                chestNos.forEach((chest, idx) => {
+                    let codeLetter = String.fromCharCode(65 + (idx % 26));
+                    if (idx >= 26) {
+                        codeLetter = String.fromCharCode(65 + Math.floor(idx / 26) - 1) + codeLetter;
+                    }
+                    rowsToSave.push([evCode, codeLetter, chest]);
+                    
+                    maxRowIndex++;
+                    // പ്രധാന മാറ്റം: getVal() ഫംഗ്ഷന് കൃത്യമായി വായിക്കാൻ കഴിയുന്ന ഒബ്ജക്റ്റ് ഫോർമാറ്റിൽ സേവ് ചെയ്യുന്നു
+                    localMemoryToSave.push({ 
+                        "0": evCode, 
+                        "1": codeLetter, 
+                        "2": chest, 
+                        "rowIndex": maxRowIndex 
+                    });
+                });
+
+                // 4. പഴയ കോഡുകൾ ഷീറ്റിൽ നിന്നും ഡിലീറ്റ് ചെയ്യുന്നു
+                let existing = (globalDbData.CodeLetters || []).filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode.toUpperCase());
+                
+                if(existing.length > 0) {
+                    btnGen.innerHTML = '<i class="fas fa-trash"></i> Clearing old...';
+                    existing.sort((a, b) => b.rowIndex - a.rowIndex); 
+                    
+                    await existing.reduce(async (previousPromise, row) => {
+                        await previousPromise; 
+                        return fetch(SCRIPT_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) 
+                        });
+                    }, Promise.resolve());
+                }
+
+                // 5. സ്ക്രീനിൽ പ്രിവ്യൂ ഉടൻ തന്നെ കാണിക്കുന്നു (സെർവറിലേക്ക് പോകുന്നതിന് മുൻപ്!)
+                if(!globalDbData.CodeLetters) globalDbData.CodeLetters = [];
+                
+                // പഴയവ ലോക്കൽ മെമ്മറിയിൽ നിന്നും നീക്കുന്നു
+                globalDbData.CodeLetters = globalDbData.CodeLetters.filter(r => getVal(r, 0).toString().trim().toUpperCase() !== evCode.toUpperCase());
+                
+                // പുതിയവ ലോക്കൽ മെമ്മറിയിലേക്ക് ചേർക്കുന്നു
+                globalDbData.CodeLetters.push(...localMemoryToSave);
+                
+                // പ്രിവ്യൂ വരയ്ക്കുന്നു - ഇപ്പോൾ ഇത് 100% ഉറപ്പായും സ്ക്രീനിൽ വരും!
+                if(typeof fetchEventCodes === 'function') fetchEventCodes(); 
+
+                btnGen.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Saving...';
+
+                // 6. പുതിയ കോഡുകൾ ഗൂഗിൾ ഷീറ്റിലേക്ക് bulk ആയി സേവ് ചെയ്യുന്നു
                 let res = await fetch(SCRIPT_URL, { 
                     method: 'POST', 
                     body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) 
                 });
                 let data = await res.json();
-                if(data.status === "success") { 
-                    alert("Random Codes Generated!"); 
+                
+                if(data.status === "success") {
+                    // പ്രിൻ്റ് ബട്ടൺ 15 സെക്കൻഡത്തേക്ക് ലോക്ക് ചെയ്യുന്നു
+                    const btnPrint = document.querySelector('button[onclick="printEventCodes()"]');
+                    const syncWarning = document.getElementById('printSyncWarning');
+                    if(btnPrint) {
+                        btnPrint.disabled = true;
+                        btnPrint.style.opacity = '0.5';
+                        btnPrint.style.cursor = 'not-allowed';
+                        if(syncWarning) syncWarning.style.display = 'inline-block';
+                        
+                        setTimeout(() => {
+                            if(btnPrint) {
+                                btnPrint.disabled = false;
+                                btnPrint.style.opacity = '1';
+                                btnPrint.style.cursor = 'pointer';
+                            }
+                            if(syncWarning) syncWarning.style.display = 'none';
+                        }, 15000); 
+                    }
                     
-                    if(!globalDbData.CodeLetters) globalDbData.CodeLetters = [];
-                    rowsToSave.forEach(row => {
-                        globalDbData.CodeLetters.push({ 0: row[0], 1: row[1], 2: row[2], rowIndex: globalDbData.CodeLetters.length + 2 });
-                    });
-
-                    fetchEventCodes(); 
+                    // സിങ്ക് ഡിലേ കാരണം പ്രിവ്യൂ മായാതിരിക്കാൻ loadDropdownData വിളിക്കുന്നത് ഒഴിവാക്കി.
+                    setTimeout(() => alert("Code Letters successfully generated!"), 200);
+                    
+                } else {
+                    alert("Failed to save codes to server.");
                 }
             } catch(e) {
-                alert("Error generating codes.");
-            } finally { 
-                btn.innerHTML = "Generate Codes"; 
-                btn.disabled = false; 
+                alert("Error during code generation. Please check your internet connection.");
+                console.error(e);
+            } finally {
+                if(btnGen) { 
+                    btnGen.disabled = false; 
+                    btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes'; 
+                }
+                // കുറച്ചു സമയത്തേക്ക് ഓട്ടോ-സിങ്ക് ബ്ലോക്ക് ചെയ്യുന്നു (പ്രീവ്യൂ സുരക്ഷിതമാക്കാൻ)
+                setTimeout(() => { window.isGeneratingCodes = false; }, 20000); 
             }
         }
 
