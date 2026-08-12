@@ -891,13 +891,22 @@
         }
 
         // ==========================================
-        // 7. CERTIFICATE GENERATION & DOWNLOAD
+        // 7. CERTIFICATE PDF GENERATION & DOWNLOAD
         // ==========================================
         function downloadCertificate(evCode, posText) {
             const events = globalDbData.Events || [];
             const settings = globalDbData.Settings || [];
             
-            // Get Authority Label & Custom Template from Settings
+            // ലോഡിങ് ആനിമേഷൻ കാണിക്കാൻ
+            const loader = document.getElementById('globalLoader');
+            const loaderText = loader.querySelector('h3');
+            const loaderSub = loader.querySelector('p');
+            if(loader) {
+                loaderText.innerText = "Generating Certificate PDF...";
+                loaderSub.innerText = "Please wait a moment";
+                loader.style.display = 'flex';
+            }
+            
             let authorityLabel = "Authorized Signatory";
             let certTemplateStr = "";
             let festDate = new Date();
@@ -927,27 +936,37 @@
                 .replace(/\[EVENT\]/g, `<b>${evName}</b>`)
                 .replace(/\[POSITION\]/g, `<b>${posText}</b>`);
 
-            let printWindow = window.open('', '_blank');
-            let htmlContent = `<html><head><title>Download Certificate</title>
+            // ബാക്ക്ഗ്രൗണ്ടിൽ സർട്ടിഫിക്കറ്റ് വരയ്ക്കാൻ ഒരു ഹിഡൻ കണ്ടെയ്നർ ഉണ്ടാക്കുന്നു
+            let certContainer = document.getElementById('certHiddenContainer');
+            if (!certContainer) {
+                certContainer = document.createElement('div');
+                certContainer.id = 'certHiddenContainer';
+                certContainer.style.position = 'absolute';
+                certContainer.style.left = '-9999px';
+                certContainer.style.top = '-9999px';
+                certContainer.style.width = '1122px';  // A4 Landscape Width in Pixels
+                certContainer.style.height = '793px';  // A4 Landscape Height in Pixels
+                certContainer.style.backgroundColor = '#fcfbf9';
+                document.body.appendChild(certContainer);
+            }
+
+            let htmlContent = `
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
-                @page { size: A4 landscape; margin: 0; }
-                body { margin: 0; background: #fff; -webkit-print-color-adjust: exact; }
-                .cert-page { width: 297mm; height: 210mm; position: relative; background-color: #fcfbf9; overflow: hidden; box-sizing: border-box; }
+                .cert-page { width: 1122px; height: 793px; position: relative; background-color: #fcfbf9; overflow: hidden; box-sizing: border-box; }
                 .cert-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-                .cert-content { position: relative; z-index: 1; padding: 22mm 28mm; width: 100%; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box; }
+                .cert-content { position: relative; z-index: 1; padding: 83px 105px; width: 100%; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box; }
                 .text-wrapper { width: 62%; }
-                .header-inst { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-                .header-fest { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; }
-                .cert-title { font-family: 'Playfair Display', serif; font-size: 3.4rem; font-weight: 700; color: #0b132b; line-height: 1.1; letter-spacing: 1px; margin: 10px 0 15px 0; }
-                .student-name { font-family: 'Bebas Neue', sans-serif; font-size: 4.8rem; color: #C5A059; line-height: 1.1; margin: 10px 0 15px 0; white-space: normal; word-break: keep-all; overflow-wrap: break-word; text-shadow: 1px 1px 2px rgba(0,0,0,0.03); letter-spacing: 2px; }
-                .main-text { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.8; color: #475569; max-width: 95%; font-weight: 500; }
+                .header-inst { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: #D4AF37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+                .header-fest { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; }
+                .cert-title { font-family: 'Playfair Display', serif; font-size: 54px; font-weight: 700; color: #0b132b; line-height: 1.1; letter-spacing: 1px; margin: 10px 0 15px 0; }
+                .student-name { font-family: 'Bebas Neue', sans-serif; font-size: 76px; color: #C5A059; line-height: 1.1; margin: 10px 0 15px 0; white-space: normal; word-break: keep-all; overflow-wrap: break-word; text-shadow: 1px 1px 2px rgba(0,0,0,0.03); letter-spacing: 2px; }
+                .main-text { font-family: 'Montserrat', sans-serif; font-size: 15px; line-height: 1.8; color: #475569; max-width: 95%; font-weight: 500; }
                 .main-text b { color: #0b132b; font-weight: 700; }
                 .footer-row { display: flex; justify-content: space-between; width: 75%; margin-top: 45px; }
                 .sig-box { text-align: left; }
-                .sig-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+                .sig-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 14px; color: #0b132b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
                 .sig-line { border-top: 1.5px solid #C5A059; width: 220px; }
-            </style></head><body>
+            </style>
             <div class="cert-page">
                 <svg class="cert-bg" viewBox="0 0 1122 793" preserveAspectRatio="none">
                     <rect width="1122" height="793" fill="#fcfbf9" />
@@ -986,13 +1005,34 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            </body></html>`;
+            </div>`;
             
-            printWindow.document.write(htmlContent); 
-            printWindow.document.close(); 
-            // Trigger print dialog after fonts are loaded
-            printWindow.setTimeout(function() { printWindow.print(); }, 800);
+            certContainer.innerHTML = htmlContent;
+            
+            // ഫോണ്ടുകൾ ലോഡ് ആകാൻ 1 സെക്കൻഡ് സമയം നൽകിയ ശേഷം PDF ജനറേറ്റ് ചെയ്യുന്നു
+            setTimeout(() => {
+                html2canvas(certContainer, { scale: 2, useCORS: true }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('l', 'mm', 'a4'); // A4 Landscape
+                    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+                    
+                    // PDF ഡൗൺലോഡ് ചെയ്യുന്നു
+                    pdf.save(`${currentSearchStudent.chest}_Certificate_${evCode}.pdf`);
+                    
+                    // ലോഡിങ് ആനിമേഷൻ മാറ്റുന്നു
+                    if(loader) {
+                        loader.style.display = 'none';
+                        loaderText.innerText = "Syncing Live Results...";
+                        loaderSub.innerText = "Please wait a moment";
+                    }
+                    certContainer.innerHTML = ''; // മെമ്മറി ക്ലിയർ ചെയ്യുന്നു
+                }).catch(err => {
+                    console.error(err);
+                    alert("Error generating PDF.");
+                    if(loader) loader.style.display = 'none';
+                });
+            }, 1000);
         }
 
         // ==========================================
