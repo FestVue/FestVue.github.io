@@ -146,6 +146,8 @@
         .b-pos-2 { background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 2px solid #94A3B8; }
         .b-pos-3 { background: rgba(180, 83, 9, 0.15); color: #F59E0B; border: 2px solid #B45309; }
 
+        .b-grade-badge { display: inline-block; background: rgba(212,175,55,0.15); border: 1px solid var(--primary); color: var(--primary); font-size: 1.6vh; font-weight: 800; padding: 0.2vh 1vw; border-radius: 6px; margin-top: 0.6vh; letter-spacing: 1px; }
+
         .b-name { font-size: 3vh; font-weight: 700; flex-grow: 1; color: white; }
         .b-grp { font-size: 2vh; color: var(--text-muted); font-weight: 600; text-align: right; }
 
@@ -173,7 +175,7 @@
             display: inline-block; 
             white-space: nowrap; 
             padding-left: 100%; 
-            animation: ticker 45s linear infinite; /* Slower speed: 45 seconds */
+            animation: ticker 150s linear infinite; /* Speed highly reduced */
         }
         .ticker-item { 
             display: inline-block; 
@@ -409,16 +411,25 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
-            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് എടുക്കുന്നു
+            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് & ഗ്രേഡ് പോയിൻ്റ് എടുക്കുന്നു
             const settings = globalDbData.Settings || [];
             let customCatPoints = {};
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 }; // Default
+
             settings.forEach(row => {
                 if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
                     const key = getVal(row, 1).toString().toUpperCase(); 
                     const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    const pts = rawVal ? rawVal.split(',') : []; 
+                    
                     if (key.startsWith("CAT_")) { 
-                        const pts = rawVal ? rawVal.split(',') : []; 
                         customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    } else if (key === "GRADE_SYS") {
+                        gradeSystemEnabled = (pts[0] && pts[0].toString().toUpperCase() === "TRUE");
+                        if(pts[1]) gradePoints["A"] = parseInt(pts[1]);
+                        if(pts[2]) gradePoints["B"] = parseInt(pts[2]);
+                        if(pts[3]) gradePoints["C"] = parseInt(pts[3]);
                     }
                 }
             });
@@ -429,7 +440,10 @@
             
             results.forEach(res => {
                 if(getVal(res,3) === "Pending") return;
-                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
+                const evCode = getVal(res, 0).toString().toUpperCase(); 
+                const chestNo = getVal(res, 1).toString().toUpperCase(); 
+                const position = parseInt(getVal(res, 2)) || 0; 
+                const gradeStr = getVal(res, 7) ? getVal(res, 7).toString().trim().toUpperCase() : "";
                 
                 const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
                 const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
@@ -439,9 +453,16 @@
                 if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
                 if (festConfig.customPts[evCode]) ptsMap = festConfig.customPts[evCode];
 
-                const points = ptsMap[position] || 0;
+                let posPoints = ptsMap[position] || 0;
                 
-                if(!chestNo || points === 0) return;
+                let grPoints = 0;
+                if(gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) {
+                    grPoints = gradePoints[gradeStr];
+                }
+
+                const totalPoints = posPoints + grPoints;
+                
+                if(!chestNo || totalPoints === 0) return;
 
                 const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
                 
@@ -457,15 +478,20 @@
                     if(stGen === "male") stGen = "boys"; if(stGen === "female") stGen = "girls";
                     
                     if(group) {
-                        if (skipIndividualPoints) {
-                            const uniqueKey = `${evCode}_${position}_${group}`; 
-                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
-                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                        if (isGroupEvent) {
+                            const uniqueKey = `${evCode}_${group}`; 
+                            if (!processedGroupEvents[uniqueKey]) { 
+                                groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                                processedGroupEvents[uniqueKey] = true; 
+                            }
+                        } else { 
+                            groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                        }
                     }
 
                     if (!skipIndividualPoints) {
                         if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), category: getVal(st,4), events: [] };
-                        studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
+                        studentPoints[chestNo].events.push({ code: evCode, points: totalPoints, mode: evMode });
                     }
                 }
             });
@@ -489,9 +515,10 @@
             }
             document.getElementById('groupStandingsBox').innerHTML = gHtml;
 
-            // TOP SCORERS (100% Safe from undefined errors)
-            let sHtml = "";
-            const colorThemes = ["#D4AF37", "#10B981", "#3B82F6", "#8B5CF6"];
+            // TOP SCORERS (Batch Display for > 4 Titles)
+            let allScorerCards = [];
+            // കൂടുതൽ ടൈറ്റിലുകൾ വന്നാൽ ഉപയോഗിക്കാൻ കൂടുതൽ കളറുകൾ ചേർത്തു
+            const colorThemes = ["#D4AF37", "#10B981", "#3B82F6", "#8B5CF6", "#EF4444", "#F59E0B", "#06B6D4", "#EC4899"];
 
             festConfig.titles.forEach((titleDef, tIdx) => {
                 if(!titleDef.name) return;
@@ -515,16 +542,49 @@
                     if(stTotal > 0 && stTotal > maxPoints) { maxPoints = stTotal; topStudent = st; }
                 });
 
-                const theme = colorThemes[tIdx % 4];
                 if(topStudent) {
-                    sHtml += `<div class="scorer-card" style="border-left-color:${theme};">
-                                <div class="sc-title" style="color:${theme};">${titleDef.name} <span class="sc-pts">${maxPoints} Pts</span></div>
-                                <div class="sc-name">${topStudent.name}</div>
-                                <div class="sc-grp">${topStudent.group || 'No Group'} - Cls ${topStudent.class}</div>
-                              </div>`;
+                    const theme = colorThemes[allScorerCards.length % colorThemes.length];
+                    allScorerCards.push(`
+                        <div class="scorer-card" style="border-left-color:${theme};">
+                            <div class="sc-title" style="color:${theme};">${titleDef.name} <span class="sc-pts">${maxPoints} Pts</span></div>
+                            <div class="sc-name">${topStudent.name}</div>
+                            <div class="sc-grp">${topStudent.group || 'No Group'} - Cls ${topStudent.class}</div>
+                        </div>
+                    `);
                 }
             });
-            document.getElementById('topScorersBox').innerHTML = sHtml || `<div style="grid-column:span 2; text-align:center; color:var(--text-muted); font-size:2vh;">Top scorers will appear here</div>`;
+
+            const scorersBox = document.getElementById('topScorersBox');
+            const headerElem = scorersBox.previousElementSibling; // Section Header എടുക്കുന്നു
+
+            if (allScorerCards.length === 0) {
+                scorersBox.innerHTML = `<div style="grid-column:span 2; text-align:center; color:var(--text-muted); font-size:2vh;">Top scorers will appear here</div>`;
+                headerElem.innerHTML = `<i class="fas fa-star"></i> TOP SCORERS`;
+            } else if (allScorerCards.length <= 4) {
+                // 4 അല്ലെങ്കിൽ അതിൽ കുറവാണെങ്കിൽ എല്ലാം ഒരുമിച്ച് കാണിക്കുന്നു
+                scorersBox.innerHTML = allScorerCards.join("");
+                headerElem.innerHTML = `<i class="fas fa-star"></i> TOP SCORERS`;
+            } else {
+                // 4-ൽ കൂടുതൽ ഉണ്ടെങ്കിൽ ബാച്ചുകളായി തിരിക്കുന്നു
+                if (typeof window.scorerBatchIndex === 'undefined') window.scorerBatchIndex = 0;
+                
+                let batchSize = 4;
+                let totalBatches = Math.ceil(allScorerCards.length / batchSize);
+                
+                if (window.scorerBatchIndex >= totalBatches) window.scorerBatchIndex = 0;
+                
+                let startIdx = window.scorerBatchIndex * batchSize;
+                let endIdx = startIdx + batchSize;
+                let currentBatch = allScorerCards.slice(startIdx, endIdx);
+                
+                scorersBox.innerHTML = currentBatch.join("");
+                
+                // ഹെഡിംഗിന്റെ കൂടെ പേജ് നമ്പർ കാണിക്കുന്നു
+                headerElem.innerHTML = `<i class="fas fa-star"></i> TOP SCORERS <span style="font-size:1.5vh; color:#94A3B8; margin-left:10px; font-weight:600; text-transform:none;">(Page ${window.scorerBatchIndex + 1}/${totalBatches})</span>`;
+                
+                // അടുത്ത റീഫ്രഷിന് വേണ്ടി ബാച്ച് ഇൻഡക്സ് മാറ്റുന്നു
+                window.scorerBatchIndex = (window.scorerBatchIndex + 1) % totalBatches;
+            }
         }
 
         function buildResultsCarousel() {
@@ -550,16 +610,25 @@
                 const isGroup = evDetails && getVal(evDetails, 4).toString().trim().toLowerCase() === 'group';
                 const suffix = isGroup ? " & Team" : "";
 
-                let p1="", p2="", p3="";
+                let p1="", p2="", p3="", pOther="";
                 groupedResults[evCode].forEach(r => {
                     const chest = getVal(r,1).toString().trim().toUpperCase();
-                    const pos = getVal(r,2);
+                    const pos = parseInt(getVal(r,2)) || 0;
+                    const grade = getVal(r,7) ? getVal(r,7).toString().trim().toUpperCase() : "";
+                    
                     const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
                     const nameStr = st ? getVal(st,1) + suffix : chest;
                     const grpStr = st && getVal(st,5) ? getVal(st,5) : "No Group";
 
-                    const rowHtml = `<div class="b-name">${nameStr}</div><div class="b-grp">${grpStr}</div>`;
-                    if(pos == 1) p1 += rowHtml; if(pos == 2) p2 += rowHtml; if(pos == 3) p3 += rowHtml;
+                    // പേരിന് തൊട്ടുകീഴെയായി ഗ്രേഡ് വരുന്ന രീതിയിലുള്ള ഡിസൈൻ
+                    let gradeTag = grade ? `<div style="margin-top:2px;"><span class="b-grade-badge">${grade} GRADE</span></div>` : "";
+
+                    const rowHtml = `<div class="b-name">${nameStr}${gradeTag}</div><div class="b-grp">${grpStr}</div>`;
+                    
+                    if(pos === 1) p1 += rowHtml; 
+                    else if(pos === 2) p2 += rowHtml; 
+                    else if(pos === 3) p3 += rowHtml;
+                    else if(pos === 0 && grade) pOther += rowHtml; // സ്ഥാനമില്ലാത്ത ഗ്രേഡുള്ളവർ
                 });
 
                 let slideHtml = `<div class="res-slide">
@@ -576,6 +645,10 @@
                 if(p1) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-1">1ST</div>${p1}</div>`;
                 if(p2) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-2">2ND</div>${p2}</div>`;
                 if(p3) slideHtml += `<div class="big-winner-row"><div class="b-pos b-pos-3">3RD</div>${p3}</div>`;
+                
+                // ഗ്രേഡ് മാത്രം ലഭിച്ച കുട്ടികൾക്ക് പ്രത്യേക റോ
+                if(pOther) slideHtml += `<div class="big-winner-row" style="background: rgba(255,255,255,0.02);"><div class="b-pos" style="background:#2A3249; color:#94A3B8; border:2px solid #334155; font-size:1.6vh;">GRADES</div>${pOther}</div>`;
+                
                 slideHtml += `</div></div></div>`;
                 
                 tempSlides.push(slideHtml);

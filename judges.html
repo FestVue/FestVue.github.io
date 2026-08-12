@@ -88,6 +88,11 @@
         .pc-remarks input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text); }
         .pc-remarks input:focus { border-color: var(--primary); background: var(--card); }
 
+        .pc-grade { width: 90px; }
+        @media (max-width: 500px) { .pc-grade { width: 100%; } }
+        .pc-grade select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; font-weight: 600; color: var(--text); outline: none; background: var(--bg); appearance: none; cursor: pointer; text-align: center; }
+        .pc-grade select:focus { border-color: var(--primary); }
+
         .tie-badge { display: none; font-size: 0.75rem; background: #FEE2E2; color: #EF4444; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-top: 5px; text-align: center; }
 
         .submit-section { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 30px; text-align: center; }
@@ -196,6 +201,10 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy23FeTNKeZCEW2w79izuGnfz6IQ_JdKH0V1nwnc1GfKfuHUqA3zwvdpOIyo03w3T9wg/exec"; 
         
+        function getVal(row, index) { 
+            return row && Object.keys(row).filter(k => k !== 'rowIndex')[index] ? row[Object.keys(row).filter(k => k !== 'rowIndex')[index]] : ""; 
+        }
+        
         let currentState = {
             instId: localStorage.getItem('fv_judge_inst') || "",
             username: localStorage.getItem('fv_judge_user') || "",
@@ -206,6 +215,15 @@
             participants: [],
             allActiveEvents: []
         };
+
+        function isGradeSystemEnabled() {
+            if(!currentState.dbData || !currentState.dbData.Settings) return false;
+            const row = currentState.dbData.Settings.find(r => getVal(r,0).toString().toUpperCase() === "POINTS" && getVal(r,1).toString().toUpperCase() === "GRADE_SYS");
+            if(row && getVal(row,2)) {
+                return getVal(row,2).toString().split(',')[0].toUpperCase() === "TRUE";
+            }
+            return false;
+        }
 
         window.onload = () => {
             if(currentState.instId && currentState.username && currentState.password) {
@@ -330,13 +348,17 @@
             currentState.allActiveEvents = [];
             const regEvCodes = [...new Set(regs.slice(1).map(r => r[0] ? r[0].toString().toUpperCase() : ""))];
             
+            // 1. ഫൈനൽ ആയ (Approved) ഇവന്റുകളുടെ ലിസ്റ്റ് എടുക്കുന്നു
+            const approvedEvents = [...new Set(results.filter(r => r[3] && r[3].toString().toLowerCase() !== "pending").map(r => r[0] ? r[0].toString().toUpperCase() : ""))];
+            
             for(let i=1; i<events.length; i++) {
                 const evCode = events[i][0] ? events[i][0].toString().toUpperCase() : "";
                 const evName = events[i][1] || "";
                 const evCat = events[i][2] || "";
                 const evGen = events[i][3] || "";
                 
-                if(evCode && regEvCodes.includes(evCode)) {
+                // 2. രജിസ്ട്രേഷൻ ഉള്ളതും, എന്നാൽ ഇതുവരെ Approve ആവാത്തതുമായ ഇവന്റുകൾ മാത്രം ഡ്രോപ്പ്ഡൗണിൽ കാണിക്കാൻ ആഡ് ചെയ്യുന്നു
+                if(evCode && regEvCodes.includes(evCode) && !approvedEvents.includes(evCode)) {
                     currentState.allActiveEvents.push({code: evCode, name: evName, category: evCat, gender: evGen});
                 }
             }
@@ -353,14 +375,34 @@
                 if(submitter.includes(currentState.name)) {
                     if(!groupedResults[evCode]) groupedResults[evCode] = { status: r[3], records: [] };
                     groupedResults[evCode].records.push(r);
+                    
+                    // അഡ്മിൻ പിന്നീട് Approve ചെയ്തതാണെങ്കിൽ സ്റ്റാറ്റസ് മാറ്റുന്നു
+                    if(r[3] && r[3].toString().toLowerCase() !== 'pending') {
+                        groupedResults[evCode].status = "Approved";
+                    }
                 }
             }
 
             for(let evCode in groupedResults) {
                 const status = groupedResults[evCode].status;
                 const badgeClass = status.toLowerCase() === 'approved' ? 'status-approved' : 'status-pending';
-                const evObj = currentState.allActiveEvents.find(e => e.code === evCode);
+                
+                // Events ൽ നിന്നും നേരിട്ട് ഡാറ്റ എടുക്കുന്നു (Approved ആയവ allActiveEvents ൽ ഇല്ലാത്തതുകൊണ്ട്)
+                let evObj = null;
+                for(let j=1; j<events.length; j++) {
+                     if(events[j][0] && events[j][0].toString().toUpperCase() === evCode) {
+                         evObj = { name: events[j][1], category: events[j][2], gender: events[j][3] };
+                         break;
+                     }
+                }
+                
                 const evDisplay = evObj ? `${evObj.name} (${evObj.category} - ${evObj.gender})` : evCode;
+                
+                // റിസൾട്ട് അപ്പ്രൂവ്ഡ് ആണെങ്കിൽ എഡിറ്റ് ബട്ടൺ ലോക്ക് ചെയ്യുന്നു
+                const isApproved = status.toLowerCase() === 'approved';
+                const btnHtml = isApproved 
+                    ? `<button class="btn-edit" style="background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed;" onclick="showToast('Results are already published! Contact Admin to make changes.', 'error')"><i class="fas fa-lock"></i> Locked</button>`
+                    : `<button class="btn-edit" onclick="startJudging('${evCode}')"><i class="fas fa-edit"></i> Edit</button>`;
                 
                 historyHtml += `
                     <div class="event-card">
@@ -368,7 +410,7 @@
                             <h3>${evDisplay}</h3>
                             <div><span class="ec-badge">${evCode}</span> <span class="ec-status ${badgeClass}">${status}</span></div>
                         </div>
-                        <button class="btn-edit" onclick="startJudging('${evCode}')"><i class="fas fa-edit"></i> Edit</button>
+                        ${btnHtml}
                     </div>`;
             }
 
@@ -411,6 +453,14 @@
         function startJudging(preSelectedCode = null) {
             const evCode = preSelectedCode || document.getElementById('eventSelect').value;
             if(!evCode) { showToast("Please select an event first.", "error"); return; }
+            
+            // Double Verification: ആരെങ്കിലും കോഡ് വഴി പബ്ലിഷ് ആയ ഇവന്റ് എഡിറ്റ് ചെയ്യാൻ ശ്രമിച്ചാൽ തടയാൻ
+            const results = currentState.dbData.Results || [];
+            const isAlreadyApproved = results.some(r => r[0] && r[0].toString().toUpperCase() === evCode && r[3] && r[3].toString().toLowerCase() !== "pending");
+            if(isAlreadyApproved) {
+                showToast("This event's results are already published!", "error");
+                return;
+            }
 
             currentState.currentEventCode = evCode;
             
@@ -431,12 +481,11 @@
                 if(regs[i][evCodeIdx] && regs[i][evCodeIdx].toString().toUpperCase() === evCode) {
                     let chest = regs[i][chestIdx] ? regs[i][chestIdx].toString().toUpperCase() : "";
                     
-                    // Check if Code Letter exists for this chest in this event
                     let secretCode = "";
                     for(let c=1; c<codeLetters.length; c++) {
                         if(codeLetters[c][0] && codeLetters[c][0].toString().toUpperCase() === evCode &&
                            codeLetters[c][2] && codeLetters[c][2].toString().toUpperCase() === chest) {
-                            secretCode = codeLetters[c][1].toString(); // Code Letter
+                            secretCode = codeLetters[c][1].toString(); 
                             break;
                         }
                     }
@@ -444,9 +493,10 @@
                     if(chest) {
                         participants.push({ 
                             chest: chest, 
-                            secret: secretCode, // Will be empty string if not generated
+                            secret: secretCode, 
                             existingPos: "", 
-                            existingRemarks: "" 
+                            existingRemarks: "",
+                            existingGrade: "" // പുതിയതായി ചേർത്തത്
                         });
                     }
                 }
@@ -455,15 +505,15 @@
             if(participants.length === 0) { showToast("No participants registered for this event.", "error"); return; }
             currentState.participants = participants;
 
-            const results = currentState.dbData.Results || [];
             for(let i=1; i<results.length; i++) {
                 if(results[i][0] && results[i][0].toString().toUpperCase() === evCode) {
                     let rChest = results[i][1].toString().toUpperCase();
                     let rPos = results[i][2];
                     let rRemarks = results[i][6] || "";
+                    let rGrade = results[i][7] || ""; // പുതിയതായി ചേർത്തത്
                     
                     let pMatch = participants.find(p => p.chest === rChest);
-                    if(pMatch) { pMatch.existingPos = rPos; pMatch.existingRemarks = rRemarks; }
+                    if(pMatch) { pMatch.existingPos = rPos; pMatch.existingRemarks = rRemarks; pMatch.existingGrade = rGrade; }
                 }
             }
 
@@ -474,6 +524,7 @@
 
             let pHTML = "";
             const maxPos = participants.length; 
+            const isGradeActive = isGradeSystemEnabled(); // ഗ്രേഡ് സിസ്റ്റം ചെക്ക്
             
             let optHtml = `<option value="">-- No Position --</option>`;
             for(let i=1; i<=maxPos; i++) {
@@ -482,17 +533,24 @@
             }
             optHtml += `<option value="DQ">Disqualified (DQ)</option>`;
 
-            // Sort participants by secret code if available, otherwise chest
+            let gradeOptHtml = `<option value="">-</option><option value="A">A Grade</option><option value="B">B Grade</option><option value="C">C Grade</option>`;
+
             participants.sort((a,b) => (a.secret || a.chest).localeCompare(b.secret || b.chest));
 
             participants.forEach((p, idx) => {
-                // CRITICAL RULE: If Secret Code exists, show ONLY Code Letter. Hide Chest No completely!
                 const displayId = p.secret ? `Code: ${p.secret}` : `Chest No: ${p.chest}`;
                 
                 let specificOptHtml = optHtml;
-                if(p.existingPos) {
-                    specificOptHtml = specificOptHtml.replace(`value="${p.existingPos}"`, `value="${p.existingPos}" selected`);
-                }
+                if(p.existingPos) { specificOptHtml = specificOptHtml.replace(`value="${p.existingPos}"`, `value="${p.existingPos}" selected`); }
+
+                let specificGradeOpt = gradeOptHtml;
+                if(p.existingGrade) { specificGradeOpt = specificGradeOpt.replace(`value="${p.existingGrade}"`, `value="${p.existingGrade}" selected`); }
+
+                // ഗ്രേഡ് സിസ്റ്റം ഓൺ ആണെങ്കിൽ മാത്രം ഗ്രേഡ് സെലക്ഷൻ കാണിക്കുക
+                const gradeHtml = isGradeActive ? `
+                    <div class="pc-grade">
+                        <select class="grade-select">${specificGradeOpt}</select>
+                    </div>` : '';
 
                 pHTML += `
                     <div class="participant-card" data-chest="${p.chest}">
@@ -509,6 +567,7 @@
                                     ${specificOptHtml}
                                 </select>
                             </div>
+                            ${gradeHtml}
                             <div class="pc-remarks">
                                 <input type="text" class="remark-input" placeholder="Remarks / Reason (Optional)" value="${p.existingRemarks}">
                             </div>
@@ -556,26 +615,27 @@
             const cards = document.querySelectorAll('.participant-card');
             
             let finalResults = [];
-            let rankedCount = 0;
+            let validCount = 0;
+            const isGradeActive = isGradeSystemEnabled();
 
             cards.forEach(card => {
                 const chest = card.getAttribute('data-chest');
-                const pos = card.querySelector('.rank-select').value;
+                const posVal = card.querySelector('.rank-select').value;
+                const pos = posVal === "DQ" ? "DQ" : (parseInt(posVal) || 0);
                 const remarks = card.querySelector('.remark-input').value.trim();
+                const grade = isGradeActive && card.querySelector('.grade-select') ? card.querySelector('.grade-select').value : "";
                 
-                finalResults.push({ chest: chest, pos: pos, remarks: remarks });
-                
-                if(pos && pos !== "DQ") {
-                    rankedCount++;
+                if(pos || grade) {
+                    finalResults.push({ chest: chest, pos: pos || 0, remarks: remarks, grade: grade });
+                    validCount++;
                 }
             });
 
-            if(rankedCount === 0) {
-                const vMsg = document.getElementById('valMsg');
-                vMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> You must assign at least one position to submit!`;
-                vMsg.style.display = 'block';
-                window.scrollTo(0, document.body.scrollHeight);
-                return;
+            // എല്ലാവരുടെയും റിസൾട്ട് മായ്ച്ചാൽ അത് ഡിലീറ്റ് ചെയ്യാൻ മുന്നറിയിപ്പ് നൽകുന്നു
+            if(validCount === 0) {
+                if(!confirm("⚠️ You haven't assigned any positions or grades.\n\nThis will CLEAR ALL existing results for this event. Do you want to continue?")) {
+                    return;
+                }
             }
 
             const btn = document.getElementById('submitResultBtn');
@@ -596,7 +656,7 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
-                    showToast("Results Submitted Successfully!");
+                    showToast("Results Updated Successfully!");
                     fetchDataSilent(false); 
                     backToDashboard();
                 } else {

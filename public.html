@@ -17,6 +17,13 @@
     <!-- Cropper.js for Image Cropping -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Certificate Fonts (Must be loaded before generating PDF) -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <style>
         :root { --primary: #046A38; --accent: #D4AF37; --bg: #F4F7F6; --text: #1E293B; --card-bg: #FFFFFF; --border: #e2e8f0; --muted: #64748b; }
@@ -353,14 +360,23 @@
                 refreshBtn.style.opacity = '0.5';
             }
             
-            // 2. ബാക്ക്ഗ്രൗണ്ടിൽ പുതിയ ഡാറ്റ എടുക്കുന്നു
+            // 2. ബാക്ക്ഗ്രൗണ്ടിൽ പുതിയ ഡാറ്റ എടുക്കുന്നു (With Safe Error Handling)
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "fetchPublicData", instId: currentInstId })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
+            .then(res => res.text()) // ആദ്യം Text ആയിട്ട് വായിക്കുന്നു
+            .then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text); // JSON ആണോ എന്ന് പരിശോധിക്കുന്നു
+                } catch(e) {
+                    // JSON അല്ലെങ്കിൽ അത് ഗൂഗിളിന്റെ ഗ്ലിച്ച് ആണ്, അതിനാൽ ഈ സൈക്കിൾ സ്കിപ്പ് ചെയ്യുന്നു (Silent Error)
+                    if(showLoader) console.warn("Sync skipped: Invalid format from server.");
+                    return; 
+                }
+
+                if (data && data.status === "success") {
                     let newDataStr = JSON.stringify(data.data);
                     
                     // 3. ഡെൽറ്റ ചെക്ക്: പഴയതിനേക്കാൾ മാറ്റമുണ്ടെങ്കിൽ മാത്രം UI അപ്ഡേറ്റ് ചെയ്യുക
@@ -382,14 +398,16 @@
                             document.getElementById('searchForm').dispatchEvent(new Event('submit'));
                         }
                     }
-                } else {
+                } else if(data && data.status === "error") {
+                    // യഥാർത്ഥ എറർ ആണെങ്കിൽ മാത്രം മുന്നറിയിപ്പ് നൽകുന്നു
                     alert(data.message || "Invalid Institution ID.");
                     localStorage.removeItem("festvue_public_instId");
                     window.location.href = "index.html";
                 }
             })
             .catch(err => {
-                console.error("Background sync failed:", err);
+                // ഇൻ്റർനെറ്റ് ഇല്ലാത്തപ്പോഴോ മറ്റോ വരുന്ന എററുകൾ സൈലന്റ് ആക്കുന്നു
+                if(showLoader) console.warn("Background sync paused (Network issue).");
             })
             .finally(() => {
                 if (showLoader) document.getElementById('globalLoader').style.display = 'none';
@@ -492,16 +510,25 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; 
             const events = globalDbData.Events || []; const bonus = globalDbData.Bonus || [];
             
-            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് എടുക്കുന്നു
+            // കാറ്റഗറി കസ്റ്റം പോയിൻ്റ് & ഗ്രേഡ് പോയിൻ്റ് എടുക്കുന്നു
             const settings = globalDbData.Settings || [];
             let customCatPoints = {};
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 }; // Default
+
             settings.forEach(row => {
                 if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
                     const key = getVal(row, 1).toString().toUpperCase(); 
                     const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
+                    const pts = rawVal ? rawVal.split(',') : []; 
+                    
                     if (key.startsWith("CAT_")) { 
-                        const pts = rawVal ? rawVal.split(',') : []; 
                         customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    } else if (key === "GRADE_SYS") {
+                        gradeSystemEnabled = (pts[0] && pts[0].toString().toUpperCase() === "TRUE");
+                        if(pts[1]) gradePoints["A"] = parseInt(pts[1]);
+                        if(pts[2]) gradePoints["B"] = parseInt(pts[2]);
+                        if(pts[3]) gradePoints["C"] = parseInt(pts[3]);
                     }
                 }
             });
@@ -512,7 +539,10 @@
             
             results.forEach(res => {
                 if(getVal(res,3) === "Pending") return;
-                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1).toString().toUpperCase(); const position = parseInt(getVal(res, 2)); 
+                const evCode = getVal(res, 0).toString().toUpperCase(); 
+                const chestNo = getVal(res, 1).toString().toUpperCase(); 
+                const position = parseInt(getVal(res, 2)) || 0; 
+                const gradeStr = getVal(res, 7) ? getVal(res, 7).toString().trim().toUpperCase() : "";
                 
                 const evDetails = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode);
                 const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
@@ -522,9 +552,16 @@
                 if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
                 if (festConfig.customPts[evCode]) ptsMap = festConfig.customPts[evCode];
 
-                const points = ptsMap[position] || 0;
+                let posPoints = ptsMap[position] || 0;
                 
-                if(!chestNo || points === 0) return;
+                let grPoints = 0;
+                if(gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) {
+                    grPoints = gradePoints[gradeStr];
+                }
+
+                const totalPoints = posPoints + grPoints;
+                
+                if(!chestNo || totalPoints === 0) return;
 
                 const st = students.find(s => getVal(s, 0).toString().trim().toUpperCase() === chestNo); 
                 
@@ -540,15 +577,20 @@
                     if(stGen === "male") stGen = "boys"; if(stGen === "female") stGen = "girls";
                     
                     if(group) {
-                        if (skipIndividualPoints) {
-                            const uniqueKey = `${evCode}_${position}_${group}`; 
-                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
-                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                        if (isGroupEvent) {
+                            const uniqueKey = `${evCode}_${group}`; 
+                            if (!processedGroupEvents[uniqueKey]) { 
+                                groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                                processedGroupEvents[uniqueKey] = true; 
+                            }
+                        } else { 
+                            groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                        }
                     }
 
                     if (!skipIndividualPoints) {
                         if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), category: getVal(st,4), events: [] };
-                        studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
+                        studentPoints[chestNo].events.push({ code: evCode, points: totalPoints, mode: evMode });
                     }
                 }
             });
@@ -677,22 +719,34 @@
                                     </div>
                                 </div>`;
                 
-                let p1="", p2="", p3="";
+                let p1="", p2="", p3="", pOther="";
                 groupedResults[evCode].forEach(r => {
                     const chest = getVal(r,1).toString().trim().toUpperCase();
-                    const pos = getVal(r,2);
+                    const pos = parseInt(getVal(r,2)) || 0;
+                    const grade = getVal(r,7) ? getVal(r,7).toString().trim().toUpperCase() : "";
+                    
                     const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
                     const nameStr = st ? getVal(st,1) + suffix : chest;
                     const grpStr = st && getVal(st,5) ? ` <small style="color:var(--muted);">(${getVal(st,5)})</small>` : "";
                     
-                    if(pos == 1) p1 += `<div>${nameStr}${grpStr}</div>`;
-                    if(pos == 2) p2 += `<div>${nameStr}${grpStr}</div>`;
-                    if(pos == 3) p3 += `<div>${nameStr}${grpStr}</div>`;
+                    // ഗ്രേഡ് ഉണ്ടെങ്കിൽ പേരിനൊപ്പം ഒരു ചെറിയ ബാഡ്ജ് ആയി നൽകുന്നു
+                    const gradeBadge = grade ? ` <span style="color:var(--primary); font-size:0.75rem; font-weight:800; background:rgba(4,106,56,0.1); padding:2px 6px; border-radius:4px; margin-left:5px;">${grade}</span>` : "";
+
+                    if(pos == 1) p1 += `<div>${nameStr}${gradeBadge}${grpStr}</div>`;
+                    if(pos == 2) p2 += `<div>${nameStr}${gradeBadge}${grpStr}</div>`;
+                    if(pos == 3) p3 += `<div>${nameStr}${gradeBadge}${grpStr}</div>`;
+                    
+                    // സ്ഥാനമില്ലാത്ത ഗ്രേഡുള്ളവർ
+                    if(pos == 0 && grade) pOther += `<div>${nameStr}${gradeBadge}${grpStr}</div>`;
                 });
 
                 if(p1) feedHTML += `<div class="feed-res"><span class="medal-1">1st</span> <div style="flex-grow:1; font-size:0.95rem;">${p1}</div></div>`;
                 if(p2) feedHTML += `<div class="feed-res"><span class="medal-2">2nd</span> <div style="flex-grow:1; font-size:0.95rem;">${p2}</div></div>`;
                 if(p3) feedHTML += `<div class="feed-res"><span class="medal-3">3rd</span> <div style="flex-grow:1; font-size:0.95rem;">${p3}</div></div>`;
+                
+                // ഗ്രേഡുകൾ ഫീഡിൽ കാണിക്കുന്നു
+                if(pOther) feedHTML += `<div class="feed-res"><span style="color:var(--muted); background:var(--bg); padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8rem; border:1px solid var(--border);">Grades</span> <div style="flex-grow:1; font-size:0.95rem;">${pOther}</div></div>`;
+                
                 feedHTML += `</div>`;
             });
 
@@ -705,15 +759,12 @@
         // ==========================================
         // 6. SEARCH & WHATSAPP SHARE & CERTIFICATES
         // ==========================================
-        // ==========================================
-        // 6. SEARCH & WHATSAPP SHARE & CERTIFICATES
-        // ==========================================
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const q = document.getElementById('searchInput').value.trim().toUpperCase();
             const students = globalDbData.Students || []; const events = globalDbData.Events || []; 
             const regs = globalDbData.Registrations || []; const results = globalDbData.Results || [];
-            const settings = globalDbData.Settings || []; // കാറ്റഗറി പോയിന്റിന് വേണ്ടി സെറ്റിംഗ്സ് എടുത്തു
+            const settings = globalDbData.Settings || []; 
             const container = document.getElementById('searchResultContainer');
             
             const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === q);
@@ -727,26 +778,38 @@
             currentSearchStudent = { name: name, chest: q, cls: cls, grp: grp };
             currentSearchWins = [];
 
-            // കാറ്റഗറി പോയിന്റ് ഉൾപ്പെടെ പുതിയ പോയിന്റ് സിസ്റ്റം സെറ്റ് ചെയ്യുന്നു
+            // 🟢 FIX 1: Grade System & Points സെറ്റ് ചെയ്യുന്നു
             let defaultPoints = { 1: 5, 2: 3, 3: 1 }; let customPoints = {}; let customCatPoints = {};
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 }; // Default Grade Points
+
             settings.forEach(row => {
                 if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
                     const key = getVal(row, 1).toString().toUpperCase(); const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
-                    const pts = rawVal ? rawVal.split(',') : []; const p1 = parseInt(pts[0]) || 0; const p2 = parseInt(pts[1]) || 0; const p3 = parseInt(pts[2]) || 0;
-                    if (key === "DEFAULT") { defaultPoints = { 1: p1, 2: p2, 3: p3 }; } 
-                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: p1, 2: p2, 3: p3 }; }
-                    else { customPoints[key] = { 1: p1, 2: p2, 3: p3 }; }
+                    const pts = rawVal ? rawVal.split(',') : []; 
+                    
+                    if (key === "DEFAULT") { defaultPoints = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; } 
+                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; }
+                    else if (key === "GRADE_SYS") {
+                        gradeSystemEnabled = (pts[0] && pts[0].toString().toUpperCase() === "TRUE");
+                        if(pts[1]) gradePoints["A"] = parseInt(pts[1]);
+                        if(pts[2]) gradePoints["B"] = parseInt(pts[2]);
+                        if(pts[3]) gradePoints["C"] = parseInt(pts[3]);
+                    }
+                    else { customPoints[key] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; }
                 }
             });
 
-            // 1. കാൽക്കുലേറ്റ് ഇൻഡിവിജ്വൽ സ്കോർ (ഗ്രൂപ്പും ജനറലും ഒഴികെ)
+            // 1. കാൽക്കുലേറ്റ് ഇൻഡിവിജ്വൽ സ്കോർ (ഗ്രേഡ് പോയിന്റ് ഉൾപ്പെടെ)
             let individualTotal = 0;
             results.forEach(resRow => {
                 if(getVal(resRow, 3) === "Pending") return;
                 const rChest = getVal(resRow, 1).toString().trim().toUpperCase();
                 if(rChest === q) {
                     const evCode = getVal(resRow, 0).toString().trim().toUpperCase();
-                    const pos = parseInt(getVal(resRow, 2));
+                    const pos = parseInt(getVal(resRow, 2)) || 0;
+                    const gradeStr = getVal(resRow, 7) ? getVal(resRow, 7).toString().trim().toUpperCase() : ""; // 🟢 FIX 2: ഗ്രേഡ് എടുക്കുന്നു
+                    
                     const evDetails = events.find(e => getVal(e,0).toString().trim().toUpperCase() === evCode);
                     
                     if(evDetails) {
@@ -754,19 +817,27 @@
                         const isGroup = getVal(evDetails, 4).toString().trim().toLowerCase() === "group";
                         const isGeneral = (evCat === "GENERAL" || evCat === "COMMON" || evCat === "ALL");
                         
-                        // ഇൻഡിവിജ്വൽ ആണെങ്കിൽ മാത്രം പോയിന്റ് കൂട്ടുന്നു (Event > Category > Default മുൻഗണനയിൽ)
+                        // ഇൻഡിവിജ്വൽ ആണെങ്കിൽ മാത്രം പോയിന്റ് കൂട്ടുന്നു
                         if(!isGroup && !isGeneral) {
                             let ptsMap = defaultPoints;
                             if (customCatPoints[evCat]) ptsMap = customCatPoints[evCat];
                             if (customPoints[evCode]) ptsMap = customPoints[evCode];
                             
-                            individualTotal += (ptsMap[pos] || 0);
+                            let posPoints = ptsMap[pos] || 0;
+                            let grPoints = 0;
+                            
+                            // 🟢 FIX 3: ഗ്രേഡ് സിസ്റ്റം ആക്ടീവ് ആണെങ്കിൽ ഗ്രേഡിന്റെ പോയിന്റ് കൂടി ചേർക്കുന്നു
+                            if(gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) {
+                                grPoints = gradePoints[gradeStr];
+                            }
+                            
+                            individualTotal += (posPoints + grPoints);
                         }
                     }
                 }
             });
 
-            // 2. പ്രൊഫൈൽ ഹെഡർ ഡിസൈൻ (കൃത്യമായ ഇൻഡിവിജ്വൽ സ്കോർ ഉൾപ്പെടെ)
+            // 2. പ്രൊഫൈൽ ഹെഡർ ഡിസൈൻ
             let html = `<div class="card" style="margin-top:10px;">
                             <div class="profile-head">
                                 <div class="profile-name">${name}</div>
@@ -809,6 +880,7 @@
                     const isGroup = ev && getVal(ev,4).toString().trim().toLowerCase() === 'group';
                     
                     let medalBadge = ""; let posText = ""; let certBtnHtml = "";
+                    let eventGradeBadge = ""; // 🟢 FIX 4: ഇവന്റിന്റെ പേരിനൊപ്പം ഗ്രേഡ് കാണിക്കാൻ
                     
                     const evResults = results.filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode && getVal(r,3) !== "Pending");
                     
@@ -820,16 +892,30 @@
                         evResults.forEach(resRow => {
                             const resChest = getVal(resRow,1).toString().trim().toUpperCase();
                             const pos = getVal(resRow,2); 
+                            const grade = getVal(resRow, 7) ? getVal(resRow, 7).toString().trim().toUpperCase() : ""; // 🟢 FIX 5: ഗ്രേഡ് എടുക്കുന്നു
                             
-                            if((resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) && (pos == 1 || pos == 2 || pos == 3)) {
-                                won = true;
-                                let posValueText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
+                            if(resChest === q || (isGroup && isTeamWinner(evCode, resChest, q))) {
                                 
-                                certBtnHtml = `<button onclick="downloadCertificate('${evCode}', '${posValueText}')" class="auth-btn" style="background:#b45309; padding: 6px 12px; font-size:0.8rem; margin: 8px 0 0 0; width:100%;"><i class="fas fa-award"></i> Download Certificate</button>`;
-                                
-                                if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
-                                else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "2nd"}); }
-                                else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "3rd"}); }
+                                if (grade) {
+                                    eventGradeBadge = ` <span style="color:var(--primary); font-size:0.75rem; font-weight:800; background:rgba(4,106,56,0.1); padding:2px 6px; border-radius:4px; margin-left:5px;">${grade}</span>`;
+                                }
+
+                                if(pos == 1 || pos == 2 || pos == 3) {
+                                    won = true;
+                                    let posValueText = pos == 1 ? "FIRST" : pos == 2 ? "SECOND" : "THIRD";
+                                    
+                                    certBtnHtml = `<button onclick="downloadCertificate('${evCode}', '${posValueText}')" class="auth-btn" style="background:#b45309; padding: 6px 12px; font-size:0.8rem; margin: 8px 0 0 0; width:100%;"><i class="fas fa-award"></i> Download Certificate</button>`;
+                                    
+                                    if(pos == 1) { medalBadge = `<span class="medal-1">1st Place</span>`; posText = "1st Place 🥇"; currentSearchWins.push({event: evName, pos: "1st"}); }
+                                    else if(pos == 2) { medalBadge = `<span class="medal-2">2nd Place</span>`; posText = "2nd Place 🥈"; currentSearchWins.push({event: evName, pos: "2nd"}); }
+                                    else if(pos == 3) { medalBadge = `<span class="medal-3">3rd Place</span>`; posText = "3rd Place 🥉"; currentSearchWins.push({event: evName, pos: "3rd"}); }
+                                } else if (grade) {
+                                    // 🟢 FIX 6: സ്ഥാനം ഇല്ലെങ്കിലും ഗ്രേഡ് ഉണ്ടെങ്കിൽ വിന്നർ ആയി പരിഗണിക്കും
+                                    won = true;
+                                    medalBadge = `<span style="font-size:0.8rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:2px 6px; border-radius:4px; font-weight:bold;">Grade ${grade}</span>`;
+                                    posText = `Grade ${grade}`;
+                                    currentSearchWins.push({event: evName, pos: `Grade ${grade}`});
+                                }
                             }
                         });
                         
@@ -842,9 +928,10 @@
                     
                     const groupBadge = isGroup ? `<span style="font-size:0.7rem; background:var(--bg); padding:2px 5px; border-radius:4px; border:1px solid var(--border); color:var(--muted); margin-left:5px;">Group</span>` : "";
                     
+                    // 🟢 FIX 7: ഇവന്റിന്റെ പേരിനൊപ്പം ഗ്രേഡ് ബാഡ്ജ് കാണിക്കുന്നു
                     html += `<div style="padding:10px; background:var(--input-bg); border-radius:6px; border:1px solid var(--border);">
                                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div style="font-size:0.95rem; font-weight:500; color:var(--text);">${evName} ${groupBadge}</div>
+                                    <div style="font-size:0.95rem; font-weight:500; color:var(--text);">${evName} ${groupBadge}${eventGradeBadge}</div>
                                     <div>${medalBadge}</div>
                                 </div>
                                 ${certBtnHtml}
@@ -1330,7 +1417,7 @@
             document.getElementById('canvasPreview').style.display = 'block';
 
             const btnDown = document.getElementById('btnDownload');
-            btnDown.href = imgData;
+            btnDown.href = imgData; 
             btnDown.download = `${currentSearchStudent.chest}_Winner_Poster.png`;
             btnDown.style.display = 'inline-block';
 

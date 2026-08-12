@@ -366,29 +366,61 @@
                         <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Publishing results manually here will overwrite any existing or pending judge results for the selected event.</p>
                         <form id="resultForm">
                             <div style="margin-bottom: 15px;">
-                               <label style="font-size: 0.85rem; color: #64748b; cursor: pointer;">
-                               <input type="checkbox" id="hidePublishedEv" onchange="populateDropdowns()"> Hide already published events
-                               </label>
+                                <label style="font-size: 0.85rem; color: #64748b; cursor: pointer;">
+                                    <input type="checkbox" id="hidePublishedEv" onchange="populateDropdowns()"> Hide already published events
+                                </label>
                             </div>
                             <div class="input-group" style="max-width: 300px;"><label>Select Event</label><select id="resEventSelect" required><option value="">-- Choose Event --</option></select></div>
+                            
                             <div class="form-grid">
+                                <!-- 1st Place -->
                                 <div class="input-group">
                                     <label style="color: #D4AF37;"><span><i class="fas fa-medal"></i> 1st Place</span></label>
-                                    <div id="firstPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;"><select class="pos-1" required><option value="">-- Select Event First --</option></select></div>
-                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('firstPlaceContainer')">+ Add Tie</span></div>
+                                    <div id="firstPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="display: flex; gap: 5px;" class="res-row">
+                                            <select class="pos-1" required style="flex-grow:1;"><option value="">-- Select Event First --</option></select>
+                                            <select class="grade-sel" style="display:none; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('firstPlaceContainer', 1)">+ Add Tie</span></div>
                                 </div>
+                                
+                                <!-- 2nd Place -->
                                 <div class="input-group">
                                     <label style="color: #94a3b8;"><span><i class="fas fa-medal"></i> 2nd Place</span></label>
-                                    <div id="secondPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;"><select class="pos-2"><option value="">-- Select Event First --</option></select></div>
-                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('secondPlaceContainer')">+ Add Tie</span></div>
+                                    <div id="secondPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="display: flex; gap: 5px;" class="res-row">
+                                            <select class="pos-2" style="flex-grow:1;"><option value="">-- Select Event First --</option></select>
+                                            <select class="grade-sel" style="display:none; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('secondPlaceContainer', 2)">+ Add Tie</span></div>
                                 </div>
+                                
+                                <!-- 3rd Place -->
                                 <div class="input-group">
                                     <label style="color: #b45309;"><span><i class="fas fa-medal"></i> 3rd Place</span></label>
-                                    <div id="thirdPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;"><select class="pos-3"><option value="">-- Select Event First --</option></select></div>
-                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('thirdPlaceContainer')">+ Add Tie</span></div>
+                                    <div id="thirdPlaceContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="display: flex; gap: 5px;" class="res-row">
+                                            <select class="pos-3" style="flex-grow:1;"><option value="">-- Select Event First --</option></select>
+                                            <select class="grade-sel" style="display:none; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 8px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addWinnerField('thirdPlaceContainer', 3)">+ Add Tie</span></div>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-btn" style="margin-top: 15px;"><i class="fas fa-upload"></i> Force Publish Result</button>
+                            
+                            <!-- Other Graded Participants Section (Visible only if Grade System is Enabled) -->
+                            <div id="otherGradesSection" style="display: none; margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(4, 106, 56, 0.03);">
+                                <h4 style="margin-bottom: 10px; color: var(--text); font-size: 0.95rem;"><i class="fas fa-award" style="color:var(--primary);"></i> Other Graded Participants</h4>
+                                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Add participants who received a grade but did not win 1st, 2nd, or 3rd place.</p>
+                                <div id="otherGradesContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <!-- Dynamic rows will be added here -->
+                                </div>
+                                <div style="margin-top: 10px;"><span style="cursor: pointer; color: var(--primary); font-size: 0.85rem; font-weight: bold;" onclick="addOtherGradeField()">+ Add Participant</span></div>
+                            </div>
+
+                            <button type="submit" class="primary-btn" style="margin-top: 20px; width: 100%;"><i class="fas fa-upload"></i> Force Publish Result</button>
                         </form>
                     </div>
 
@@ -555,18 +587,35 @@
                         
                         <form id="pointsConfigForm">
                             
-                            <!-- 1. Default Points Accordion (Open by default) -->
+                            <!-- 1. Default Points & Grades Accordion (Open by default) -->
                             <div class="accordion-card active" style="background: rgba(4, 106, 56, 0.03); border-color: rgba(4, 106, 56, 0.2); border-radius: 8px; margin-bottom: 20px;" onclick="this.classList.toggle('active')">
                                 <div class="accordion-header">
-                                    <h4 style="margin: 0; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> 1. Default Points (Normal)</h4>
+                                    <h4 style="margin: 0; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> 1. Default Points & Grades</h4>
                                     <i class="fas fa-chevron-down accordion-icon"></i>
                                 </div>
                                 <div class="accordion-body" onclick="event.stopPropagation()">
-                                    <div class="form-grid">
+                                    
+                                    <h5 style="font-size: 0.9rem; color: var(--text); margin-bottom: 10px;"><i class="fas fa-medal" style="color:var(--accent);"></i> Position Points</h5>
+                                    <div class="form-grid" style="margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 20px;">
                                         <div class="input-group" style="margin:0;"><label>1st Place</label><input type="number" id="defP1" value="5" required></div>
                                         <div class="input-group" style="margin:0;"><label>2nd Place</label><input type="number" id="defP2" value="3" required></div>
                                         <div class="input-group" style="margin:0;"><label>3rd Place</label><input type="number" id="defP3" value="1" required></div>
                                     </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                                        <h5 style="font-size: 0.9rem; color: var(--text); margin: 0;"><i class="fas fa-award" style="color:#3b82f6;"></i> Default Grade Points</h5>
+                                        <label style="font-size: 0.85rem; font-weight: bold; color: var(--primary); cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--primary);">
+                                            <input type="checkbox" id="enableGradeSystem" onchange="toggleGradeInputs()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Enable Grade System
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- checkbox ടിക് ചെയ്താൽ മാത്രം ആക്ടീവ് ആകുന്ന ഗ്രേഡ് ബോക്സുകൾ -->
+                                    <div class="form-grid" id="gradeInputsContainer" style="opacity: 0.4; pointer-events: none; transition: 0.3s;">
+                                        <div class="input-group" style="margin:0;"><label style="color:#10b981;">A Grade</label><input type="number" id="gradeA" value="5"></div>
+                                        <div class="input-group" style="margin:0;"><label style="color:#3b82f6;">B Grade</label><input type="number" id="gradeB" value="3"></div>
+                                        <div class="input-group" style="margin:0;"><label style="color:#f59e0b;">C Grade</label><input type="number" id="gradeC" value="1"></div>
+                                    </div>
+
                                 </div>
                             </div>
                             
@@ -863,9 +912,18 @@
             }
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "fetchData", targetSheetId: targetSheetId }) })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === "success") {
+            .then(res => res.text()) // ആദ്യം Text ആയിട്ട് വായിക്കുന്നു
+            .then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text); // JSON ആണോ എന്ന് പരിശോധിക്കുന്നു
+                } catch(e) {
+                    // JSON അല്ലെങ്കിൽ അത് ഗൂഗിളിന്റെ ഗ്ലിച്ച് ആണ്, അതിനാൽ ഈ സൈക്കിൾ സ്കിപ്പ് ചെയ്യുന്നു (Silent Error)
+                    console.warn("Admin sync skipped: Invalid format from server.");
+                    return; 
+                }
+
+                if (data && data.status === "success") {
                     let newDataStr = JSON.stringify(data.data);
                     
                     // ഡെൽറ്റ ചെക്ക്: വ്യത്യാസമുണ്ടെങ്കിൽ മാത്രം അപ്ഡേറ്റ് ചെയ്യുന്നു
@@ -972,11 +1030,14 @@
 
             if(document.getElementById('bonusGroupSelect')) document.getElementById('bonusGroupSelect').innerHTML = groupOptionsHTML;
 
-            // Initialize Searchable Dropdowns (Safe Load)
+            // Initialize Searchable Dropdowns (Safe Load to prevent Infinite Loop)
             if(window.jQuery && $.fn.select2) {
-                $('#regEventSelect, #resEventSelect, #codeEventSelect, #printCertEventSelect').select2().on('select2:select', function (e) {
-                    this.dispatchEvent(new Event('change')); 
-                });
+                $('#regEventSelect, #resEventSelect, #codeEventSelect, #printCertEventSelect')
+                    .select2()
+                    .off('select2:select')
+                    .on('select2:select', function (e) {
+                        this.dispatchEvent(new Event('change')); 
+                    });
             }
         }
 
@@ -1097,6 +1158,14 @@
                         if(document.getElementById('defP1')) document.getElementById('defP1').value = pts[0] || 0; 
                         if(document.getElementById('defP2')) document.getElementById('defP2').value = pts[1] || 0; 
                         if(document.getElementById('defP3')) document.getElementById('defP3').value = pts[2] || 0;
+                    } else if (key === 'GRADE_SYS') {
+                        if(document.getElementById('enableGradeSystem')) {
+                            document.getElementById('enableGradeSystem').checked = (pts[0] === "TRUE");
+                            toggleGradeInputs();
+                        }
+                        if(document.getElementById('gradeA')) document.getElementById('gradeA').value = pts[1] || 5;
+                        if(document.getElementById('gradeB')) document.getElementById('gradeB').value = pts[2] || 3;
+                        if(document.getElementById('gradeC')) document.getElementById('gradeC').value = pts[3] || 1;
                     } else if (key.startsWith('CAT_')) { 
                         addCustomCategoryPointRow(key.replace('CAT_', ''), pts[0]||0, pts[1]||0, pts[2]||0); 
                     } else { 
@@ -1202,11 +1271,30 @@
             }
         }
 
+        function toggleGradeInputs() {
+            const isChecked = document.getElementById('enableGradeSystem').checked;
+            const container = document.getElementById('gradeInputsContainer');
+            if(isChecked) {
+                container.style.opacity = '1';
+                container.style.pointerEvents = 'auto';
+            } else {
+                container.style.opacity = '0.4';
+                container.style.pointerEvents = 'none';
+            }
+        }
+
         if(document.getElementById('pointsConfigForm')) document.getElementById('pointsConfigForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]'); const oText = btn.innerHTML; btn.innerHTML = 'Saving...'; btn.disabled = true;
             let pointsData = [ ["POINTS", "DEFAULT", `${document.getElementById('defP1').value},${document.getElementById('defP2').value},${document.getElementById('defP3').value}`] ];
             
+            // ഗ്രേഡ് സിസ്റ്റം ഡാറ്റ സേവ് ചെയ്യാൻ
+            const gradeEnabled = document.getElementById('enableGradeSystem').checked ? "TRUE" : "FALSE";
+            const gA = document.getElementById('gradeA').value || 0;
+            const gB = document.getElementById('gradeB').value || 0;
+            const gC = document.getElementById('gradeC').value || 0;
+            pointsData.push(["POINTS", "GRADE_SYS", `${gradeEnabled},${gA},${gB},${gC}`]);
+
             // കാറ്റഗറി പോയിൻ്റുകൾ സേവ് ചെയ്യുന്നു
             document.querySelectorAll('.custom-cat-point-row').forEach(row => { 
                 const cat = row.querySelector('.ccp-cat').value.toUpperCase();
@@ -1647,9 +1735,28 @@
                 html += `</div><div style="display:flex; gap:15px; flex-wrap:wrap;">`;
                 
                 let pos1="N/A", pos2="N/A", pos3="N/A";
-                grouped[evCode].forEach(r => { const pos = getVal(r,2); const chest = getVal(r,1); if(pos==1) pos1 = chest; if(pos==2) pos2 = chest; if(pos==3) pos3 = chest; });
+                let others = [];
+                grouped[evCode].forEach(r => { 
+                    const pos = parseInt(getVal(r,2)) || 0; 
+                    const chest = getVal(r,1); 
+                    const grade = getVal(r,7) ? getVal(r,7).toString().trim() : "";
+                    
+                    let display = chest;
+                    if(grade) display += ` <span style="font-size:0.75rem; font-weight:bold; color:var(--primary);">(${grade})</span>`;
+
+                    if(pos===1) pos1 = display; 
+                    else if(pos===2) pos2 = display; 
+                    else if(pos===3) pos3 = display; 
+                    else if(pos===0 && grade) others.push(display);
+                });
                 
-                html += `<div style="background:#fef9c3; color:#b45309; padding:5px 10px; border-radius:4px; font-weight:600;">🥇 1st: ${pos1}</div><div style="background:#f1f5f9; color:#475569; padding:5px 10px; border-radius:4px; font-weight:600;">🥈 2nd: ${pos2}</div><div style="background:#ffedd5; color:#9a3412; padding:5px 10px; border-radius:4px; font-weight:600;">🥉 3rd: ${pos3}</div>`;
+                html += `<div style="background:#fef9c3; color:#b45309; padding:5px 10px; border-radius:4px; font-weight:600;">🥇 1st: ${pos1}</div>`;
+                html += `<div style="background:#f1f5f9; color:#475569; padding:5px 10px; border-radius:4px; font-weight:600;">🥈 2nd: ${pos2}</div>`;
+                html += `<div style="background:#ffedd5; color:#9a3412; padding:5px 10px; border-radius:4px; font-weight:600;">🥉 3rd: ${pos3}</div>`;
+                
+                if(others.length > 0) {
+                    html += `<div style="background:#e2e8f0; color:#0f172a; padding:5px 10px; border-radius:4px; font-weight:600; width:100%; margin-top:5px;">🎖️ Graded: ${others.join(', ')}</div>`;
+                }
                 html += `</div></div>`;
             });
             container.innerHTML = html;
@@ -1657,9 +1764,31 @@
 
         async function approveEvent(evCode) {
             if(!confirm(`Approve results for ${evCode}? This will publish them to the public immediately.`)) return;
-            try { let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "approveResults", targetSheetId: targetSheetId, eventCode: evCode }) });
-                if((await res.json()).status === "success") { alert("Approved successfully!"); loadDropdownData(); }
-            } catch(e) { alert("Error approving."); }
+            
+            try { 
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "approveResults", targetSheetId: targetSheetId, eventCode: evCode }) });
+                let text = await res.text(); 
+                let data;
+                
+                try {
+                    data = JSON.parse(text); 
+                } catch(err) {
+                    // ഗ്ലിച്ച് വന്നാൽ കണ്ണുംപൂട്ടി സക്സസ് കാണിക്കില്ല, പകരം ഡാറ്റ റീലോഡ് ചെയ്ത് ഉറപ്പുവരുത്തും
+                    alert("Action submitted. Refreshing data to verify..."); 
+                    loadDropdownData(); // ഇത് ഡാറ്റാബേസിൽ നിന്നുള്ള ഏറ്റവും പുതിയ ഡാറ്റ കൊണ്ടുവരും
+                    return;
+                }
+
+                if(data && data.status === "success") { 
+                    alert("Approved successfully!"); 
+                    loadDropdownData(); 
+                } else {
+                    alert(data ? data.message : "Failed to approve.");
+                }
+            } catch(e) { 
+                console.error(e);
+                alert("Network error! Request did not reach the server."); 
+            }
         }
 
         async function rejectEvent(evCode) {
@@ -1860,10 +1989,33 @@
         });
 
         // ==========================================
-        // MANUAL RESULTS (CAPTAIN FORMATTING)
+        // MANUAL RESULTS & GRADES LOGIC
         // ==========================================
+        
+        // നിലവിൽ ഗ്രേഡ് സിസ്റ്റം ആക്റ്റീവ് ആണോ എന്ന് പരിശോധിക്കാൻ
+        function isGradeSystemEnabled() {
+            if(!globalDbData || !globalDbData.Settings) return false;
+            const row = globalDbData.Settings.find(r => getVal(r,0).toString().toUpperCase() === "POINTS" && getVal(r,1).toString().toUpperCase() === "GRADE_SYS");
+            if(row && getVal(row,2)) {
+                return getVal(row,2).toString().split(',')[0].toUpperCase() === "TRUE";
+            }
+            return false;
+        }
+
+        // ഗ്രേഡ് സിസ്റ്റം സ്റ്റാറ്റസ് വെച്ച് ഫോമിലെ മാറ്റങ്ങൾ വരുത്തുന്നു
+        function toggleGradeUI() {
+            const isEnabled = isGradeSystemEnabled();
+            document.querySelectorAll('.grade-sel').forEach(el => el.style.display = isEnabled ? 'block' : 'none');
+            document.getElementById('otherGradesSection').style.display = isEnabled ? 'block' : 'none';
+        }
+
         document.getElementById('resEventSelect').addEventListener('change', function() {
-            document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
+            // പഴയ ഫീൽഡുകൾ ക്ലിയർ ചെയ്യുന്നു
+            document.querySelectorAll('#firstPlaceContainer .res-row, #secondPlaceContainer .res-row, #thirdPlaceContainer .res-row, #otherGradesContainer .res-row').forEach((el, idx) => { 
+                if(el.parentElement.id !== 'otherGradesContainer' && el === el.parentElement.firstElementChild) return; // ആദ്യത്തെ ബോക്സ് നിലനിർത്തുന്നു
+                el.remove(); 
+            });
+            
             const evCode = this.value; 
             const regs = globalDbData.Registrations || []; 
             const students = globalDbData.Students || []; 
@@ -1871,6 +2023,7 @@
             
             if(!evCode) { 
                 document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = '<option value="">-- Event First --</option>'); 
+                document.querySelectorAll('.grade-sel').forEach(sel => sel.value = "");
                 return; 
             }
             
@@ -1879,18 +2032,18 @@
             
             if(isPending) { 
                 if(!confirm(`Wait! There is a "Pending" result from a judge for ${evCode}. \n\nClick OK to overwrite manually.\nClick Cancel to go back.`)) { 
-                    if(window.jQuery) $(this).val('').trigger('change');
+                    if(window.jQuery) $(this).val(null).trigger('change.select2');
                     else this.value = "";
                     return; 
                 } 
             }
             else if (isExisting) { 
                 if(!confirm(`Warning: Results already published for this event. Do you want to overwrite them?`)) { 
-                    if(window.jQuery) $(this).val('').trigger('change');
+                    if(window.jQuery) $(this).val(null).trigger('change.select2');
                     else this.value = "";
                     return; 
                 } 
-            }
+            } 
             
             const ev = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase());
             const isGroup = ev && getVal(ev, 4).toString().trim().toLowerCase() === 'group';
@@ -1907,9 +2060,10 @@
                 options += `<option value="${safeCNo}">${safeCNo}${captText} - ${st ? getVal(st, 1) : ""}${suffix}</option>`; 
             });
 
-            document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = options);
+            document.querySelectorAll('.pos-1, .pos-2, .pos-3, .other-grade-sel').forEach(sel => sel.innerHTML = options);
+            toggleGradeUI();
 
-            // 1. ഓൾറെഡി പബ്ലിഷ് ചെയ്തതാണെങ്കിൽ പഴയ ഡാറ്റ പ്രിവ്യൂ ആയി കാണിക്കുന്നു (Ties ഫിക്സ് ചെയ്ത്)
+            // 1. ഓൾറെഡി പബ്ലിഷ് ചെയ്തതാണെങ്കിൽ പഴയ ഡാറ്റ പ്രിവ്യൂ ആയി കാണിക്കുന്നു (ഗ്രേഡ് ഉൾപ്പെടെ)
             if (isExisting) {
                 const evResults = (globalDbData.Results || []).filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase() && getVal(r,3) !== "Pending");
                 
@@ -1919,82 +2073,109 @@
                     evResults.forEach(r => {
                         const rChest = String(getVal(r,1)).trim().toUpperCase();
                         const rPos = parseInt(getVal(r,2));
-                        let targetSelect = null;
+                        const rGrade = getVal(r,7) ? getVal(r,7).toString().trim().toUpperCase() : ""; // 8th column for Grade
+                        let targetRow = null;
                         
-                        // കോഡിനുള്ളിൽ നിന്ന് തന്നെ തനിയെ ബോക്സുകൾ നിർമ്മിക്കുന്നു
                         if(rPos === 1) {
-                            if(pos1Count === 0) { targetSelect = document.querySelector('.pos-1'); } 
-                            else {
-                                const div = document.createElement('div'); div.style.marginTop = '10px';
-                                div.innerHTML = `<select class="pos-1" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${options}</select>`;
-                                document.getElementById('firstPlaceContainer').appendChild(div);
-                                targetSelect = div.querySelector('select');
-                            }
-                            if(targetSelect) targetSelect.value = rChest;
+                            if(pos1Count === 0) { targetRow = document.querySelector('#firstPlaceContainer .res-row'); } 
+                            else { targetRow = addWinnerField('firstPlaceContainer', 1, options); }
+                            if(targetRow) { targetRow.querySelector('.pos-1').value = rChest; targetRow.querySelector('.grade-sel').value = rGrade; }
                             pos1Count++;
                         }
                         else if(rPos === 2) {
-                            if(pos2Count === 0) { targetSelect = document.querySelector('.pos-2'); } 
-                            else {
-                                const div = document.createElement('div'); div.style.marginTop = '10px';
-                                div.innerHTML = `<select class="pos-2" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${options}</select>`;
-                                document.getElementById('secondPlaceContainer').appendChild(div);
-                                targetSelect = div.querySelector('select');
-                            }
-                            if(targetSelect) targetSelect.value = rChest;
+                            if(pos2Count === 0) { targetRow = document.querySelector('#secondPlaceContainer .res-row'); } 
+                            else { targetRow = addWinnerField('secondPlaceContainer', 2, options); }
+                            if(targetRow) { targetRow.querySelector('.pos-2').value = rChest; targetRow.querySelector('.grade-sel').value = rGrade; }
                             pos2Count++;
                         }
                         else if(rPos === 3) {
-                            if(pos3Count === 0) { targetSelect = document.querySelector('.pos-3'); } 
-                            else {
-                                const div = document.createElement('div'); div.style.marginTop = '10px';
-                                div.innerHTML = `<select class="pos-3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${options}</select>`;
-                                document.getElementById('thirdPlaceContainer').appendChild(div);
-                                targetSelect = div.querySelector('select');
-                            }
-                            if(targetSelect) targetSelect.value = rChest;
+                            if(pos3Count === 0) { targetRow = document.querySelector('#thirdPlaceContainer .res-row'); } 
+                            else { targetRow = addWinnerField('thirdPlaceContainer', 3, options); }
+                            if(targetRow) { targetRow.querySelector('.pos-3').value = rChest; targetRow.querySelector('.grade-sel').value = rGrade; }
                             pos3Count++;
+                        }
+                        else if(rPos === 0 && rGrade) {
+                            // സ്ഥാനമില്ലാത്ത, എന്നാൽ ഗ്രേഡുള്ളവർ
+                            targetRow = addOtherGradeField(options);
+                            if(targetRow) { targetRow.querySelector('.other-grade-sel').value = rChest; targetRow.querySelector('.grade-sel').value = rGrade; }
                         }
                     });
                 }, 50);
             }
         });
 
+        // പുതിയതായി ബോക്സുകൾ ആഡ് ചെയ്യാനുള്ള ഫംഗ്ഷനുകൾ
+        function addWinnerField(containerId, posNum, optionsHtml = null) {
+            const container = document.getElementById(containerId);
+            const firstSelect = container.querySelector(`select.pos-${posNum}`);
+            if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
+            
+            const div = document.createElement('div'); div.className = 'res-row'; div.style.display = 'flex'; div.style.gap = '5px';
+            div.innerHTML = `<select class="pos-${posNum}" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+                             <select class="grade-sel" style="display:${isGradeSystemEnabled() ? 'block' : 'none'}; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                             <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
+            return div;
+        }
+
+        function addOtherGradeField(optionsHtml = null) {
+            const container = document.getElementById('otherGradesContainer');
+            const firstSelect = document.querySelector('.pos-1'); // കോപ്പി ചെയ്യാൻ വേണ്ടി മാത്രം
+            if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
+            
+            const div = document.createElement('div'); div.className = 'res-row'; div.style.display = 'flex'; div.style.gap = '5px';
+            div.innerHTML = `<select class="other-grade-sel" required style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+                             <select class="grade-sel" required style="width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                             <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
+            return div;
+        }
+
+        // ഡാറ്റാബേസിലേക്ക് സേവ് ചെയ്യുന്ന ഭാഗം (ഗ്രേഡ് കൂടി ഉൾപ്പെടുത്തി)
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const evCode = document.getElementById('resEventSelect').value; let resultsToSave = []; const checkDups = [];
             
-            const addRes = (sel, pos) => { if(sel.value) { if(checkDups.includes(sel.value)) return false; checkDups.push(sel.value); resultsToSave.push([evCode, sel.value.toUpperCase(), pos]); return true; } return true;};
+            const addRes = (rowEl, pos) => { 
+                const sel = rowEl.querySelector(`select.pos-${pos}`) || rowEl.querySelector(`.other-grade-sel`);
+                const gradeSel = rowEl.querySelector('.grade-sel');
+                if(sel && sel.value) { 
+                    if(checkDups.includes(sel.value)) return false; 
+                    checkDups.push(sel.value); 
+                    const gradeVal = gradeSel && gradeSel.style.display !== 'none' ? gradeSel.value : "";
+                    
+                    // [Event Code, Chest No, Position, Status, Submitted By, Timestamp, Remarks, Grade]
+                    resultsToSave.push([evCode, sel.value.toUpperCase(), pos, "Approved", "Admin", new Date().toISOString(), "", gradeVal]); 
+                    return true; 
+                } 
+                return true;
+            };
             
             let isValid = true;
-            document.querySelectorAll('.pos-1').forEach(s => { if(!addRes(s, 1)) isValid = false; });
-            document.querySelectorAll('.pos-2').forEach(s => { if(!addRes(s, 2)) isValid = false; });
-            document.querySelectorAll('.pos-3').forEach(s => { if(!addRes(s, 3)) isValid = false; });
+            document.querySelectorAll('#firstPlaceContainer .res-row').forEach(row => { if(!addRes(row, 1)) isValid = false; });
+            document.querySelectorAll('#secondPlaceContainer .res-row').forEach(row => { if(!addRes(row, 2)) isValid = false; });
+            document.querySelectorAll('#thirdPlaceContainer .res-row').forEach(row => { if(!addRes(row, 3)) isValid = false; });
+            
+            // Other Grades (Position = 0)
+            document.querySelectorAll('#otherGradesContainer .res-row').forEach(row => { if(!addRes(row, 0)) isValid = false; });
             
             if(!isValid) { alert("Duplicate selections found in results!"); return; }
+            if(resultsToSave.length === 0) { alert("Please select at least one winner or graded participant!"); return; }
             
             const btn = this.querySelector('button[type="submit"]'); const oText = btn.innerHTML; btn.innerHTML = 'Publishing...'; btn.disabled = true;
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveResults", targetSheetId: targetSheetId, eventCode: evCode, rowsData: resultsToSave }) });
-            if((await res.json()).status === "success") { 
-                document.querySelectorAll('#firstPlaceContainer div, #secondPlaceContainer div, #thirdPlaceContainer div').forEach(el => el.remove());
-                alert("Published!"); 
-                this.reset(); 
-                $('#resEventSelect').val('').trigger('change'); // Select2 UI Reset
-                document.querySelectorAll('.pos-1, .pos-2, .pos-3').forEach(sel => sel.innerHTML = '<option value="">-- Event First --</option>'); 
-                loadDropdownData(); 
-            }
-            } catch (error) {} finally { btn.innerHTML = oText; btn.disabled = false; }
-        });
-        
-        document.getElementById('bonusForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const group = document.getElementById('bonusGroupSelect').value; const points = document.getElementById('bonusPointsVal').value; const reason = document.getElementById('bonusReasonVal').value;
-            const btn = this.querySelector('button'); const oText = btn.innerHTML; btn.innerHTML = 'Saving...'; btn.disabled = true;
-            try {
-                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveData", targetSheetId: targetSheetId, sheetName: "Bonus", rowData: [group, points, reason] }) });
-                if((await res.json()).status === "success") { alert("Bonus / Penalty added to Group!"); document.getElementById('bonusPointsVal').value=""; document.getElementById('bonusReasonVal').value=""; loadDropdownData(); }
-            } catch(e) { alert("Error adding points."); } finally { btn.innerHTML = oText; btn.disabled = false; }
+                if((await res.json()).status === "success") { 
+                    document.querySelectorAll('#firstPlaceContainer .res-row, #secondPlaceContainer .res-row, #thirdPlaceContainer .res-row, #otherGradesContainer .res-row').forEach((el, idx) => { 
+                        if(el.parentElement.id !== 'otherGradesContainer' && el === el.parentElement.firstElementChild) return; 
+                        el.remove(); 
+                    });
+                    alert("Published!"); 
+                    this.reset(); 
+                    if(window.jQuery) $('#resEventSelect').val('').trigger('change'); 
+                    loadDropdownData(); 
+                }
+            } catch (error) { alert("Failed to save results. Check your connection."); } finally { btn.innerHTML = oText; btn.disabled = false; }
         });
 
         function addWinnerField(containerId) {
@@ -2160,8 +2341,20 @@
                 });
             } else if(dataType === "Results") {
                 return rawData.map(row => {
-                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); const pos = getVal(row, 2);
-                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Position": pos == 1 ? "1st Place" : pos == 2 ? "2nd Place" : "3rd Place", "Student": st ? getVal(st, 1) : getVal(row, 1), "Status": getVal(row, 3) || "Approved" };
+                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); 
+                    const pos = parseInt(getVal(row, 2)) || 0;
+                    const grade = getVal(row, 7) ? getVal(row, 7).toString().trim() : "";
+                    
+                    let posStr = "";
+                    if(pos === 1) posStr = "1st Place";
+                    else if(pos === 2) posStr = "2nd Place";
+                    else if(pos === 3) posStr = "3rd Place";
+                    else if(pos === 0 && grade) posStr = "Other Graded";
+                    else posStr = "No Position";
+
+                    if(grade) posStr += ` (${grade} Grade)`;
+
+                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Position & Grade": posStr, "Student": st ? getVal(st, 1) : getVal(row, 1), "Status": getVal(row, 3) || "Approved" };
                 });
             } else if(dataType === "PendingReg") {
                 const registeredCodes = (globalDbData.Registrations || []).map(r => getVal(r,0).toString().trim().toUpperCase());
@@ -2228,15 +2421,34 @@
             const results = globalDbData.Results || []; const students = globalDbData.Students || []; const events = globalDbData.Events || [];
             const settings = globalDbData.Settings || []; const bonus = globalDbData.Bonus || [];
             
-            let defaultPoints = { 1: 5, 2: 3, 3: 1 }; let customPoints = {}; let customCatPoints = {};
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 }; 
+            let customPoints = {}; let customCatPoints = {};
             
+            // --- പുതിയ ഗ്രേഡ് സിസ്റ്റം വേരിയബിളുകൾ ---
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 }; // Default
+
             settings.forEach(row => {
                 if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
                     const key = getVal(row, 1).toString().toUpperCase(); const rawVal = getVal(row, 2) ? getVal(row, 2).toString() : "";
-                    const pts = rawVal ? rawVal.split(',') : []; const p1 = parseInt(pts[0]) || 0; const p2 = parseInt(pts[1]) || 0; const p3 = parseInt(pts[2]) || 0;
-                    if (key === "DEFAULT") { defaultPoints = { 1: p1, 2: p2, 3: p3 }; } 
-                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: p1, 2: p2, 3: p3 }; }
-                    else { customPoints[key] = { 1: p1, 2: p2, 3: p3 }; }
+                    const pts = rawVal ? rawVal.split(',') : []; 
+                    
+                    if (key === "DEFAULT") { 
+                        defaultPoints = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    } 
+                    else if (key === "GRADE_SYS") {
+                        // Grade System Settings [Enabled/Disabled, A-Point, B-Point, C-Point]
+                        gradeSystemEnabled = (pts[0] && pts[0].toString().toUpperCase() === "TRUE");
+                        if(pts[1]) gradePoints["A"] = parseInt(pts[1]);
+                        if(pts[2]) gradePoints["B"] = parseInt(pts[2]);
+                        if(pts[3]) gradePoints["C"] = parseInt(pts[3]);
+                    }
+                    else if (key.startsWith("CAT_")) { 
+                        customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    }
+                    else { 
+                        customPoints[key] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; 
+                    }
                 }
             });
 
@@ -2246,23 +2458,34 @@
             
             results.forEach(res => {
                 if(getVal(res, 3) === "Pending") return; 
-                const evCode = getVal(res, 0).toString().toUpperCase(); const chestNo = getVal(res, 1); const position = parseInt(getVal(res, 2)); 
+                const evCode = getVal(res, 0).toString().toUpperCase(); 
+                const chestNo = getVal(res, 1); 
+                const position = parseInt(getVal(res, 2)) || 0; 
+                const gradeStr = getVal(res, 7) ? getVal(res, 7).toString().trim().toUpperCase() : ""; // Grade (A, B, C)
                 
-                // ഒന്നാമത്തെ ഡിക്ലറേഷൻ മാത്രം നിലനിർത്തി
                 const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
                 const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
                 const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
                 const isGeneralCat = (evCategory === "GENERAL" || evCategory === "COMMON" || evCategory === "ALL");
                 const evMode = evDetails ? getVal(evDetails, 5).toString().trim() : "Stage";
 
-                // മുൻഗണനാ ക്രമം (Priority Rule: Event > Category > Default)
+                // 1. Position Points (മുൻഗണനാ ക്രമം: Event > Category > Default)
                 let ptsMap = defaultPoints;
                 if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
                 if (customPoints[evCode]) ptsMap = customPoints[evCode];
-
-                const points = ptsMap[position] || 0;
+                let posPoints = ptsMap[position] || 0;
                 
-                if(!chestNo || points === 0) return;
+                // 2. Grade Points
+                let grPoints = 0;
+                if(gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) {
+                    grPoints = gradePoints[gradeStr];
+                }
+
+                // 3. Total Points Calculation
+                const totalPoints = posPoints + grPoints;
+                
+                // സ്ഥാനം ലഭിച്ചില്ലെങ്കിലും, ഗ്രേഡ് പോലും ഇല്ലെങ്കിൽ ഒഴിവാക്കുന്നു
+                if(!chestNo || totalPoints === 0) return;
                 const st = students.find(s => getVal(s, 0) == chestNo); 
 
                 const skipIndividualPoints = isGroupEvent || isGeneralCat;
@@ -2272,20 +2495,32 @@
                     let stGen = getVal(st, 2).toString().trim().toLowerCase();
                     if(stGen === "male") stGen = "boys"; if(stGen === "female") stGen = "girls";
                     
+                    // --- ഗ്രൂപ്പ് പോയിൻ്റ് കാൽക്കുലേഷൻ ---
                     if(group) {
-                        if (skipIndividualPoints) {
-                            const uniqueKey = `${evCode}_${position}_${group}`; 
-                            if (!processedGroupEvents[uniqueKey]) { groupPoints[group] = (groupPoints[group] || 0) + points; processedGroupEvents[uniqueKey] = true; }
-                        } else { groupPoints[group] = (groupPoints[group] || 0) + points; }
+                        if (isGroupEvent) {
+                            // ഗ്രൂപ്പ് ഇവന്റുകളിൽ ഗ്രൂപ്പിന് ഒറ്റത്തവണ മാത്രമേ പോയിൻ്റ് ലഭിക്കൂ (അത് ഗ്രേഡ് പോയിൻ്റ് ആയാലും പൊസിഷൻ ആയാലും)
+                            const uniqueKey = `${evCode}_${group}`; // removed position from key to prevent multiple counting of different grades in same group
+                            if (!processedGroupEvents[uniqueKey]) { 
+                                groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                                processedGroupEvents[uniqueKey] = true; 
+                            }
+                        } else { 
+                            // ഇൻഡിവിജ്വൽ ഇവന്റുകളിലെ പോയിൻ്റുകൾ (ഗ്രേഡ് അടക്കം) ഗ്രൂപ്പിന് ലഭിക്കും
+                            groupPoints[group] = (groupPoints[group] || 0) + totalPoints; 
+                        }
                     }
 
+                    // --- ഇൻഡിവിജ്വൽ ടോപ്പ് സ്കോറർ കാൽക്കുലേഷൻ ---
                     if (!skipIndividualPoints) {
                         if(!studentPoints[chestNo]) studentPoints[chestNo] = { name: getVal(st, 1), gender: stGen, group: group, class: getVal(st,3), category: getVal(st,4), events: [] };
-                        studentPoints[chestNo].events.push({ code: evCode, points: points, mode: evMode });
+                        
+                        // ഇൻഡിവിജ്വൽ സ്കോറിലേക്കും ടോട്ടൽ പോയിൻ്റ് (Position + Grade) ചേർക്കുന്നു
+                        studentPoints[chestNo].events.push({ code: evCode, points: totalPoints, mode: evMode });
                     }
                 }
             });
 
+            // ഡാഷ്ബോർഡിൽ ലീഡർബോർഡ് പ്രിന്റ് ചെയ്യാൻ
             let groupHTML = "";
             Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]).forEach((g, idx) => {
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
@@ -2678,13 +2913,23 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
             const regs = globalDbData.Registrations || []; const results = globalDbData.Results || [];
             const settings = globalDbData.Settings || []; const bonus = globalDbData.Bonus || [];
             
-            // പോയിന്റ് സെറ്റിംഗ്സ് എടുക്കുന്നു
+            // 🟢 പുതിയ ഗ്രേഡ് സിസ്റ്റം & പോയിൻ്റ് സെറ്റിംഗ്സ് എടുക്കുന്നു
             let defaultPts = {1:5, 2:3, 3:1}; let customPts = {}; let customCatPts = {};
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 };
+
             settings.forEach(row => {
                 if(getVal(row,0).toString().toUpperCase() === "POINTS") {
-                    const k = getVal(row,1).toString().toUpperCase(); const v = getVal(row,2);
+                    const k = getVal(row,1).toString().toUpperCase(); const v = getVal(row,2) ? getVal(row,2).toString() : "";
                     const p = v ? v.split(',') : [];
+                    
                     if(k === "DEFAULT") { defaultPts = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; } 
+                    else if (k === "GRADE_SYS") {
+                        gradeSystemEnabled = (p[0] && p[0].toUpperCase() === "TRUE");
+                        if(p[1]) gradePoints["A"] = parseInt(p[1]);
+                        if(p[2]) gradePoints["B"] = parseInt(p[2]);
+                        if(p[3]) gradePoints["C"] = parseInt(p[3]);
+                    }
                     else if(k.startsWith("CAT_")) { customCatPts[k.replace("CAT_", "")] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
                     else { customPts[k] = { 1: parseInt(p[0])||0, 2: parseInt(p[1])||0, 3: parseInt(p[2])||0 }; }
                 }
@@ -2706,12 +2951,16 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
 
                 results.forEach(r => {
                     if(getVal(r,3) === "Pending") return;
-                    const eCode = getVal(r,0).toString().toUpperCase(); const rChest = getVal(r,1).toString().toUpperCase(); const pos = parseInt(getVal(r,2));
+                    const eCode = getVal(r,0).toString().toUpperCase(); 
+                    const rChest = getVal(r,1).toString().toUpperCase(); 
+                    const pos = parseInt(getVal(r,2)) || 0;
+                    const gradeStr = getVal(r,7) ? getVal(r,7).toString().trim().toUpperCase() : ""; // 🟢 ഗ്രേഡ് എടുക്കുന്നു
+                    
                     const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
 
                     if(ev) {
                         const isGroup = getVal(ev,4).toString().toLowerCase() === 'group';
-                        const isGeneral = (getVal(ev,2).toString().toLowerCase() === "general" || getVal(ev,2).toString().toLowerCase() === "common");
+                        const isGeneral = (getVal(ev,2).toString().toLowerCase() === "general" || getVal(ev,2).toString().toLowerCase() === "common" || getVal(ev,2).toString().toLowerCase() === "all");
                         
                         let won = false;
                         if(rChest === chest) won = true;
@@ -2720,21 +2969,29 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
                            if(regRow && JSON.stringify(regRow).toUpperCase().includes(chest)) won = true;
                         }
 
-                        if(won) {
-                            wonPositions.push(`${getVal(ev,1)} (${pos === 1 ? '1st' : pos === 2 ? '2nd' : '3rd'})`);
+                        if(won && (pos > 0 || gradeStr)) { // 🟢 സ്ഥാനമോ ഗ്രേഡോ ഉണ്ടെങ്കിൽ വിന്നർ ആണ്
+                            let posStr = pos === 1 ? '1st' : pos === 2 ? '2nd' : pos === 3 ? '3rd' : 'Graded';
+                            let gradeDisplay = gradeStr ? ` (${gradeStr})` : "";
+                            
+                            wonPositions.push(`${getVal(ev,1)} - ${posStr}${gradeDisplay}`);
+                            
                             if(!isGroup && !isGeneral) {
                                 const evCategory = ev ? getVal(ev, 2).toString().trim().toUpperCase() : "";
+                                
                                 let pMap = defaultPts;
                                 if(customCatPts[evCategory]) pMap = customCatPts[evCategory];
                                 if(customPts[eCode]) pMap = customPts[eCode];
                                 
-                                indScore += (pMap[pos] || 0);
+                                let posPts = pMap[pos] || 0;
+                                let grPts = (gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) ? gradePoints[gradeStr] : 0;
+                                
+                                indScore += (posPts + grPts); // 🟢 ഗ്രേഡ് പോയിന്റ് കൂടി ആഡ് ചെയ്യുന്നു
                             }
                         }
                     }
                 });
 
-                stData.push({ "Chest No": chest, "Name": name, "Gender": getVal(st,2), "Class": getVal(st,3), "Category": getVal(st,4), "Group": getVal(st,5), "Participated Events": regEvents.join(", "), "Secured Positions": wonPositions.join(", "), "Total Individual Score": indScore });
+                stData.push({ "Chest No": chest, "Name": name, "Gender": getVal(st,2), "Class": getVal(st,3), "Category": getVal(st,4), "Group": getVal(st,5), "Participated Events": regEvents.join(", "), "Secured Positions & Grades": wonPositions.join(", "), "Total Individual Score": indScore });
             });
             // ആൽഫബെറ്റിക് ഓർഡറിൽ അടുക്കുന്നു
             stData.sort((a,b) => a.Name.localeCompare(b.Name));
@@ -2745,10 +3002,17 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
             
             results.forEach(r => {
                  if(getVal(r,3) === "Pending") return;
-                 const eCode = getVal(r,0).toString().toUpperCase(); const rChest = getVal(r,1).toString().toUpperCase(); const pos = parseInt(getVal(r,2));
+                 const eCode = getVal(r,0).toString().toUpperCase(); 
+                 const rChest = getVal(r,1).toString().toUpperCase(); 
+                 const pos = parseInt(getVal(r,2)) || 0;
+                 const gradeStr = getVal(r,7) ? getVal(r,7).toString().trim().toUpperCase() : ""; // 🟢 ഗ്രേഡ് എടുക്കുന്നു
+                 
                  const ev = events.find(e => getVal(e,0).toString().toUpperCase() === eCode);
+                 
                  if(ev) {
+                     const isGroupEvent = getVal(ev, 4).toString().toLowerCase() === 'group';
                      const st = students.find(s => getVal(s,0).toString().toUpperCase() === rChest);
+                     
                      if(st) { 
                          const grp = getVal(st,5); 
                          const evCategory = getVal(ev, 2).toString().trim().toUpperCase();
@@ -2757,7 +3021,19 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
                          if(customCatPts[evCategory]) pMap = customCatPts[evCategory];
                          if(customPts[eCode]) pMap = customPts[eCode];
                          
-                         if(grp) gpDataMap[grp] = (gpDataMap[grp] || 0) + (pMap[pos] || 0); 
+                         let posPts = pMap[pos] || 0;
+                         let grPts = (gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) ? gradePoints[gradeStr] : 0;
+                         let totalPts = posPts + grPts;
+
+                         if(grp) {
+                             if(isGroupEvent) {
+                                // ഗ്രൂപ്പ് ഇവൻ്റുകൾക്ക് ഗ്രൂപ്പിന് ഒരുതവണ മാത്രമേ ഗ്രേഡ് പോയിന്റ് കൊടുക്കാവൂ. 
+                                // ഈ ലൂപ്പിൽ റിസൾട്ട് ഒരൊറ്റ റോ ആയതുകൊണ്ട് അത് അങ്ങനെ തന്നെ ആഡ് ചെയ്യാം.
+                                gpDataMap[grp] = (gpDataMap[grp] || 0) + totalPts;
+                             } else {
+                                gpDataMap[grp] = (gpDataMap[grp] || 0) + totalPts; 
+                             }
+                         }
                      }
                  }
             });
