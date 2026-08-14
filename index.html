@@ -56,9 +56,66 @@
         .contact-btn:hover { background: #1da851 !important; color: white !important; }
         
         .nav-controls { display: flex; align-items: center; gap: 15px; z-index: 101; }
-        .theme-toggle { background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer; transition: 0.3s; outline: none; }
-        .theme-toggle:hover { transform: scale(1.1); }
         .menu-toggle { display: none; font-size: 1.8rem; color: var(--primary); cursor: pointer; }
+        
+        /* =========================================
+           Creative Hanging Spotlight Theme Toggle 
+           ========================================= */
+        .spotlight-wrapper {
+            position: fixed;
+            top: 0;
+            right: 12%; /* Desktop alignment */
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: top center;
+            cursor: pointer;
+            /* Default slow swing */
+            animation: swingSlow 4s ease-in-out infinite alternate;
+        }
+        
+        /* Click Animation Class */
+        .spotlight-wrapper.click-swing {
+            animation: swingFast 0.8s ease-in-out;
+        }
+
+        @keyframes swingSlow {
+            0% { transform: rotate(-4deg); }
+            100% { transform: rotate(4deg); }
+        }
+
+        @keyframes swingFast {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .wire { width: 2px; height: 50px; background-color: #1E293B; transition: 0.3s; }
+        body.dark-mode .wire { background-color: #64748B; }
+
+        .lamp-container { position: relative; display: flex; flex-direction: column; align-items: center; }
+        
+        .lamp-body { width: 34px; height: 18px; background: #1E293B; border-radius: 8px 8px 0 0; z-index: 2; transition: 0.3s; }
+        body.dark-mode .lamp-body { background: #334155; }
+        
+        .lamp-head { width: 44px; height: 15px; background: #0f172a; border-radius: 3px; z-index: 2; transition: 0.3s; border-bottom: 2px solid #333; }
+        body.dark-mode .lamp-head { background: #1e293b; border-bottom: 2px solid #000; }
+
+        /* The Bulb (Light On/Off) */
+        .bulb { width: 30px; height: 10px; background: #FFD700; border-radius: 0 0 15px 15px; box-shadow: 0 5px 20px rgba(255, 215, 0, 0.9), 0 10px 40px rgba(255, 215, 0, 0.6); transition: background 0.4s, box-shadow 0.4s; z-index: 1; }
+        body.dark-mode .bulb { background: #475569; box-shadow: none; }
+
+        /* The Light Beam (Illuminates the page) */
+        .light-beam { position: absolute; top: 35px; width: 300px; height: 100vh; background: linear-gradient(to bottom, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0) 100%); clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 1; pointer-events: none; transition: opacity 0.5s ease-in-out; transform-origin: top center; z-index: 0; }
+        body.dark-mode .light-beam { opacity: 0; }
+
+        /* Mobile alignment for Spotlight */
+        @media (max-width: 768px) {
+            .spotlight-wrapper { right: 80px; } /* Placed safely beside the hamburger menu */
+        }
         
         /* Hero Section */
         .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px 5%; background: linear-gradient(135deg, var(--hero-bg-1) 0%, var(--hero-bg-2) 100%); position: relative; overflow: hidden; transition: background 0.3s; }
@@ -165,6 +222,17 @@
 </head>
 <body>
 
+    <!-- Hanging Spotlight Theme Toggle -->
+    <div class="spotlight-wrapper" id="spotlightWrapper" onclick="toggleThemeWithAnimation()" title="Turn On/Off the Light">
+        <div class="wire"></div>
+        <div class="lamp-container">
+            <div class="lamp-body"></div>
+            <div class="lamp-head"></div>
+            <div class="bulb"></div>
+            <div class="light-beam"></div>
+        </div>
+    </div>
+
     <nav id="navbar">
         <a href="#" class="logo">Fest<span>Vue</span></a>
         
@@ -176,7 +244,7 @@
         </div>
 
         <div class="nav-controls">
-            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+            <!-- Hamburger menu for mobile -->
             <div class="menu-toggle" id="menuToggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
         </div>
     </nav>
@@ -313,49 +381,65 @@
 
     <script>
         // ==========================================
-        // Theme Management Logic
+        // CREATIVE SPOTLIGHT THEME LOGIC
         // ==========================================
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const icon = document.querySelector('#themeToggle i');
-            if(document.body.classList.contains('dark-mode')) { 
-                icon.className = 'fas fa-sun'; 
-                localStorage.setItem('festvue_theme', 'dark'); 
-            } else { 
-                icon.className = 'fas fa-moon'; 
-                localStorage.setItem('festvue_theme', 'light'); 
-            }
-        }
-
-        // സിസ്റ്റം ഡിഫോൾട്ട് തീം അപ്ലൈ ചെയ്യുന്നു
-        function initTheme() {
+        
+        // 1. Initial 2-Second Dramatic Theme Switch
+        function initCreativeTheme() {
             const savedTheme = localStorage.getItem('festvue_theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
+            // ലക്ഷ്യമിടുന്ന തീം (Target Theme) കണ്ടെത്തുന്നു
+            let targetTheme = 'light';
             if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.body.classList.add('dark-mode');
-                document.querySelector('#themeToggle i').className = 'fas fa-sun';
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.querySelector('#themeToggle i').className = 'fas fa-moon';
+                targetTheme = 'dark';
+            }
+
+            // ലക്ഷ്യം ഡാർക്ക് ആണെങ്കിൽ ആദ്യം ലൈറ്റ് കത്തുകയും 2 സെക്കൻഡിന് ശേഷം ഓഫ് ആവുകയും ചെയ്യും
+            if (targetTheme === 'dark') {
+                document.body.classList.remove('dark-mode'); // Light ON
+                setTimeout(() => {
+                    document.body.classList.add('dark-mode'); // Turn OFF
+                }, 2000);
+            } 
+            // ലക്ഷ്യം ലൈറ്റ് ആണെങ്കിൽ ആദ്യം ഡാർക്ക് ആയിരിക്കുകയും 2 സെക്കൻഡിന് ശേഷം ലൈറ്റ് കത്തുകയും ചെയ്യും
+            else {
+                document.body.classList.add('dark-mode'); // Light OFF
+                setTimeout(() => {
+                    document.body.classList.remove('dark-mode'); // Turn ON
+                }, 2000);
             }
         }
         
-        // പേജ് ലോഡ് ആകുമ്പോൾ തന്നെ തീം ശരിയാക്കുന്നു
-        initTheme();
+        // പേജ് ലോഡ് ആകുമ്പോൾ മാജിക് ഇൻട്രോ വിളിക്കുന്നു
+        initCreativeTheme();
 
-        // യൂസറിന്റെ ഡിവൈസിൽ തീം മാറ്റിയാൽ അതിനനുസരിച്ച് വെബ്സൈറ്റിലും മാറാൻ
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (!localStorage.getItem('festvue_theme')) { 
-                if (e.matches) {
-                    document.body.classList.add('dark-mode');
-                    document.querySelector('#themeToggle i').className = 'fas fa-sun';
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    document.querySelector('#themeToggle i').className = 'fas fa-moon';
-                }
+        // 2. സ്പോട്ട്‌ലൈറ്റിൽ ക്ലിക്ക് ചെയ്യുമ്പോഴുള്ള ആനിമേഷനും തീം മാറ്റവും
+        function toggleThemeWithAnimation() {
+            const spotlight = document.getElementById('spotlightWrapper');
+            
+            // പഴയ ക്ലിക്ക് ആനിമേഷൻ ഉണ്ടെങ്കിൽ റീസെറ്റ് ചെയ്യുന്നു
+            spotlight.classList.remove('click-swing');
+            void spotlight.offsetWidth; // Trigger reflow for animation restart
+            
+            // പുതിയതായി ഫാസ്റ്റ് ആനിമേഷൻ നൽകുന്നു
+            spotlight.classList.add('click-swing');
+            
+            // ആനിമേഷൻ തീരുന്ന സമയത്ത് (800ms) അത് മാറ്റി പഴയ പതുക്കെയുള്ള ആട്ടം (Slow swing) തിരികെ കൊണ്ടുവരുന്നു
+            setTimeout(() => {
+                spotlight.classList.remove('click-swing');
+            }, 800);
+
+            // യഥാർത്ഥത്തിൽ തീം മാറ്റുന്നു (Light On/Off)
+            document.body.classList.toggle('dark-mode');
+            
+            // യൂസറിന്റെ താല്പര്യം സേവ് ചെയ്യുന്നു
+            if(document.body.classList.contains('dark-mode')) { 
+                localStorage.setItem('festvue_theme', 'dark'); 
+            } else { 
+                localStorage.setItem('festvue_theme', 'light'); 
             }
-        });
+        }
 
         // ==========================================
         // Mobile Hamburger Menu Logic (Auto-Hide) - FIXED
@@ -366,7 +450,7 @@
         function toggleMenu() {
             navLinks.classList.toggle('active');
             
-            // ഐക്കൺ മാറ്റാൻ innerHTML ന് പകരം class മാറ്റുന്നു (പ്രശ്നം ഇവിടെയായിരുന്നു!)
+            // ഐക്കൺ മാറ്റാൻ innerHTML ന് പകരം class മാറ്റുന്നു
             const icon = menuToggle.querySelector('i');
             if(navLinks.classList.contains('active')) {
                 icon.className = 'fas fa-times';
