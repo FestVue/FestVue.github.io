@@ -17,11 +17,11 @@
         :root { --primary: #046A38; --accent: #D4AF37; --bg: #F4F7F6; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --muted: #64748B; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Anek Malayalam', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
-        
-        .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 500; z-index: 9999; transition: 0.4s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; }
+                
+        .toast { position: fixed; top: -120px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 500; z-index: 9999; transition: all 0.4s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; opacity: 0;     visibility: hidden;     pointer-events: none; }
         .toast.success { background: #10B981; }
         .toast.error { background: #EF4444; }
-        .toast.show { top: 20px; }
+        .toast.show {     top: 20px;     opacity: 1;     visibility: visible;     pointer-events: auto; }
 
         /* Login Screen */
         #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -147,6 +147,7 @@
     <div id="dashboardScreen">
         <header>
             <div>
+                <div class="header-subtitle" id="dashFestName" style="color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">FESTIVAL NAME</div>
                 <div class="header-title" id="dashJudgeName">Welcome, Judge</div>
                 <div class="header-subtitle" id="dashInstName">Institution Name</div>
             </div>
@@ -225,6 +226,12 @@
             return false;
         }
 
+        function getFestName() {
+            if(!currentState.dbData || !currentState.dbData.Settings) return "KALOTSAVAM LIVE";
+            const row = currentState.dbData.Settings.find(r => getVal(r,0).toString().toUpperCase() === "CONFIG" && getVal(r,1).toString().toUpperCase() === "FEST_NAME");
+            return row && getVal(row,2) ? getVal(row,2).toString() : "KALOTSAVAM LIVE";
+        }
+
         window.onload = () => {
             if(currentState.instId && currentState.username && currentState.password) {
                 document.getElementById('instId').value = currentState.instId;
@@ -234,6 +241,7 @@
                 if(cached) {
                     try {
                         currentState.dbData = JSON.parse(cached);
+                        document.getElementById('dashFestName').innerText = getFestName();
                         document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
                         document.getElementById('dashInstName').innerText = localStorage.getItem('fv_judge_instname') || "Institution";
                         buildDashboard();
@@ -246,10 +254,15 @@
         };
 
         function showToast(msg, type="success") {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = msg;
-            t.className = `toast show ${type}`;
-            setTimeout(() => t.classList.remove('show'), 3000);
+          const t = document.getElementById('toast');
+          document.getElementById('toastMsg').innerText = msg;    
+          t.className = `toast ${type}`;    
+          setTimeout(() => {
+          t.classList.add('show');
+          }, 10);
+          setTimeout(() => {
+          t.classList.remove('show');
+          }, 3000);
         }
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -281,6 +294,7 @@
                     localStorage.setItem('fv_judge_instname', data.institutionName);
                     localStorage.setItem('fv_judge_cache', JSON.stringify(data.data));
                     
+                    document.getElementById('dashFestName').innerText = getFestName();
                     document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
                     document.getElementById('dashInstName').innerText = data.institutionName;
                     
@@ -310,6 +324,7 @@
                 if(data.status === "success") {
                     currentState.dbData = data.data;
                     localStorage.setItem('fv_judge_cache', JSON.stringify(data.data));
+                    document.getElementById('dashFestName').innerText = getFestName();
                     document.getElementById('dashJudgeName').innerText = `Judge: ${currentState.name}`;
                     document.getElementById('dashInstName').innerText = data.institutionName;
                     
