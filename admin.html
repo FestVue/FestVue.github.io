@@ -1212,17 +1212,17 @@
         }
 
         if(document.getElementById('globalConfigForm')) document.getElementById('globalConfigForm').addEventListener('submit', function(e) {
-            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button'));
+            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button[type="submit"]'));
         });
 
         if(document.getElementById('limitsConfigForm')) document.getElementById('limitsConfigForm').addEventListener('submit', function(e) {
-            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button'));
+            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button[type="submit"]'));
         });
 
         if(document.getElementById('titlesConfigForm')) document.getElementById('titlesConfigForm').addEventListener('submit', function(e) {
-            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button'));
+            e.preventDefault(); saveMultipleConfigs(getAllConfigs(), this.querySelector('button[type="submit"]'));
         });
-
+        
         function addCustomCategoryPointRow(catCode = "", p1 = 10, p2 = 7, p3 = 5) {
             const container = document.getElementById('customCategoryPointsContainer'); 
             const div = document.createElement('div'); 
