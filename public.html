@@ -434,7 +434,8 @@
                 if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_NAME") festConfig.name = val2 || "FestVue Results";
                 if (type === "CONFIG" && val1.toString().toUpperCase() === "FEST_DESC") festConfig.desc = val2 || "";
                 if (type === "CONFIG" && val1.toString().toUpperCase().startsWith("TITLE_") && val2) {
-                    const p = val2.split('|'); festConfig.titles.push({ name: p[0], gender: p[1], mode: p[2] });
+                    const p = val2.split('|'); 
+                    festConfig.titles.push({ name: p[0], gender: p[1] || "All", mode: p[2] || "All", category: p[3] || "All" });
                 }
                 if (type === "POINTS") {
                     const evCode = val1.toString().toUpperCase(); 
