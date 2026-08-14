@@ -789,6 +789,7 @@
             }
         }
 
+        // 1. മെനുവിന് പുറത്ത് ക്ലിക്ക് ചെയ്താൽ ക്ലോസ് ആവാൻ
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const menuBtn = document.querySelector('.menu-toggle');
@@ -798,6 +799,25 @@
                 }
             }
         });
+
+        // 2. പേജ് സ്ക്രോൾ ചെയ്യുമ്പോൾ മെനു ക്ലോസ് ആവാൻ (മെനുവിനുള്ളിലെ സ്ക്രോളിംഗിനെ ബാധിക്കില്ല)
+        window.addEventListener('scroll', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // 3. മൊബൈലിൽ പുറത്ത് ടച്ച് ചെയ്ത് സ്വൈപ്പ് ചെയ്യുമ്പോൾ അപ്പൊൾത്തന്നെ ക്ലോസ് ആവാൻ
+        document.addEventListener('touchmove', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                // ടച്ച് ചെയ്യുന്നത് സൈഡ്ബാറിന് ഉള്ളിലല്ലെങ്കിൽ മാത്രം ക്ലോസ് ചെയ്യുക
+                if (!sidebar.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        }, { passive: true });
 
         function logout() {
             sessionStorage.clear(); targetSheetId = null;
@@ -1086,16 +1106,27 @@
         let globalTitles = []; 
 
         function addTitleRow(name="", gen="All", mod="All", cat="All") {
-            // ടൈറ്റിലുകളുടെ എണ്ണത്തിലുള്ള പരിധി (Limit) ഒഴിവാക്കി
-            const container = document.getElementById('titlesContainer'); const div = document.createElement('div');
-            div.className = 'form-grid custom-title-row'; div.style.marginBottom='15px'; div.style.borderBottom='1px solid var(--border)'; div.style.paddingBottom='15px'; div.style.position='relative';
+            const container = document.getElementById('titlesContainer'); 
+            const div = document.createElement('div');
+            div.className = 'custom-title-row'; 
+            
+            div.style.display = 'flex';
+            div.style.flexWrap = 'wrap';
+            div.style.gap = '15px';
+            div.style.alignItems = 'flex-end';
+            div.style.marginBottom = '15px'; 
+            div.style.background = 'var(--bg)'; 
+            div.style.padding = '15px'; 
+            div.style.borderRadius = '8px'; 
+            div.style.border = '1px solid var(--border)';
+            
             const sel = (v, m) => v===m ? 'selected' : '';
             div.innerHTML = `
-                <div class="input-group" style="margin:0;"><label>Title Name</label><input type="text" class="t-name" value="${name}" required></div>
-                <div class="input-group" style="margin:0;"><label>Category Filter</label><select class="t-category"><option value="All" ${sel(cat,'All')}>All Categories</option>${categoryOptionsHTML.replace('<option value="">-- Select Category --</option>', '')}</select></div>
-                <div class="input-group" style="margin:0;"><label>Gender Filter</label><select class="t-gender"><option value="All" ${sel(gen,'All')}>All Genders</option><option value="Boys" ${sel(gen,'Boys')}>Boys Only</option><option value="Girls" ${sel(gen,'Girls')}>Girls Only</option></select></div>
-                <div class="input-group" style="margin:0;"><label>Mode Filter</label><select class="t-mode"><option value="All" ${sel(mod,'All')}>All Modes</option><option value="Stage" ${sel(mod,'Stage')}>Stage Only</option><option value="Off-Stage" ${sel(mod,'Off-Stage')}>Off-Stage Only</option></select></div>
-                <button type="button" onclick="this.parentElement.remove();" style="background:#ff5a5f; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; position:absolute; right:0; top:0; height:45px;"><i class="fas fa-trash"></i></button>
+                <div class="input-group" style="margin:0; flex: 1 1 200px;"><label>Title Name</label><input type="text" class="t-name" value="${name}" required></div>
+                <div class="input-group" style="margin:0; flex: 1 1 150px;"><label>Category Filter</label><select class="t-category"><option value="All" ${sel(cat,'All')}>All Categories</option>${categoryOptionsHTML.replace('<option value="">-- Select Category --</option>', '')}</select></div>
+                <div class="input-group" style="margin:0; flex: 1 1 150px;"><label>Gender Filter</label><select class="t-gender"><option value="All" ${sel(gen,'All')}>All Genders</option><option value="Boys" ${sel(gen,'Boys')}>Boys Only</option><option value="Girls" ${sel(gen,'Girls')}>Girls Only</option></select></div>
+                <div class="input-group" style="margin:0; flex: 1 1 150px;"><label>Mode Filter</label><select class="t-mode"><option value="All" ${sel(mod,'All')}>All Modes</option><option value="Stage" ${sel(mod,'Stage')}>Stage Only</option><option value="Off-Stage" ${sel(mod,'Off-Stage')}>Off-Stage Only</option></select></div>
+                <button type="button" onclick="this.parentElement.remove();" style="background:#ff5a5f; color:white; border:none; padding:0 20px; border-radius:6px; cursor:pointer; height:45px;"><i class="fas fa-trash"></i></button>
             `;
             if(cat !== "All") div.querySelector('.t-category').value = cat;
             container.appendChild(div);
