@@ -341,6 +341,7 @@
                                 <option value="">-- Select Event --</option>
                             </select>
                             <button type="button" id="generateCodeBtn" onclick="generateCodes()" class="primary-btn" style="background: #10b981; display: none;"><i class="fas fa-random"></i> Generate Codes</button>
+                            <button type="button" id="deleteCodeBtn" onclick="deleteEventCodes()" class="primary-btn" style="background: #ff5a5f; display: none;"><i class="fas fa-trash-alt"></i> Delete Codes</button>
                         </div>
                         <div id="codeTableContainer" style="overflow-x: auto;">
                             <p style="color: #64748b; font-size: 0.9rem;">Please select an event.</p>
@@ -982,6 +983,13 @@
 
         function populateDropdowns() {
             if (!globalDbData) globalDbData = {};
+            
+            // 🟢 1. നിലവിൽ സെലക്ട് ചെയ്തു വെച്ചിട്ടുള്ള കാര്യങ്ങൾ ഓർമ്മിക്കാൻ (Save state)
+            const curReg = document.getElementById('regEventSelect') ? document.getElementById('regEventSelect').value : "";
+            const curRes = document.getElementById('resEventSelect') ? document.getElementById('resEventSelect').value : "";
+            const curCode = document.getElementById('codeEventSelect') ? document.getElementById('codeEventSelect').value : "";
+            const curPrint = document.getElementById('printCertEventSelect') ? document.getElementById('printCertEventSelect').value : "";
+
             const events = globalDbData.Events || []; const settings = globalDbData.Settings || []; 
             categoryOptionsHTML = '<option value="">-- Select Category --</option>'; groupOptionsHTML = '<option value="">-- Select Group --</option>'; classOptionsHTML = '<option value="">-- Select Class --</option>'; classCategoryMap = {};
             let printClassOptions = '<option value="all">-- All Classes --</option>'; let eventOptions = '<option value="">-- Choose Event --</option>';
@@ -1012,7 +1020,6 @@
             if(document.getElementById('mapCategorySelect')) document.getElementById('mapCategorySelect').innerHTML = categoryOptionsHTML; 
             if(document.getElementById('printChestClassSelect')) document.getElementById('printChestClassSelect').innerHTML = printClassOptions;
 
-            // ചെക്ക്ബോക്സ് സ്റ്റാറ്റസ് എടുക്കുന്നു
             const hideReg = document.getElementById('hideRegisteredEv') && document.getElementById('hideRegisteredEv').checked;
             const hidePub = document.getElementById('hidePublishedEv') && document.getElementById('hidePublishedEv').checked;
             const existingRegs = (globalDbData.Registrations || []).map(r => getVal(r,0).toString().trim().toUpperCase());
@@ -1030,13 +1037,11 @@
                 
                 if(code) {
                     const optionHtml = `<option value="${code}">${code} - ${name}${extraInfo}</option>`;
-                    eventOptions += optionHtml; // ജനറൽ ലിസ്റ്റ്
+                    eventOptions += optionHtml; 
                     
-                    // Registration Dropdown
                     if(!(hideReg && existingRegs.includes(code.toString().trim().toUpperCase()))) {
                         regEventOptions += optionHtml;
                     }
-                    // Results Dropdown
                     if(!(hidePub && publishedRes.includes(code.toString().trim().toUpperCase()))) {
                         resEventOptions += optionHtml;
                     }
@@ -1050,7 +1055,13 @@
 
             if(document.getElementById('bonusGroupSelect')) document.getElementById('bonusGroupSelect').innerHTML = groupOptionsHTML;
 
-            // Initialize Searchable Dropdowns (Safe Load to prevent Infinite Loop)
+            // 🟢 2. പഴയ വാല്യൂസ് ഡ്രോപ്പ്ഡൗണുകളിലേക്ക് തിരികെ നൽകുന്നു (Restore state)
+            if(curReg && document.getElementById('regEventSelect')) document.getElementById('regEventSelect').value = curReg;
+            if(curRes && document.getElementById('resEventSelect')) document.getElementById('resEventSelect').value = curRes;
+            if(curCode && document.getElementById('codeEventSelect')) document.getElementById('codeEventSelect').value = curCode;
+            if(curPrint && document.getElementById('printCertEventSelect')) document.getElementById('printCertEventSelect').value = curPrint;
+
+            // Initialize Searchable Dropdowns (Select2)
             if(window.jQuery && $.fn.select2) {
                 $('#regEventSelect, #resEventSelect, #codeEventSelect, #printCertEventSelect')
                     .select2()
@@ -1370,10 +1381,10 @@
             const existing = (globalDbData.CodeLetters||[]).filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase());
             const students = globalDbData.Students || [];
             
-            const btnGen = document.querySelector('button[onclick="generateCodes()"]');
+            const btnGen = document.getElementById('generateCodeBtn');
+            const btnDelete = document.getElementById('deleteCodeBtn'); 
             const btnPrint = document.querySelector('button[onclick="printEventCodes()"]');
             
-            // സിങ്ക് വാണിംഗ് കാണിക്കാനുള്ള സ്ഥലം 
             let syncWarning = document.getElementById('printSyncWarning');
             if(!syncWarning && btnPrint) {
                 syncWarning = document.createElement('span');
@@ -1397,9 +1408,9 @@
             }
             
             if(!evCode) {
-                // ഇവൻ്റ് സെലക്ട് ചെയ്തില്ലെങ്കിൽ (അതായത് Bulk Print മോഡിൽ) ജനറേറ്റ് ബട്ടൺ മാത്രം ഹൈഡ് ചെയ്യുന്നു
                 if(btnGen) btnGen.style.display = 'none';
-                if(btnPrint) btnPrint.style.display = 'inline-block'; // ബൾക്ക് പ്രിൻ്റ് ബട്ടൺ കാണിക്കുന്നു
+                if(btnDelete) btnDelete.style.display = 'none'; 
+                if(btnPrint) btnPrint.style.display = 'inline-block';
                 if(previewArea) previewArea.innerHTML = '';
                 return;
             }
@@ -1407,10 +1418,11 @@
             if(existing.length > 0) {
                 if(btnGen) {
                     btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes';
-                    btnGen.style.background = '#ef4444'; 
+                    btnGen.style.background = '#f59e0b'; // 
                     btnGen.style.display = 'inline-block';
                     btnGen.setAttribute('data-regen', 'true');
                 }
+                if(btnDelete) btnDelete.style.display = 'inline-block'; 
                 if(btnPrint) btnPrint.style.display = 'inline-block';
                 
                 let sortedCodes = [...existing].sort((a,b) => getVal(a,1).toString().localeCompare(getVal(b,1).toString()));
@@ -1453,7 +1465,7 @@
                     btnGen.style.display = 'inline-block';
                     btnGen.setAttribute('data-regen', 'false');
                 }
-                // കോഡുകൾ ജനറേറ്റ് ചെയ്യാത്ത ഇവന്റ് ആണെങ്കിൽ പ്രിൻ്റ് ബട്ടണും വാണിംഗും ഹൈഡ് ചെയ്യുന്നു
+                if(btnDelete) btnDelete.style.display = 'none'; 
                 if(btnPrint) btnPrint.style.display = 'none';
                 if(syncWarning) syncWarning.style.display = 'none'; 
                 if(previewArea) previewArea.innerHTML = '<div style="padding:20px; margin-top:20px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:8px;">No codes generated yet for this event. Click Generate.</div>';
@@ -1593,6 +1605,55 @@
                 }
                 // കുറച്ചു സമയത്തേക്ക് ഓട്ടോ-സിങ്ക് ബ്ലോക്ക് ചെയ്യുന്നു (പ്രീവ്യൂ സുരക്ഷിതമാക്കാൻ)
                 setTimeout(() => { window.isGeneratingCodes = false; }, 20000); 
+            }
+        }
+
+        async function deleteEventCodes() {
+            const evCode = document.getElementById('codeEventSelect').value;
+            if(!evCode) return alert("Please select an event!");
+
+            const existing = (globalDbData.CodeLetters || []).filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode.toUpperCase());
+            if(existing.length === 0) return;
+
+            if(!confirm(`⚠️ Are you sure you want to DELETE all code letters for ${evCode}?\n\nJudges will not be able to evaluate this event until new codes are generated.`)) {
+                return;
+            }
+
+            const btnDelete = document.getElementById('deleteCodeBtn');
+            const oText = btnDelete.innerHTML;
+            btnDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...'; 
+            btnDelete.disabled = true;
+
+            // സിങ്ക് വന്ന് തടസ്സപ്പെടുത്താതിരിക്കാൻ ലോക്ക് ചെയ്യുന്നു
+            window.isGeneratingCodes = true;
+
+            try {
+                // ഡാറ്റാബേസിൽ നിന്നും പഴയ കോഡുകൾ സുരക്ഷിതമായി ഡിലീറ്റ് ചെയ്യുന്നു (താഴെ നിന്നും മുകളിലേക്ക്)
+                existing.sort((a, b) => b.rowIndex - a.rowIndex); 
+                
+                await existing.reduce(async (previousPromise, row) => {
+                    await previousPromise; 
+                    return fetch(SCRIPT_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) 
+                    });
+                }, Promise.resolve());
+
+                // സ്ക്രീനിൽ നിന്ന് ഉടനടി മാറ്റാൻ ലോക്കൽ മെമ്മറിയിൽ നിന്നും നീക്കുന്നു
+                if(globalDbData.CodeLetters) {
+                    globalDbData.CodeLetters = globalDbData.CodeLetters.filter(r => getVal(r, 0).toString().trim().toUpperCase() !== evCode.toUpperCase());
+                }
+                
+                alert(`Code Letters for ${evCode} deleted successfully!`);
+                fetchEventCodes(); // സ്ക്രീൻ റീഫ്രഷ് ചെയ്യാൻ
+                
+            } catch(e) {
+                alert("Error during deletion. Please check your connection.");
+                console.error(e);
+            } finally {
+                btnDelete.innerHTML = oText; 
+                btnDelete.disabled = false;
+                setTimeout(() => { window.isGeneratingCodes = false; }, 5000); // ലോക്ക് റിലീസ് ചെയ്യുന്നു
             }
         }
 
