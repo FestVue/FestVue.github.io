@@ -333,7 +333,11 @@
                     <div class="card">
                         <div class="card-header">
                             <h3><i class="fas fa-qrcode"></i> Generate & Print Code Letters</h3>
-                            <button type="button" onclick="printEventCodes()" class="primary-btn" style="background: var(--accent); color:var(--text); padding: 8px 15px;"><i class="fas fa-print"></i> Print</button>
+                            <!-- 🟢 Mark Sheet & Calling Sheet ബട്ടണുകൾ -->
+                            <div id="printButtonsWrapper" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" onclick="printEventCodes('mark')" class="primary-btn print-action-btn" style="background: var(--accent); color:var(--text); padding: 8px 15px;"><i class="fas fa-print"></i> Mark Sheet</button>
+                                <button type="button" onclick="printEventCodes('calling')" class="primary-btn print-action-btn" style="background: #3b82f6; padding: 8px 15px;"><i class="fas fa-list-ol"></i> Calling Sheet</button>
+                            </div>
                         </div>
                         <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;">Randomly shuffle registered students/teams and assign random letters.</p>
                         <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
@@ -1374,7 +1378,7 @@
         });
 
         // ==========================================
-        // 4. JUDGES CODES GENERATION
+        // 4. JUDGES CODES GENERATION & PRINTING
         // ==========================================
         function fetchEventCodes() {
             const evCode = document.getElementById('codeEventSelect').value;
@@ -1383,10 +1387,10 @@
             
             const btnGen = document.getElementById('generateCodeBtn');
             const btnDelete = document.getElementById('deleteCodeBtn'); 
-            const btnPrint = document.querySelector('button[onclick="printEventCodes()"]');
+            const printWrapper = document.getElementById('printButtonsWrapper'); // 🟢 രണ്ട് ബട്ടണുകൾക്കും കൂടിയുള്ള റാപ്പർ
             
             let syncWarning = document.getElementById('printSyncWarning');
-            if(!syncWarning && btnPrint) {
+            if(!syncWarning && printWrapper) {
                 syncWarning = document.createElement('span');
                 syncWarning.id = 'printSyncWarning';
                 syncWarning.style.fontSize = '0.85rem';
@@ -1395,22 +1399,22 @@
                 syncWarning.style.marginLeft = '10px';
                 syncWarning.style.display = 'none'; 
                 syncWarning.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing live data... Please wait to print.';
-                btnPrint.insertAdjacentElement('afterend', syncWarning);
+                printWrapper.insertAdjacentElement('afterend', syncWarning);
             }
             
             let previewArea = document.getElementById('codePreviewArea');
-            if(!previewArea && btnPrint) {
+            if(!previewArea && printWrapper) {
                 previewArea = document.createElement('div');
                 previewArea.id = 'codePreviewArea';
                 previewArea.style.width = '100%';
                 if(syncWarning) syncWarning.insertAdjacentElement('afterend', previewArea);
-                else btnPrint.insertAdjacentElement('afterend', previewArea);
+                else printWrapper.insertAdjacentElement('afterend', previewArea);
             }
             
             if(!evCode) {
                 if(btnGen) btnGen.style.display = 'none';
                 if(btnDelete) btnDelete.style.display = 'none'; 
-                if(btnPrint) btnPrint.style.display = 'inline-block';
+                if(printWrapper) printWrapper.style.display = 'flex';
                 if(previewArea) previewArea.innerHTML = '';
                 return;
             }
@@ -1418,12 +1422,12 @@
             if(existing.length > 0) {
                 if(btnGen) {
                     btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes';
-                    btnGen.style.background = '#f59e0b'; // 
+                    btnGen.style.background = '#f59e0b'; 
                     btnGen.style.display = 'inline-block';
                     btnGen.setAttribute('data-regen', 'true');
                 }
                 if(btnDelete) btnDelete.style.display = 'inline-block'; 
-                if(btnPrint) btnPrint.style.display = 'inline-block';
+                if(printWrapper) printWrapper.style.display = 'flex';
                 
                 let sortedCodes = [...existing].sort((a,b) => getVal(a,1).toString().localeCompare(getVal(b,1).toString()));
                 
@@ -1466,7 +1470,7 @@
                     btnGen.setAttribute('data-regen', 'false');
                 }
                 if(btnDelete) btnDelete.style.display = 'none'; 
-                if(btnPrint) btnPrint.style.display = 'none';
+                if(printWrapper) printWrapper.style.display = 'none';
                 if(syncWarning) syncWarning.style.display = 'none'; 
                 if(previewArea) previewArea.innerHTML = '<div style="padding:20px; margin-top:20px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:8px;">No codes generated yet for this event. Click Generate.</div>';
             }
@@ -1476,7 +1480,7 @@
             const evCode = document.getElementById('codeEventSelect').value;
             if(!evCode) return alert("Please select an event!");
 
-            const btnGen = document.querySelector('button[onclick="generateCodes()"]');
+            const btnGen = document.getElementById('generateCodeBtn');
             
             if(btnGen && btnGen.getAttribute('data-regen') === 'true') {
                 if(!confirm("⚠️ WARNING: Regenerating codes will REPLACE all existing code letters for this event.\n\nOnly do this if new students were added or changes were made.\n\nDo you want to proceed?")) {
@@ -1494,19 +1498,13 @@
 
             const oText = btnGen ? btnGen.innerHTML : "Generating...";
             if(btnGen) { btnGen.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btnGen.disabled = true; }
-            
-            // ഓട്ടോ-സിങ്ക് വന്ന് പ്രിവ്യൂ മായ്ക്കാതിരിക്കാൻ ഒരു ലോക്ക് വെക്കുന്നു
             window.isGeneratingCodes = true;
 
             try {
-                // 1. ഈ പരിപാടിയിലെ കുട്ടികളുടെ ചെസ്റ്റ് നമ്പറുകൾ എടുക്കുന്നു
                 let chestNos = evRegs.map(r => getVal(r, 1).toString().trim().toUpperCase());
                 chestNos = [...new Set(chestNos)]; 
-                
-                // 2. ചെസ്റ്റ് നമ്പറുകളെ റാൻഡം ആയി ഷഫിൾ ചെയ്യുന്നു
                 chestNos.sort(() => Math.random() - 0.5);
 
-                // 3. പുതിയ കോഡുകൾ നിർമ്മിക്കുന്നു
                 let rowsToSave = [];
                 let localMemoryToSave = [];
                 let maxRowIndex = 0;
@@ -1523,16 +1521,9 @@
                     rowsToSave.push([evCode, codeLetter, chest]);
                     
                     maxRowIndex++;
-                    // പ്രധാന മാറ്റം: getVal() ഫംഗ്ഷന് കൃത്യമായി വായിക്കാൻ കഴിയുന്ന ഒബ്ജക്റ്റ് ഫോർമാറ്റിൽ സേവ് ചെയ്യുന്നു
-                    localMemoryToSave.push({ 
-                        "0": evCode, 
-                        "1": codeLetter, 
-                        "2": chest, 
-                        "rowIndex": maxRowIndex 
-                    });
+                    localMemoryToSave.push({ "0": evCode, "1": codeLetter, "2": chest, "rowIndex": maxRowIndex });
                 });
 
-                // 4. പഴയ കോഡുകൾ ഷീറ്റിൽ നിന്നും ഡിലീറ്റ് ചെയ്യുന്നു
                 let existing = (globalDbData.CodeLetters || []).filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode.toUpperCase());
                 
                 if(existing.length > 0) {
@@ -1541,69 +1532,39 @@
                     
                     await existing.reduce(async (previousPromise, row) => {
                         await previousPromise; 
-                        return fetch(SCRIPT_URL, { 
-                            method: 'POST', 
-                            body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) 
-                        });
+                        return fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) });
                     }, Promise.resolve());
                 }
 
-                // 5. സ്ക്രീനിൽ പ്രിവ്യൂ ഉടൻ തന്നെ കാണിക്കുന്നു (സെർവറിലേക്ക് പോകുന്നതിന് മുൻപ്!)
                 if(!globalDbData.CodeLetters) globalDbData.CodeLetters = [];
-                
-                // പഴയവ ലോക്കൽ മെമ്മറിയിൽ നിന്നും നീക്കുന്നു
                 globalDbData.CodeLetters = globalDbData.CodeLetters.filter(r => getVal(r, 0).toString().trim().toUpperCase() !== evCode.toUpperCase());
-                
-                // പുതിയവ ലോക്കൽ മെമ്മറിയിലേക്ക് ചേർക്കുന്നു
                 globalDbData.CodeLetters.push(...localMemoryToSave);
                 
-                // പ്രിവ്യൂ വരയ്ക്കുന്നു - ഇപ്പോൾ ഇത് 100% ഉറപ്പായും സ്ക്രീനിൽ വരും!
                 if(typeof fetchEventCodes === 'function') fetchEventCodes(); 
-
                 btnGen.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Saving...';
 
-                // 6. പുതിയ കോഡുകൾ ഗൂഗിൾ ഷീറ്റിലേക്ക് bulk ആയി സേവ് ചെയ്യുന്നു
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) 
-                });
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) });
                 let data = await res.json();
                 
                 if(data.status === "success") {
-                    // പ്രിൻ്റ് ബട്ടൺ 15 സെക്കൻഡത്തേക്ക് ലോക്ക് ചെയ്യുന്നു
-                    const btnPrint = document.querySelector('button[onclick="printEventCodes()"]');
+                    const printBtns = document.querySelectorAll('.print-action-btn');
                     const syncWarning = document.getElementById('printSyncWarning');
-                    if(btnPrint) {
-                        btnPrint.disabled = true;
-                        btnPrint.style.opacity = '0.5';
-                        btnPrint.style.cursor = 'not-allowed';
-                        if(syncWarning) syncWarning.style.display = 'inline-block';
-                        
-                        setTimeout(() => {
-                            if(btnPrint) {
-                                btnPrint.disabled = false;
-                                btnPrint.style.opacity = '1';
-                                btnPrint.style.cursor = 'pointer';
-                            }
-                            if(syncWarning) syncWarning.style.display = 'none';
-                        }, 15000); 
-                    }
+                    printBtns.forEach(btn => { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; });
+                    if(syncWarning) syncWarning.style.display = 'inline-block';
                     
-                    // സിങ്ക് ഡിലേ കാരണം പ്രിവ്യൂ മായാതിരിക്കാൻ loadDropdownData വിളിക്കുന്നത് ഒഴിവാക്കി.
+                    setTimeout(() => {
+                        printBtns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; });
+                        if(syncWarning) syncWarning.style.display = 'none';
+                    }, 15000); 
+                    
                     setTimeout(() => alert("Code Letters successfully generated!"), 200);
-                    
                 } else {
                     alert("Failed to save codes to server.");
                 }
             } catch(e) {
                 alert("Error during code generation. Please check your internet connection.");
-                console.error(e);
             } finally {
-                if(btnGen) { 
-                    btnGen.disabled = false; 
-                    btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes'; 
-                }
-                // കുറച്ചു സമയത്തേക്ക് ഓട്ടോ-സിങ്ക് ബ്ലോക്ക് ചെയ്യുന്നു (പ്രീവ്യൂ സുരക്ഷിതമാക്കാൻ)
+                if(btnGen) { btnGen.disabled = false; btnGen.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate Codes'; }
                 setTimeout(() => { window.isGeneratingCodes = false; }, 20000); 
             }
         }
@@ -1615,66 +1576,53 @@
             const existing = (globalDbData.CodeLetters || []).filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode.toUpperCase());
             if(existing.length === 0) return;
 
-            if(!confirm(`⚠️ Are you sure you want to DELETE all code letters for ${evCode}?\n\nJudges will not be able to evaluate this event until new codes are generated.`)) {
-                return;
-            }
+            if(!confirm(`⚠️ Are you sure you want to DELETE all code letters for ${evCode}?\n\nJudges will not be able to evaluate this event until new codes are generated.`)) return;
 
             const btnDelete = document.getElementById('deleteCodeBtn');
             const oText = btnDelete.innerHTML;
             btnDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...'; 
             btnDelete.disabled = true;
-
-            // സിങ്ക് വന്ന് തടസ്സപ്പെടുത്താതിരിക്കാൻ ലോക്ക് ചെയ്യുന്നു
             window.isGeneratingCodes = true;
 
             try {
-                // ഡാറ്റാബേസിൽ നിന്നും പഴയ കോഡുകൾ സുരക്ഷിതമായി ഡിലീറ്റ് ചെയ്യുന്നു (താഴെ നിന്നും മുകളിലേക്ക്)
                 existing.sort((a, b) => b.rowIndex - a.rowIndex); 
-                
                 await existing.reduce(async (previousPromise, row) => {
                     await previousPromise; 
-                    return fetch(SCRIPT_URL, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) 
-                    });
+                    return fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) });
                 }, Promise.resolve());
 
-                // സ്ക്രീനിൽ നിന്ന് ഉടനടി മാറ്റാൻ ലോക്കൽ മെമ്മറിയിൽ നിന്നും നീക്കുന്നു
                 if(globalDbData.CodeLetters) {
                     globalDbData.CodeLetters = globalDbData.CodeLetters.filter(r => getVal(r, 0).toString().trim().toUpperCase() !== evCode.toUpperCase());
                 }
-                
                 alert(`Code Letters for ${evCode} deleted successfully!`);
-                fetchEventCodes(); // സ്ക്രീൻ റീഫ്രഷ് ചെയ്യാൻ
-                
+                fetchEventCodes(); 
             } catch(e) {
                 alert("Error during deletion. Please check your connection.");
-                console.error(e);
             } finally {
-                btnDelete.innerHTML = oText; 
-                btnDelete.disabled = false;
-                setTimeout(() => { window.isGeneratingCodes = false; }, 5000); // ലോക്ക് റിലീസ് ചെയ്യുന്നു
+                btnDelete.innerHTML = oText; btnDelete.disabled = false;
+                setTimeout(() => { window.isGeneratingCodes = false; }, 5000); 
             }
         }
 
-        function printEventCodes() {
+        // 🟢 Calling Sheet-നും Mark Sheet-നും ഉപയോഗിക്കാൻ കഴിയുന്ന പുതിയ പ്രിന്റ് എഞ്ചിൻ
+        function printEventCodes(sheetType = 'mark') {
             const evCodeInput = document.getElementById('codeEventSelect').value;
             const allEvents = globalDbData.Events || [];
             const allRegs = globalDbData.Registrations || [];
             const allCodes = globalDbData.CodeLetters || [];
+            const students = globalDbData.Students || []; 
             const instName = sessionStorage.getItem("instName") || "Institution Name";
             const festName = document.getElementById('confFestName') ? document.getElementById('confFestName').value : "FESTIVAL NAME";
             
             let targetEvents = [];
             
-            // 1. പരിപാടി സെലക്ട് ചെയ്തിട്ടുണ്ടോ അതോ Bulk Download ആണോ എന്ന് നോക്കുന്നു
             if (evCodeInput) {
                 targetEvents = allEvents.filter(e => getVal(e,0) === evCodeInput);
                 if (targetEvents.length === 0) { alert("Event not found!"); return; }
             } else {
-                if(!confirm("No event selected. Do you want to Bulk Print mark sheets for ALL events?")) return;
+                let sheetName = sheetType === 'mark' ? "Mark Sheets" : "Calling Sheets";
+                if(!confirm(`No event selected. Do you want to Bulk Print ${sheetName} for ALL events?`)) return;
                 targetEvents = [...allEvents];
-                // ഓർഡർ മാറ്റുന്നു: ആദ്യം Stage, പിന്നെ Off-Stage
                 targetEvents.sort((a,b) => {
                     const mA = getVal(a,5).toString().trim();
                     const mB = getVal(b,5).toString().trim();
@@ -1685,29 +1633,31 @@
             }
             
             let sheetsHtmlArray = [];
-            const ROWS_PER_PAGE = 22; // ഫുൾ A4 പേജിൽ ഉൾക്കൊള്ളാവുന്ന വരികളുടെ എണ്ണം (വായിക്കാൻ എളുപ്പമുള്ള സ്പേസിങ്ങോടെ)
+            const ROWS_PER_PAGE = 20; // 🟢 ലേഔട്ട് ബ്രേക്ക് ആവാതിരിക്കാൻ വരികൾ 20 ആയി നിജപ്പെടുത്തി
             
-            // 2. ഓരോ പരിപാടിയും പ്രോസസ്സ് ചെയ്യുന്നു
             targetEvents.forEach(ev => {
                 const evCode = getVal(ev, 0);
                 const evName = getVal(ev, 1);
                 const cat = getVal(ev, 2) || "";
                 const gen = getVal(ev, 3) || "";
                 const fullEvName = `${evName} [${cat} - ${gen}]`;
+                const isGroup = getVal(ev, 4).toString().trim().toLowerCase() === 'group';
                 
-                // ആ പരിപാടിയുടെ രജിസ്ട്രേഷനുകൾ എടുക്കുന്നു
                 const regs = allRegs.filter(r => getVal(r,0).toString().toUpperCase() === evCode.toString().toUpperCase());
                 if (regs.length === 0) return; 
                 
-                // കോഡുകൾ മാപ്പ് ചെയ്യുന്നു
                 let participants = regs.map(r => {
                     const chest = getVal(r,1).toString().toUpperCase();
                     const codeRow = allCodes.find(c => getVal(c,0).toString().toUpperCase() === evCode.toString().toUpperCase() && getVal(c,2).toString().toUpperCase() === chest);
                     const code = codeRow ? getVal(codeRow,1).toString().toUpperCase() : ""; 
-                    return { chest, code };
+                    
+                    const st = students.find(s => getVal(s,0).toString().trim().toUpperCase() === chest);
+                    let stName = st ? getVal(st,1) : "Unknown";
+                    if(isGroup) stName += " & Team";
+
+                    return { chest, code, name: stName };
                 });
                 
-                // അടുക്കുന്നു (ആദ്യം കോഡ് വെച്ച്, കോഡ് ഇല്ലെങ്കിൽ ചെസ്റ്റ് നമ്പർ വെച്ച്)
                 participants.sort((a,b) => {
                     if(a.code && b.code) return a.code.localeCompare(b.code);
                     if(a.code && !b.code) return -1;
@@ -1715,46 +1665,54 @@
                     return a.chest.localeCompare(b.chest);
                 });
                 
-                // വരികളെ ഭാഗങ്ങളാക്കുന്നു (ഓരോ പേജിലേക്കും)
                 for (let i = 0; i < participants.length; i += ROWS_PER_PAGE) {
                     const chunk = participants.slice(i, i + ROWS_PER_PAGE);
                     const isLastChunk = (i + ROWS_PER_PAGE) >= participants.length;
                     
                     let tableRows = "";
                     chunk.forEach((p, idx) => {
-                        tableRows += `<tr>
-                            <td>${i + idx + 1}</td>
-                            <td style="font-weight:bold; font-size:16px;">${p.code}</td>
-                            <td style="font-size:15px;">${p.chest}</td>
-                            <td></td>
-                            <td></td>
-                        </tr>`;
+                        if (sheetType === 'mark') {
+                            tableRows += `<tr>
+                                <td>${i + idx + 1}</td>
+                                <td style="font-weight:bold; font-size:16px;">${p.code}</td>
+                                <td style="font-size:15px;">${p.chest}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>`;
+                        } else {
+                            // 🟢 Calling Sheet Row Design
+                            tableRows += `<tr>
+                                <td>${i + idx + 1}</td>
+                                <td style="font-weight:bold; font-size:16px;">${p.chest}</td>
+                                <td style="font-weight:bold; font-size:16px; color:#333;">${p.code}</td>
+                                <td style="text-align:left; padding-left:10px; font-weight:600;">${p.name}</td>
+                            </tr>`;
+                        }
                     });
+
+                    const sheetTitleText = sheetType === 'mark' ? "MARK SHEET" : "CALLING SHEET";
+                    const tableHeader = sheetType === 'mark' 
+                        ? `<tr><th style="width:10%;">S.I NO</th><th style="width:20%;">Code Letter</th><th style="width:20%;">CHEST NO</th><th style="width:20%;">Mark</th><th style="width:30%;">Remarks</th></tr>`
+                        : `<tr><th style="width:10%;">S.I NO</th><th style="width:15%;">CHEST NO</th><th style="width:15%;">Code Letter</th><th style="width:60%;">Student / Team Name</th></tr>`;
                     
-                    // ഫുൾ A4 പേജിനുള്ള ഡിസൈൻ
+                    // 🟢 Flexbox ഉപയോഗിച്ചുള്ള പുതിയ പേജ് ലേഔട്ട്
                     let sheetHtml = `
-                    <div class="mark-sheet">
+                    <div class="print-page">
                         <div class="sheet-header">
                             <div class="inst-name">${instName}</div>
                             <div class="fest-name">${festName}</div>
-                            <div class="sheet-title">MARK SHEET</div>
+                            <div class="sheet-title">${sheetTitleText}</div>
                         </div>
                         <div class="event-details">Event: <b>${fullEvName}</b> <span style="float:right;">Code: <b>${evCode}</b></span></div>
-                        <table class="sheet-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:10%;">S.I NO</th>
-                                    <th style="width:20%;">Code Letter</th>
-                                    <th style="width:20%;">CHEST NO</th>
-                                    <th style="width:20%;">Mark</th>
-                                    <th style="width:30%;">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
-                        </table>
-                        ${isLastChunk ? '<div class="sheet-footer">Name and Signature<br>___________________________</div>' : ''}
+                        
+                        <div class="table-container">
+                            <table class="sheet-table">
+                                <thead>${tableHeader}</thead>
+                                <tbody>${tableRows}</tbody>
+                            </table>
+                        </div>
+                        
+                        ${isLastChunk && sheetType === 'mark' ? '<div class="sheet-footer">Name and Signature of Judge<br><br>___________________________</div>' : ''}
                     </div>`;
                     
                     sheetsHtmlArray.push(sheetHtml);
@@ -1766,28 +1724,48 @@
                 return;
             }
             
-            // 3. ഫുൾ A4 Portrait പ്രിൻ്റ് ഡിസൈൻ
-            let printContent = `<html><head><title>Mark Sheets</title><style>
-                @page { size: A4 portrait; margin: 0; }
-                body { margin: 0; font-family: 'Helvetica', 'Arial', sans-serif; background: #fff; -webkit-print-color-adjust: exact; }
-                .mark-sheet { width: 210mm; height: 297mm; padding: 20mm 15mm; box-sizing: border-box; position: relative; page-break-after: always; }
-                .sheet-header { text-align: center; margin-bottom: 20px; }
-                .inst-name { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; color: #000; }
-                .fest-name { font-size: 18px; margin-bottom: 8px; color: #333; font-weight: 600; }
+            // 🟢 CSS പേജ് ബ്രേക്ക് ലോജിക് പൂർണ്ണമായും പുതുക്കി (ഓവർലാപ്പ് ഒഴിവാക്കാൻ)
+            let printContent = `<html><head><title>Print Sheets</title><style>
+                @page { size: A4 portrait; margin: 15mm; }
+                * { box-sizing: border-box; } /* 🟢 ബോർഡർ കട്ട് ആവാതിരിക്കാനുള്ള സുരക്ഷ */
+                body { margin: 0; font-family: 'Helvetica', 'Arial', sans-serif; background: #fff; -webkit-print-color-adjust: exact; color: #000; }
+                
+                .print-page { 
+                    display: flex; 
+                    flex-direction: column; 
+                    min-height: 260mm; 
+                    page-break-after: always; 
+                    break-after: page; 
+                    box-sizing: border-box; 
+                    padding-bottom: 5mm;
+                    padding-right: 1px; /* വലത് വശത്തെ ബോർഡറിന് സ്പേസ് നൽകുന്നു */
+                }
+                .print-page:last-child { page-break-after: auto; break-after: auto; }
+                
+                .sheet-header { text-align: center; margin-bottom: 15px; }
+                .inst-name { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #000; }
+                .fest-name { font-size: 16px; margin-bottom: 5px; color: #333; font-weight: 600; }
                 .sheet-title { font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 15px; color: #000; }
-                .event-details { font-size: 16px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #f9f9f9; color: #000; }
-                .sheet-table { width: 100%; border-collapse: collapse; font-size: 15px; color: #000; }
-                .sheet-table th, .sheet-table td { border: 1px solid #000; padding: 10px 8px; text-align: center; }
+                .event-details { font-size: 15px; margin-bottom: 15px; border: 1px solid #000; padding: 10px; background: #f9f9f9; color: #000; font-weight: 500;}
+                
+                .table-container { width: 100%; max-width: 100%; overflow: hidden; }
+                .sheet-table { width: 100%; border-collapse: collapse; font-size: 14px; color: #000; border: 1px solid #000; } /* 🟢 ടേബിളിനും പൂർണ്ണമായ ബോർഡർ ഉറപ്പാക്കുന്നു */
+                .sheet-table th, .sheet-table td { border: 1px solid #000; padding: 8px; text-align: center; }
                 .sheet-table th { background: #eaeaea; font-weight: bold; }
-                .sheet-table td { height: 32px; } /* കൂടുതൽ ഗ്യാപ്പ് നൽകുന്നു */
-                .sheet-footer { position: absolute; bottom: 25mm; right: 20mm; font-size: 16px; font-weight: bold; text-align: center; color: #000; line-height: 1.5; }
+                .sheet-table td { height: 35px; } 
+                
+                .sheet-footer { 
+                    margin-top: auto; 
+                    padding-top: 30px; 
+                    text-align: right; 
+                    font-size: 15px; 
+                    font-weight: bold; 
+                    color: #000; 
+                    padding-right: 15px;
+                }
             </style></head><body>`;
             
-            // എല്ലാ പേജുകളും ചേർക്കുന്നു
-            sheetsHtmlArray.forEach(sheet => {
-                printContent += sheet;
-            });
-            
+            sheetsHtmlArray.forEach(sheet => { printContent += sheet; });
             printContent += `</body></html>`;
             
             let printWindow = window.open('', '_blank');
