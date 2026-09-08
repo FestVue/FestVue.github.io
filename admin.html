@@ -347,6 +347,24 @@
                             <button type="button" id="generateCodeBtn" onclick="generateCodes()" class="primary-btn" style="background: #10b981; display: none;"><i class="fas fa-random"></i> Generate Codes</button>
                             <button type="button" id="deleteCodeBtn" onclick="deleteEventCodes()" class="primary-btn" style="background: #ff5a5f; display: none;"><i class="fas fa-trash-alt"></i> Delete Codes</button>
                         </div>
+
+                        <!-- 🟢 NEW BULK GENERATE UI -->
+                        <div style="margin-bottom: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(4, 106, 56, 0.05);">
+                            <h4 style="margin-bottom: 12px; color: var(--primary); font-size: 1rem;"><i class="fas fa-magic"></i> Quick Bulk Generate Codes</h4>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                                <select id="bulkCodeCat" class="st-category" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color:var(--text); min-width: 180px;">
+                                    <option value="">-- All Categories --</option>
+                                </select>
+                                <select id="bulkCodeMode" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color:var(--text); min-width: 180px;">
+                                    <option value="All">-- All Modes --</option>
+                                    <option value="Stage">Stage Only</option>
+                                    <option value="Off-Stage">Off-Stage Only</option>
+                                </select>
+                                <button type="button" onclick="generateBulkCodes()" class="primary-btn" style="background: var(--primary); padding: 8px 15px;"><i class="fas fa-cogs"></i> Generate Bulk</button>
+                            </div>
+                            <div id="bulkCodeProgress" style="margin-top: 15px; font-size: 0.95rem; color: #f59e0b; font-weight: bold; display: none;"></div>
+                        </div>
+
                         <div id="codeTableContainer" style="overflow-x: auto;">
                             <p style="color: #64748b; font-size: 0.9rem;">Please select an event.</p>
                         </div>
@@ -1470,9 +1488,12 @@
                     btnGen.setAttribute('data-regen', 'false');
                 }
                 if(btnDelete) btnDelete.style.display = 'none'; 
-                if(printWrapper) printWrapper.style.display = 'none';
+                
+                // 🟢 കോഡ് ഇല്ലെങ്കിലും പ്രിന്റ് ബട്ടണുകൾ കാണിക്കാൻ flex ആക്കി 
+                if(printWrapper) printWrapper.style.display = 'flex'; 
+                
                 if(syncWarning) syncWarning.style.display = 'none'; 
-                if(previewArea) previewArea.innerHTML = '<div style="padding:20px; margin-top:20px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:8px;">No codes generated yet for this event. Click Generate.</div>';
+                if(previewArea) previewArea.innerHTML = '<div style="padding:20px; margin-top:20px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:8px;">No codes generated yet for this event. You can still print the sheets.</div>';
             }
         }
 
@@ -1601,6 +1622,119 @@
             } finally {
                 btnDelete.innerHTML = oText; btnDelete.disabled = false;
                 setTimeout(() => { window.isGeneratingCodes = false; }, 5000); 
+            }
+        }
+
+        // 🟢 ബൾക്ക് ആയി കോഡുകൾ ജനറേറ്റ് ചെയ്യാനുള്ള പുതിയ ഫംഗ്ഷൻ
+        async function generateBulkCodes() {
+            const cat = document.getElementById('bulkCodeCat').value;
+            const mode = document.getElementById('bulkCodeMode').value;
+            
+            const allEvents = globalDbData.Events || [];
+            const allRegs = globalDbData.Registrations || [];
+            const existingCodes = globalDbData.CodeLetters || [];
+            
+            // 1. ഫിൽറ്ററുകൾ അനുസരിച്ച് ഇവന്റുകൾ കണ്ടെത്തുന്നു
+            let targetEvents = allEvents.filter(ev => {
+                const eCat = getVal(ev, 2) || ""; 
+                const eMode = getVal(ev, 5) || ""; 
+                
+                let matchCat = (!cat || eCat.toString().toUpperCase() === cat.toString().toUpperCase());
+                let matchMode = (mode === "All" || eMode.toString().toUpperCase() === mode.toString().toUpperCase());
+                
+                return matchCat && matchMode;
+            });
+            
+            if(targetEvents.length === 0) {
+                alert("No events found matching these filters.");
+                return;
+            }
+            
+            if(!confirm(`⚠️ WARNING: You are about to bulk-generate codes for ${targetEvents.length} events.\nThis will DELETE any existing codes for these matched events and recreate them.\n\nAre you sure you want to proceed?`)) return;
+            
+            const progressDiv = document.getElementById('bulkCodeProgress');
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing registrations...';
+            
+            window.isGeneratingCodes = true;
+            
+            try {
+                let rowsToSave = [];
+                let localMemoryToSave = [];
+                let maxRowIndex = 0;
+                if (existingCodes.length > 0) {
+                    maxRowIndex = Math.max(...existingCodes.map(r => parseInt(r.rowIndex) || 0));
+                }
+                
+                let codesToDelete = [];
+                let processedEventsCount = 0;
+                
+                // 2. പുതിയ കോഡുകൾ അസൈൻ ചെയ്യുന്നു
+                for (let ev of targetEvents) {
+                    const evCode = getVal(ev, 0).toString().trim().toUpperCase();
+                    const evRegs = allRegs.filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode);
+                    
+                    if(evRegs.length === 0) continue; 
+                    processedEventsCount++;
+                    
+                    let existing = existingCodes.filter(r => getVal(r, 0).toString().trim().toUpperCase() === evCode);
+                    codesToDelete.push(...existing);
+                    
+                    let chestNos = evRegs.map(r => getVal(r, 1).toString().trim().toUpperCase());
+                    chestNos = [...new Set(chestNos)]; 
+                    chestNos.sort(() => Math.random() - 0.5); // ഷഫിൾ ചെയ്യുന്നു
+                    
+                    chestNos.forEach((chest, idx) => {
+                        let codeLetter = String.fromCharCode(65 + (idx % 26));
+                        if (idx >= 26) {
+                            codeLetter = String.fromCharCode(65 + Math.floor(idx / 26) - 1) + codeLetter;
+                        }
+                        rowsToSave.push([evCode, codeLetter, chest]);
+                        
+                        maxRowIndex++;
+                        localMemoryToSave.push({ "0": evCode, "1": codeLetter, "2": chest, "rowIndex": maxRowIndex });
+                    });
+                }
+                
+                if(rowsToSave.length === 0) {
+                    progressDiv.innerHTML = "No registrations found for the matched events. Nothing to generate.";
+                    setTimeout(() => progressDiv.style.display = 'none', 3000);
+                    window.isGeneratingCodes = false;
+                    return;
+                }
+                
+                // 3. ആവശ്യമില്ലാത്ത പഴയ കോഡുകൾ ഡിലീറ്റ് ചെയ്യുന്നു (ഉണ്ടെങ്കിൽ)
+                if(codesToDelete.length > 0) {
+                    progressDiv.innerHTML = `<i class="fas fa-trash"></i> Clearing ${codesToDelete.length} old codes... (Please do not close this window)`;
+                    codesToDelete.sort((a, b) => b.rowIndex - a.rowIndex); 
+                    await codesToDelete.reduce(async (previousPromise, row) => {
+                        await previousPromise; 
+                        return fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowIndex: row.rowIndex }) });
+                    }, Promise.resolve());
+                }
+                
+                // 4. സർവറിലേക്ക് അപ്‌ലോഡ് ചെയ്യുന്നു
+                let evCodesProcessed = targetEvents.map(e => getVal(e,0).toString().trim().toUpperCase());
+                globalDbData.CodeLetters = globalDbData.CodeLetters.filter(r => !evCodesProcessed.includes(getVal(r, 0).toString().trim().toUpperCase()));
+                globalDbData.CodeLetters.push(...localMemoryToSave);
+                
+                progressDiv.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Saving ${rowsToSave.length} new codes to server...`;
+                
+                let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveBulkData", targetSheetId: targetSheetId, sheetName: "CodeLetters", rowsData: rowsToSave }) });
+                let data = await res.json();
+                
+                if(data.status === "success") {
+                    progressDiv.innerHTML = `<i class="fas fa-check-circle" style="color:#10b981;"></i> Successfully generated codes for ${processedEventsCount} events!`;
+                    if(typeof fetchEventCodes === 'function') fetchEventCodes(); 
+                } else {
+                    progressDiv.innerHTML = `<i class="fas fa-times-circle" style="color:#ef4444;"></i> Failed to save bulk codes.`;
+                }
+                
+            } catch(e) {
+                progressDiv.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Error during bulk generation. Check console.`;
+                console.error(e);
+            } finally {
+                setTimeout(() => { progressDiv.style.display = 'none'; window.isGeneratingCodes = false; }, 6000); 
             }
         }
 
