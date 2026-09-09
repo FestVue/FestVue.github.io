@@ -357,10 +357,13 @@
             .then(text => {
                 try {
                     let data = JSON.parse(text);
-                    if (data.status === "success") {
-                        globalDbData = data.data || {};
+                    // 🟢 BUG FIX: ഡാറ്റ പൂർണ്ണമായി ഉണ്ടെങ്കിൽ മാത്രം അപ്ഡേറ്റ് ചെയ്യുക
+                    if (data.status === "success" && data.data && data.data.Results && data.data.Students) {
+                        globalDbData = data.data;
                         festConfig.inst = data.institutionName;
                         processData(false); 
+                    } else {
+                        console.warn("Incomplete data received. Skipping update.");
                     }
                 } catch(e) {}
             }).catch(err => {});
@@ -497,8 +500,12 @@
             });
 
             // ഗ്രൂപ്പ് ലീഡർബോർഡ്
-            const sortedGroups = Object.entries(groupPoints).sort((a,b)=>b[1]-a[1]);
+            // 🟢 BUG FIX: ഗ്രൂപ്പിന്റെ പേരോ പോയിന്റോ undefined ആണെങ്കിൽ ഒഴിവാക്കുന്നു
+            const sortedGroups = Object.entries(groupPoints)
+                .filter(g => g[0] && g[0] !== "undefined" && g[0] !== "null" && !isNaN(g[1]))
+                .sort((a,b)=>b[1]-a[1]);
             let gHtml = "";
+            
             if(sortedGroups.length === 0) {
                 gHtml = `<div style="text-align:center; color:var(--text-muted); font-size:2vh;">Awaiting points...</div>`;
             } else {
@@ -548,7 +555,7 @@
                         <div class="scorer-card" style="border-left-color:${theme};">
                             <div class="sc-title" style="color:${theme};">${titleDef.name} <span class="sc-pts">${maxPoints} Pts</span></div>
                             <div class="sc-name">${topStudent.name}</div>
-                            <div class="sc-grp">${topStudent.group || 'No Group'} - Cls ${topStudent.class}</div>
+                            <div class="sc-grp">${(topStudent.group && topStudent.group !== "undefined") ? topStudent.group : 'No Group'} - Cls ${topStudent.class}</div>
                         </div>
                     `);
                 }
