@@ -376,8 +376,38 @@
 
                 <!-- 6. MANAGE RESULTS -->
                 <section id="manageResults" class="page-section">
+
+                    <!-- 🟢 NEW: Live Score Predictor -->
+                <div class="card accordion-card" style="border-left: 4px solid #8b5cf6; background: rgba(139, 92, 246, 0.03);" onclick="this.classList.toggle('active')">
+                    <div class="accordion-header">
+                        <h3><i class="fas fa-magic" style="color: #8b5cf6;"></i> Live Score Predictor</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-body" onclick="event.stopPropagation()">
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Select pending results below to simulate how publishing them will affect the current team leaderboard. <b>(This will not publish them)</b></p>
+                        
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <!-- Left: Pending Events Checkboxes -->
+                            <div style="flex: 1; min-width: 250px; border-right: 1px dashed var(--border); padding-right: 15px;">
+                                <h4 style="margin-bottom: 10px; color: var(--text); font-size: 0.95rem;">Pending Events</h4>
+                                <div id="simulatorCheckboxes" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                                    <p style="color: var(--muted); font-size: 0.85rem;">Loading...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Simulated Leaderboard -->
+                            <div style="flex: 1; min-width: 250px;">
+                                <h4 style="margin-bottom: 10px; color: var(--text); font-size: 0.95rem;">Simulated Standings</h4>
+                                <div id="simulatorLeaderboard" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <p style="color: var(--muted); font-size: 0.85rem;">Select events to see prediction.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                     <!-- 1. Pending Approvals Accordion (Open by default) -->
-                    <div class="card accordion-card active" style="border-left: 4px solid var(--accent);" onclick="this.classList.toggle('active')">
+                    <div class="card accordion-card" style="border-left: 4px solid var(--accent);" onclick="this.classList.toggle('active')">
                         <div class="accordion-header">
                             <h3><i class="fas fa-clock" style="color: var(--accent);"></i> Pending Approvals</h3>
                             <i class="fas fa-chevron-down accordion-icon"></i>
@@ -947,6 +977,7 @@
                         updateDashboardStats();
                         renderTable();
                         renderPendingApprovals();
+                        renderScorePredictor();
                         if(document.getElementById('codeEventSelect').value) fetchEventCodes();
                     }
                 } catch(e) {
@@ -3210,6 +3241,7 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
                             renderTable();
                             populateDropdowns();
                             renderSettingsLists();
+                            renderScorePredictor();
                         }
                     }
                 }
@@ -3543,6 +3575,186 @@ function searchTableData(inputId, tableId) {
                     card.style.display = "none";
                 }
             });
+        }
+
+        // ==========================================
+        // SCORE PREDICTOR LOGIC
+        // ==========================================
+        function renderScorePredictor() {
+            if(!globalDbData) return;
+            const results = globalDbData.Results || [];
+            const events = globalDbData.Events || [];
+            
+            // Pending ഇവന്റുകൾ മാത്രം എടുക്കുന്നു
+            const pendingEvents = [...new Set(results.filter(r => getVal(r, 3) === "Pending").map(r => getVal(r, 0).toString().trim()))];
+            const checkboxContainer = document.getElementById('simulatorCheckboxes');
+            
+            if(!checkboxContainer) return;
+            
+            if(pendingEvents.length === 0) {
+                checkboxContainer.innerHTML = `<p style="color:#10b981; font-size:0.85rem;"><i class="fas fa-check-circle"></i> No pending results to simulate.</p>`;
+                calculateAndShowSimulation(); 
+                return;
+            }
+            
+            // 🟢 പുതിയ സെർച്ച് ബാർ ചേർക്കുന്നു
+            let html = `
+            <div style="position: relative; margin-bottom: 15px;">
+                <i class="fas fa-search" style="position: absolute; left: 10px; top: 10px; color: var(--muted); font-size: 0.9rem;"></i>
+                <input type="text" id="simulatorSearchInput" onkeyup="searchSimulatorEvents()" placeholder="Search event or code..." style="width: 100%; padding: 8px 10px 8px 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 0.85rem;">
+            </div>
+            <div id="simulatorEventsList" style="display: flex; flex-direction: column; gap: 8px;">`;
+            
+            pendingEvents.forEach(evCode => {
+                const evDetails = events.find(e => getVal(e,0) === evCode);
+                const evName = evDetails ? getVal(evDetails, 1) : evCode;
+                // 🟢 ഫിൽറ്റർ ചെയ്യാൻ എളുപ്പത്തിന് ഒരു ക്ലാസ് നൽകുന്നു (sim-event-item)
+                html += `
+                <label class="sim-event-item" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                    <input type="checkbox" class="sim-checkbox" value="${evCode}" onchange="calculateAndShowSimulation()" style="width: 16px; height: 16px; accent-color: #8b5cf6;">
+                    <span>${evName} (${evCode})</span>
+                </label>`;
+            });
+            
+            html += `</div>`;
+            checkboxContainer.innerHTML = html;
+            calculateAndShowSimulation(); 
+        }
+
+        // 🟢 സിമുലേറ്ററിനായുള്ള പുതിയ ലൈവ് സെർച്ച് ഫംഗ്ഷൻ
+        function searchSimulatorEvents() {
+            let input = document.getElementById('simulatorSearchInput');
+            if(!input) return;
+            let filter = input.value.toUpperCase();
+            let items = document.querySelectorAll('.sim-event-item');
+            
+            items.forEach(item => {
+                let text = item.textContent || item.innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    item.style.display = "flex"; // label ആയതുകൊണ്ട് flex നിലനിർത്തണം
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        function calculateAndShowSimulation() {
+            if(!globalDbData) return;
+            
+            // ടിക് ചെയ്ത ഇവന്റുകൾ കണ്ടെത്തുന്നു
+            const checkedBoxes = Array.from(document.querySelectorAll('.sim-checkbox:checked')).map(cb => cb.value);
+            
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
+            const events = globalDbData.Events || [];
+            const settings = globalDbData.Settings || [];
+            const bonus = globalDbData.Bonus || [];
+
+            // പോയിന്റ് സെറ്റിംഗ്സ് ലോഡ് ചെയ്യുന്നു (Main Leaderboard ലേത് പോലെ തന്നെ)
+            let defaultPoints = { 1: 5, 2: 3, 3: 1 };
+            let customPoints = {};
+            let customCatPoints = {};
+            let gradeSystemEnabled = false;
+            let gradePoints = { "A": 5, "B": 3, "C": 1 };
+
+            settings.forEach(row => {
+                if (getVal(row, 0).toString().toUpperCase() === "POINTS") {
+                    const key = getVal(row, 1).toString().toUpperCase();
+                    const pts = (getVal(row, 2) ? getVal(row, 2).toString() : "").split(',');
+                    if (key === "DEFAULT") { defaultPoints = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; }
+                    else if (key === "GRADE_SYS") { gradeSystemEnabled = (pts[0] && pts[0].toUpperCase() === "TRUE"); if(pts[1]) gradePoints["A"] = parseInt(pts[1]); if(pts[2]) gradePoints["B"] = parseInt(pts[2]); if(pts[3]) gradePoints["C"] = parseInt(pts[3]); }
+                    else if (key.startsWith("CAT_")) { customCatPoints[key.replace("CAT_", "")] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; }
+                    else { customPoints[key] = { 1: parseInt(pts[0])||0, 2: parseInt(pts[1])||0, 3: parseInt(pts[2])||0 }; }
+                }
+            });
+
+            let baseGroupPoints = {}; // പബ്ലിഷ് ചെയ്ത സ്കോറുകൾ മാത്രം
+            let simGroupPoints = {};  // പബ്ലിഷ് ചെയ്തത് + ടിക് ചെയ്ത സ്കോറുകൾ
+            let processedBaseGroupEvents = {};
+            let processedSimGroupEvents = {};
+
+            // ബോണസ് പോയിന്റുകൾ രണ്ടിടത്തും ചേർക്കുന്നു
+            bonus.forEach(b => {
+                const grp = getVal(b, 0); const pts = parseInt(getVal(b, 1)) || 0;
+                if(grp) { baseGroupPoints[grp] = (baseGroupPoints[grp] || 0) + pts; simGroupPoints[grp] = (simGroupPoints[grp] || 0) + pts; }
+            });
+
+            results.forEach(res => {
+                const isPending = getVal(res, 3) === "Pending";
+                const evCode = getVal(res, 0).toString().toUpperCase();
+                
+                // ബേസ് കാൽക്കുലേഷന് പബ്ലിഷ് ചെയ്തത് മാത്രം. സിമുലേഷന് പബ്ലിഷ് ചെയ്തതും ടിക് ചെയ്തതും.
+                let includeInBase = !isPending;
+                let includeInSim = !isPending || checkedBoxes.includes(evCode);
+
+                if(!includeInBase && !includeInSim) return;
+
+                const chestNo = getVal(res, 1);
+                const position = parseInt(getVal(res, 2)) || 0;
+                const gradeStr = getVal(res, 7) ? getVal(res, 7).toString().trim().toUpperCase() : "";
+                const evDetails = events.find(e => getVal(e, 0).toString().toUpperCase() === evCode);
+                const evCategory = evDetails ? getVal(evDetails, 2).toString().trim().toUpperCase() : "";
+                const isGroupEvent = evDetails ? (getVal(evDetails, 4).toString().toLowerCase() === "group") : false;
+
+                let ptsMap = defaultPoints;
+                if (customCatPoints[evCategory]) ptsMap = customCatPoints[evCategory];
+                if (customPoints[evCode]) ptsMap = customPoints[evCode];
+                let posPoints = ptsMap[position] || 0;
+                let grPoints = (gradeSystemEnabled && gradeStr && gradePoints[gradeStr]) ? gradePoints[gradeStr] : 0;
+                const totalPoints = posPoints + grPoints;
+
+                if(!chestNo || totalPoints === 0) return;
+
+                const st = students.find(s => getVal(s, 0) == chestNo);
+                if(st && getVal(st, 5)) {
+                    const group = getVal(st, 5);
+                    const uniqueKey = `${evCode}_${group}`;
+                    
+                    if (includeInBase) {
+                        if (isGroupEvent) {
+                            if (!processedBaseGroupEvents[uniqueKey]) { baseGroupPoints[group] = (baseGroupPoints[group] || 0) + totalPoints; processedBaseGroupEvents[uniqueKey] = true; }
+                        } else { baseGroupPoints[group] = (baseGroupPoints[group] || 0) + totalPoints; }
+                    }
+
+                    if (includeInSim) {
+                        if (isGroupEvent) {
+                            if (!processedSimGroupEvents[uniqueKey]) { simGroupPoints[group] = (simGroupPoints[group] || 0) + totalPoints; processedSimGroupEvents[uniqueKey] = true; }
+                        } else { simGroupPoints[group] = (simGroupPoints[group] || 0) + totalPoints; }
+                    }
+                }
+            });
+
+            // UI ൽ കാണിക്കാൻ റെഡിയാക്കുന്നു
+            let simHTML = "";
+            let sortedGroups = Object.entries(simGroupPoints).sort((a,b)=>b[1]-a[1]);
+            
+            sortedGroups.forEach((g, idx) => {
+                const groupName = g[0];
+                const simPts = g[1];
+                const basePts = baseGroupPoints[groupName] || 0;
+                const difference = simPts - basePts;
+                
+                let diffBadge = "";
+                if (difference > 0) {
+                    diffBadge = `<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 8px;">+${difference}</span>`;
+                }
+
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
+                
+                simHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--input-bg); border:1px solid var(--border); border-radius:6px;">
+                    <div>
+                        <span style="font-size:1.1rem; margin-right:5px;">${medal}</span>
+                        <b style="color:var(--text);">${groupName}</b>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size:1.1rem; font-weight:bold; color: #8b5cf6;">${simPts} Pts</span>
+                        ${diffBadge}
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('simulatorLeaderboard').innerHTML = simHTML || "<p style='color:var(--muted);'>No team points found.</p>";
         }
 
     </script>
