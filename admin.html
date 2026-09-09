@@ -197,19 +197,22 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h3>Data Overview</h3>
-                            <div style="display: flex; gap: 10px;">
-                                <select id="reportDataType" onchange="renderTable()" style="padding: 8px; border-radius:6px; background:var(--input-bg); color:var(--text); border:1px solid var(--border);">
-                                    <option value="Students">Registered Students</option>
-                                    <option value="Events">All Events</option>
-                                    <option value="Registrations">Event Registrations</option>
-                                    <option value="Results">Published Results</option>
-                                    <option value="PendingReg">Pending Registrations</option>
-                                    <option value="PendingRes">Pending Results</option>
-                                </select>
-                                <button onclick="downloadCSV()" class="primary-btn" style="padding: 8px 15px;"><i class="fas fa-download"></i> CSV</button>
-                            </div>
-                        </div>
+    <h3>Data Overview</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <!-- പുതിയ സെർച്ച് ബോക്സ് -->
+        <input type="text" id="tableSearchInput" onkeyup="searchTableData('tableSearchInput', 'dataTable')" placeholder="Search data..." style="padding: 8px; border-radius:6px; background:var(--input-bg); color:var(--text); border:1px solid var(--border); min-width: 200px;">
+        
+        <select id="reportDataType" onchange="renderTable()" style="padding: 8px; border-radius:6px; background:var(--input-bg); color:var(--text); border:1px solid var(--border);">
+            <option value="Students">Registered Students</option>
+            <option value="Events">All Events</option>
+            <option value="Registrations">Event Registrations</option>
+            <option value="Results">Published Results</option>
+            <option value="PendingReg">Pending Registrations</option>
+            <option value="PendingRes">Pending Results</option>
+        </select>
+        <button onclick="downloadCSV()" class="primary-btn" style="padding: 8px 15px;"><i class="fas fa-download"></i> CSV</button>
+    </div>
+</div>
                         <div style="overflow-x: auto;"><table id="dataTable"></table></div>
                     </div>
                 </section>
@@ -1913,26 +1916,45 @@
         // ==========================================
         function renderPendingApprovals() {
             if(!globalDbData) return;
-            const results = globalDbData.Results || []; const events = globalDbData.Events || [];
-            const pending = results.filter(r => getVal(r, 3) === "Pending"); const container = document.getElementById('pendingResultsContainer');
+            const results = globalDbData.Results || [];
+            const events = globalDbData.Events || [];
+            const pending = results.filter(r => getVal(r, 3) === "Pending");
+            const container = document.getElementById('pendingResultsContainer');
             
-            if(pending.length === 0) { container.innerHTML = `<p style="color:#10b981; font-weight:600;"><i class="fas fa-check-circle"></i> All caught up! No pending approvals.</p>`; return; }
+            if(pending.length === 0) {
+                container.innerHTML = `<p style="color:#10b981; font-weight:600;"><i class="fas fa-check-circle"></i> All caught up! No pending approvals.</p>`;
+                return;
+            }
             
             let grouped = {};
-            pending.forEach(p => { const evCode = getVal(p,0); if(!grouped[evCode]) grouped[evCode] = []; grouped[evCode].push(p); });
-
-            let html = "";
+            pending.forEach(p => {
+                const evCode = getVal(p,0);
+                if(!grouped[evCode]) grouped[evCode] = [];
+                grouped[evCode].push(p);
+            });
+            
+            // 🟢 പുതിയ സെർച്ച് ബോക്സ് ഇവിടെ ചേർക്കുന്നു
+            let html = `
+            <div style="position: relative; width: 100%; margin-bottom: 20px;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: var(--muted);"></i>
+                <input type="text" id="searchPendingInput" onkeyup="searchPendingApprovals()" placeholder="Search by Event, Code, Judge, or Chest No..." style="width: 100%; padding: 10px 10px 10px 35px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>`;
+            
             Object.keys(grouped).forEach(evCode => {
-                const evDetails = events.find(e => getVal(e,0)===evCode); 
+                const evDetails = events.find(e => getVal(e,0)===evCode);
                 let evName = evCode;
                 if(evDetails) {
                     let cat = getVal(evDetails, 2) || "";
                     let gen = getVal(evDetails, 3) || "";
                     evName = `${getVal(evDetails, 1)} [${cat} - ${gen}]`;
                 }
-                const sampleRow = grouped[evCode][0]; const judgeName = getVal(sampleRow, 4) || "Unknown Judge"; const time = getVal(sampleRow, 5) || "N/A";
-
-                html += `<div style="border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:var(--card-bg);">`;
+                const sampleRow = grouped[evCode][0];
+                const judgeName = getVal(sampleRow, 4) || "Unknown Judge";
+                const time = getVal(sampleRow, 5) || "N/A";
+                
+                // 🟢 ഫിൽറ്റർ ചെയ്യാൻ എളുപ്പത്തിന് 'pending-item-card' എന്ന ക്ലാസ്സ് നൽകുന്നു
+                html += `<div class="pending-item-card" style="border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:var(--card-bg);">`;
+                
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px; flex-wrap:wrap; gap:10px;">`;
                 html += `<div><h4 style="color:var(--primary);">${evName} (${evCode})</h4><small style="color:#64748b;"><i class="fas fa-user"></i> By: ${judgeName} | <i class="fas fa-clock"></i> ${time}</small></div>`;
                 html += `<div style="display:flex; gap:10px;"><button onclick="rejectEvent('${evCode}')" id="rejectBtn_${evCode}" class="primary-btn" style="padding:6px 15px; background:#ff5a5f;"><i class="fas fa-times"></i> Reject</button><button onclick="approveEvent('${evCode}')" class="primary-btn" style="padding:6px 15px; background:#10b981;"><i class="fas fa-check"></i> Approve</button></div>`;
@@ -1940,17 +1962,17 @@
                 
                 let pos1="N/A", pos2="N/A", pos3="N/A";
                 let others = [];
-                grouped[evCode].forEach(r => { 
-                    const pos = parseInt(getVal(r,2)) || 0; 
-                    const chest = getVal(r,1); 
+                grouped[evCode].forEach(r => {
+                    const pos = parseInt(getVal(r,2)) || 0;
+                    const chest = getVal(r,1);
                     const grade = getVal(r,7) ? getVal(r,7).toString().trim() : "";
                     
                     let display = chest;
                     if(grade) display += ` <span style="font-size:0.75rem; font-weight:bold; color:var(--primary);">(${grade})</span>`;
-
-                    if(pos===1) pos1 = display; 
-                    else if(pos===2) pos2 = display; 
-                    else if(pos===3) pos3 = display; 
+                    
+                    if(pos===1) pos1 = display;
+                    else if(pos===2) pos2 = display;
+                    else if(pos===3) pos3 = display;
                     else if(pos===0 && grade) others.push(display);
                 });
                 
@@ -2008,23 +2030,44 @@
         }
 
         // ==========================================
-        // SMART REGISTRATION (CAPTAIN + MEMBERS)
-        // ==========================================
-        function addRegistrationField() {
-            const container = document.getElementById('registrationStudentsContainer'); const firstSelect = container.querySelector('select');
-            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
-            div.appendChild(newSelect); div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-            container.appendChild(div);
-        }
+// SMART REGISTRATION (CAPTAIN + MEMBERS)
+// ==========================================
+function addRegistrationField() {
+    const container = document.getElementById('registrationStudentsContainer');
+    const firstSelect = container.querySelector('select.reg-student-select');
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginBottom = '8px';
+    
+    // Select2 ഇഷ്യൂ ഒഴിവാക്കാൻ പുതിയ select ഉണ്ടാക്കുന്നു
+    div.innerHTML = `<select class="reg-student-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${firstSelect.innerHTML}</select>
+    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+    container.appendChild(div);
 
-        function addMemberField() {
-            const container = document.getElementById('regMembersContainer'); const firstSelect = container.querySelector('select');
-            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
-            div.appendChild(newSelect); div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-            container.appendChild(div);
-        }
+    // 🟢 പുതിയ ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+    if(window.jQuery && $.fn.select2) {
+        $(div.querySelector('.reg-student-select')).select2();
+    }
+}
+
+function addMemberField() {
+    const container = document.getElementById('regMembersContainer');
+    const firstSelect = container.querySelector('select.reg-member-select');
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginBottom = '8px';
+    
+    div.innerHTML = `<select class="reg-member-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${firstSelect.innerHTML}</select>
+    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+    container.appendChild(div);
+
+    // 🟢 പുതിയ ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+    if(window.jQuery && $.fn.select2) {
+        $(div.querySelector('.reg-member-select')).select2();
+    }
+}
 
         document.getElementById('regEventSelect').addEventListener('change', function() {
             const evCode = this.value; const events = globalDbData.Events || []; const students = globalDbData.Students || [];
@@ -2052,14 +2095,24 @@
             filtered.forEach(st => { options += `<option value="${getVal(st, 0)}">${getVal(st, 0)} - ${getVal(st, 1)}</option>`; });
             
             if(isGroup) {
-                document.getElementById('groupRegMode').style.display = 'block';
-                document.getElementById('regCaptainSelect').innerHTML = options;
-                document.querySelector('.reg-member-select').innerHTML = options;
-            } else {
-                document.getElementById('indivRegMode').style.display = 'block';
-                document.querySelector('.reg-student-select').innerHTML = options;
-            }
-        });
+        document.getElementById('groupRegMode').style.display = 'block';
+        document.getElementById('regCaptainSelect').innerHTML = options;
+        document.querySelector('.reg-member-select').innerHTML = options;
+        
+        // 🟢 Group Mode-ൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+        if(window.jQuery && $.fn.select2) {
+            $('#regCaptainSelect, .reg-member-select').select2();
+        }
+    } else {
+        document.getElementById('indivRegMode').style.display = 'block';
+        document.querySelector('.reg-student-select').innerHTML = options;
+        
+        // 🟢 Individual Mode-ൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+        if(window.jQuery && $.fn.select2) {
+            $('.reg-student-select').select2();
+        }
+    }
+});
 
         // ==========================================
         // BULK SAVES
@@ -2267,6 +2320,14 @@
             document.querySelectorAll('.pos-1, .pos-2, .pos-3, .other-grade-sel').forEach(sel => sel.innerHTML = options);
             toggleGradeUI();
 
+            document.querySelectorAll('.pos-1, .pos-2, .pos-3, .other-grade-sel').forEach(sel => sel.innerHTML = options);
+        toggleGradeUI();
+        
+        // 🟢 Results പേജിലെ എല്ലാ കുട്ടികളുടെ ലിസ്റ്റിലും Select2 ആക്റ്റീവ് ആക്കുന്നു
+        if(window.jQuery && $.fn.select2) {
+            $('.pos-1, .pos-2, .pos-3, .other-grade-sel').select2();
+        }
+
             // 1. ഓൾറെഡി പബ്ലിഷ് ചെയ്തതാണെങ്കിൽ പഴയ ഡാറ്റ പ്രിവ്യൂ ആയി കാണിക്കുന്നു (ഗ്രേഡ് ഉൾപ്പെടെ)
             if (isExisting) {
                 const evResults = (globalDbData.Results || []).filter(r => getVal(r,0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase() && getVal(r,3) !== "Pending");
@@ -2309,31 +2370,49 @@
         });
 
         // പുതിയതായി ബോക്സുകൾ ആഡ് ചെയ്യാനുള്ള ഫംഗ്ഷനുകൾ
-        function addWinnerField(containerId, posNum, optionsHtml = null) {
-            const container = document.getElementById(containerId);
-            const firstSelect = container.querySelector(`select.pos-${posNum}`);
-            if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
-            
-            const div = document.createElement('div'); div.className = 'res-row'; div.style.display = 'flex'; div.style.gap = '5px';
-            div.innerHTML = `<select class="pos-${posNum}" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
-                             <select class="grade-sel" style="display:${isGradeSystemEnabled() ? 'block' : 'none'}; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-                             <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-            container.appendChild(div);
-            return div;
-        }
+function addWinnerField(containerId, posNum, optionsHtml = null) {
+    const container = document.getElementById(containerId);
+    const firstSelect = container.querySelector(`select.pos-${posNum}`);
+    if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
+    
+    const div = document.createElement('div');
+    div.className = 'res-row';
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginTop = '8px';
+    div.innerHTML = `<select class="pos-${posNum}" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+    <select class="grade-sel" style="display:${isGradeSystemEnabled() ? 'block' : 'none'}; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+    container.appendChild(div);
+    
+    // 🟢 പുതിയ Tie വിന്നർ ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+    if(window.jQuery && $.fn.select2) {
+        $(div.querySelector(`select.pos-${posNum}`)).select2();
+    }
+    return div;
+}
 
-        function addOtherGradeField(optionsHtml = null) {
-            const container = document.getElementById('otherGradesContainer');
-            const firstSelect = document.querySelector('.pos-1'); // കോപ്പി ചെയ്യാൻ വേണ്ടി മാത്രം
-            if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
-            
-            const div = document.createElement('div'); div.className = 'res-row'; div.style.display = 'flex'; div.style.gap = '5px';
-            div.innerHTML = `<select class="other-grade-sel" required style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
-                             <select class="grade-sel" required style="width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-                             <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-            container.appendChild(div);
-            return div;
-        }
+function addOtherGradeField(optionsHtml = null) {
+    const container = document.getElementById('otherGradesContainer');
+    const firstSelect = document.querySelector('.pos-1'); 
+    if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
+    
+    const div = document.createElement('div');
+    div.className = 'res-row';
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginTop = '8px';
+    div.innerHTML = `<select class="other-grade-sel" required style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+    <select class="grade-sel" required style="width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+    container.appendChild(div);
+    
+    // 🟢 പുതിയ Graded ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
+    if(window.jQuery && $.fn.select2) {
+        $(div.querySelector('.other-grade-sel')).select2();
+    }
+    return div;
+}
 
         // ഡാറ്റാബേസിലേക്ക് സേവ് ചെയ്യുന്ന ഭാഗം (ഗ്രേഡ് കൂടി ഉൾപ്പെടുത്തി)
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
@@ -2538,28 +2617,56 @@
             };
 
             if(dataType === "Registrations") {
-                return rawData.map(row => {
-                    const st = students.find(s => getVal(s, 0) == getVal(row, 1));
-                    const teamMembers = getVal(row, 2) ? " + Team" : "";
-                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Chest No (Capt)": getVal(row, 1), "Name": st ? getVal(st, 1) + teamMembers : "Unknown", "Class": st ? getVal(st, 3) : "", "Category": st ? getVal(st, 4) : "", "Group": st ? getVal(st, 5) : "" };
-                });
+            return rawData.map(row => {
+                const evCode = getVal(row, 0);
+                const chestNo = getVal(row, 1);
+                const st = students.find(s => getVal(s, 0) == chestNo);
+                const teamMembers = getVal(row, 2) ? " + Team" : "";
+                
+                // 🟢 ഇവൻ്റ് ഡീറ്റെയിൽസ് എടുക്കുന്നു
+                const ev = events.find(e => getVal(e, 0).toString().trim().toUpperCase() === evCode.toString().trim().toUpperCase());
+                const evCat = ev ? getVal(ev, 2).toString().trim() : "";
+                const isGeneral = (evCat.toUpperCase() === "GENERAL" || evCat.toUpperCase() === "COMMON" || evCat.toUpperCase() === "ALL");
+                
+                // 🟢 ജനറൽ ഇവൻ്റ് ആണെങ്കിൽ കാറ്റഗറി കോളത്തിൽ ഇവൻ്റിൻ്റെ കാറ്റഗറി (General) തന്നെ നൽകുന്നു
+                const displayCategory = isGeneral ? evCat : (st ? getVal(st, 4) : "");
+
+                return {
+                    rowIndex: row.rowIndex,
+                    "Event": getFullEvName(evCode),
+                    "Chest No (Capt)": chestNo,
+                    "Name": st ? getVal(st, 1) + teamMembers : "Unknown",
+                    "Class": st ? getVal(st, 3) : "",
+                    "Category": displayCategory, // 🟢 പുതുക്കിയ കാറ്റഗറി ലോജിക്
+                    "Group": st ? getVal(st, 5) : ""
+                };
+            });
+        
             } else if(dataType === "Results") {
-                return rawData.map(row => {
-                    const st = students.find(s => getVal(s, 0) == getVal(row, 1)); 
-                    const pos = parseInt(getVal(row, 2)) || 0;
-                    const grade = getVal(row, 7) ? getVal(row, 7).toString().trim() : "";
-                    
-                    let posStr = "";
-                    if(pos === 1) posStr = "1st Place";
-                    else if(pos === 2) posStr = "2nd Place";
-                    else if(pos === 3) posStr = "3rd Place";
-                    else if(pos === 0 && grade) posStr = "Other Graded";
-                    else posStr = "No Position";
+            return rawData.map(row => {
+                const chestNo = getVal(row, 1);
+                const st = students.find(s => getVal(s, 0) == chestNo);
+                const pos = parseInt(getVal(row, 2)) || 0;
+                const grade = getVal(row, 7) ? getVal(row, 7).toString().trim() : "";
+                let posStr = "";
+                if(pos === 1) posStr = "1st Place";
+                else if(pos === 2) posStr = "2nd Place";
+                else if(pos === 3) posStr = "3rd Place";
+                else if(pos === 0 && grade) posStr = "Other Graded";
+                else posStr = "No Position";
+                if(grade) posStr += ` (${grade} Grade)`;
+                
+                return {
+                    rowIndex: row.rowIndex,
+                    "Event": getFullEvName(getVal(row, 0)),
+                    "Position & Grade": posStr,
+                    "Chest No": chestNo, /* 🟢 പുതിയതായി ചേർത്തത് */
+                    "Student": st ? getVal(st, 1) : chestNo,
+                    "Group": st ? getVal(st, 5) : "-", /* 🟢 പുതിയതായി ചേർത്തത് */
+                    "Status": getVal(row, 3) || "Approved"
+                };
+            });
 
-                    if(grade) posStr += ` (${grade} Grade)`;
-
-                    return { rowIndex: row.rowIndex, "Event": getFullEvName(getVal(row, 0)), "Position & Grade": posStr, "Student": st ? getVal(st, 1) : getVal(row, 1), "Status": getVal(row, 3) || "Approved" };
-                });
             } else if(dataType === "PendingReg") {
                 const registeredCodes = (globalDbData.Registrations || []).map(r => getVal(r,0).toString().trim().toUpperCase());
                 let pendingEvents = events.filter((ev, idx) => idx > 0 && !registeredCodes.includes(getVal(ev,0).toString().trim().toUpperCase())); // Header row (idx=0) ഒഴിവാക്കുന്നു
@@ -3254,58 +3361,181 @@ body { margin: 0; background: #fff; font-family: 'Poppins', 'Anek Malayalam', 'C
 
         function downloadPrizePDF() {
             if(!globalDbData || !globalDbData.Events) return alert("Data not loaded yet!");
-            
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
+
             const instName = sessionStorage.getItem("instName") || "Institution";
             const festName = document.getElementById('confFestName') ? document.getElementById('confFestName').value : "Fest";
+            const events = globalDbData.Events || [];
+            const results = globalDbData.Results || [];
+            const students = globalDbData.Students || [];
 
-            const events = globalDbData.Events || []; const results = globalDbData.Results || []; const students = globalDbData.Students || [];
-            
             // കാറ്റഗറി അടിസ്ഥാനത്തിൽ തിരിക്കുന്നു
             let categories = {};
-            events.forEach(ev => { const cat = getVal(ev,2) || "General"; if(!categories[cat]) categories[cat] = []; categories[cat].push(ev); });
+            events.forEach(ev => {
+                const cat = getVal(ev,2) || "General";
+                if(!categories[cat]) categories[cat] = [];
+                categories[cat].push(ev);
+            });
 
-            let yPos = 20;
-            doc.setFontSize(18); doc.setFont("helvetica", "bold"); doc.text(`${instName}`, 105, yPos, { align: 'center' });
-            yPos += 8; doc.setFontSize(14); doc.text(`${festName} - Prize Distribution Report`, 105, yPos, { align: 'center' });
-            yPos += 12;
+            // 🟢 മലയാളം ഫോണ്ട് സപ്പോർട്ടിനൊപ്പം HTML Print വഴി PDF ജനറേറ്റ് ചെയ്യുന്നു
+            let htmlContent = `<html><head><title>Prize Distribution Report</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap');
+                @page { size: A4 portrait; margin: 15mm; }
+                * { box-sizing: border-box; }
+                body { margin: 0; font-family: 'Poppins', 'Anek Malayalam', sans-serif; background: #fff; -webkit-print-color-adjust: exact; color: #000; }
+                
+                .report-header { text-align: center; margin-bottom: 20px; }
+                .inst-name { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #000; }
+                .fest-name { font-size: 16px; margin-bottom: 15px; color: #333; font-weight: 600; }
+                .report-title { font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 20px; color: #000; }
+                
+                .cat-header { background: #046A38; color: #fff; padding: 8px 12px; font-size: 16px; font-weight: bold; margin-top: 25px; margin-bottom: 10px; border-radius: 4px; }
+                
+                .pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #000; margin-bottom: 20px; border: 1px solid #000;}
+                .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+                .pdf-table th { background: #eaeaea; font-weight: bold; text-transform: uppercase; font-size: 12px;}
+            </style></head><body>`;
+
+            htmlContent += `<div class="report-header">
+                <div class="inst-name">${instName}</div>
+                <div class="fest-name">${festName}</div>
+                <div class="report-title">PRIZE DISTRIBUTION REPORT</div>
+            </div>`;
+
+            let hasData = false;
 
             for (const [catName, catEvents] of Object.entries(categories)) {
-                let eventsWithResults = catEvents.filter(ev => { const eCode = getVal(ev,0).toString().toUpperCase(); return results.some(r => getVal(r,0).toString().toUpperCase() === eCode && getVal(r,3) !== "Pending"); });
+                let eventsWithResults = catEvents.filter(ev => {
+                    const eCode = getVal(ev,0).toString().toUpperCase();
+                    return results.some(r => getVal(r,0).toString().toUpperCase() === eCode && getVal(r,3) !== "Pending");
+                });
+
                 if(eventsWithResults.length === 0) continue;
+                hasData = true;
 
-                if (yPos > 260) { doc.addPage(); yPos = 20; }
-                doc.setFontSize(12); doc.setTextColor(255, 255, 255); doc.setFillColor(4, 106, 56); doc.rect(14, yPos-5, 182, 7, 'F');
-                doc.text(`Category: ${catName.toUpperCase()}`, 105, yPos, { align: 'center' }); yPos += 8; doc.setTextColor(0, 0, 0);
+                htmlContent += `<div class="cat-header">Category: ${catName.toUpperCase()}</div>`;
+                htmlContent += `<table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Event Name</th>
+                            <th style="width: 10%;">Position</th>
+                            <th style="width: 12%;">Chest No</th> <!-- 🟢 പുതിയ Chest No കോളം -->
+                            <th style="width: 25%;">Student / Team Name</th>
+                            <th style="width: 12%;">Class</th>
+                            <th style="width: 16%;">Group</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-                let tableData = [];
                 eventsWithResults.forEach(ev => {
-                    const eCode = getVal(ev,0).toString().toUpperCase(); const eName = getVal(ev,1);
+                    const eCode = getVal(ev,0).toString().toUpperCase();
+                    const eName = getVal(ev,1);
+                    const eCat = getVal(ev,2) || "";
+                    const eGen = getVal(ev,3) || "";
+                    
+                    // 🟢 Event Name [Category - Gender] എന്ന ഫോർമാറ്റാക്കി
+                    const fullEventName = `${eName} [${eCat} - ${eGen}]`;
                     const isGroup = getVal(ev,4).toString().toLowerCase() === 'group';
+
                     const evResults = results.filter(r => getVal(r,0).toString().toUpperCase() === eCode && getVal(r,3) !== "Pending");
                     evResults.sort((a,b) => parseInt(getVal(a,2)) - parseInt(getVal(b,2)));
 
                     evResults.forEach(r => {
-                        const pos = parseInt(getVal(r,2)); const chest = getVal(r,1).toString().toUpperCase();
+                        const pos = parseInt(getVal(r,2));
+                        const chest = getVal(r,1).toString().toUpperCase();
                         let wName = "Unknown", wCls = "-", wGrp = "-";
+
                         const st = students.find(s => getVal(s,0).toString().toUpperCase() === chest);
-                        if(st) { wName = getVal(st,1); wCls = getVal(st,3); wGrp = getVal(st,5); if(isGroup) wName += " & Team"; }
-                        
-                        let posStr = pos === 1 ? "1st" : pos === 2 ? "2nd" : "3rd";
-                        tableData.push([eName, posStr, wName, wCls, wGrp, chest]);
+                        if(st) {
+                            wName = getVal(st,1);
+                            wCls = getVal(st,3);
+                            wGrp = getVal(st,5) || "-";
+                            if(isGroup) wName += " & Team";
+                        }
+
+                        let posStr = pos === 1 ? "1st" : pos === 2 ? "2nd" : pos === 3 ? "3rd" : "";
+                        if(pos === 0 && getVal(r,7)) posStr = getVal(r,7);
+
+                        // 🟢 ഓർഡർ മാറ്റി: Event, Position, Chest No, Name, Class, Group
+                        htmlContent += `<tr>
+                            <td style="font-weight: 500;">${fullEventName}</td>
+                            <td style="font-weight: bold;">${posStr}</td>
+                            <td style="font-weight: bold; color: #046A38;">${chest}</td>
+                            <td style="font-weight: 600;">${wName}</td>
+                            <td>${wCls}</td>
+                            <td>${wGrp}</td>
+                        </tr>`;
                     });
                 });
-
-                doc.autoTable({
-                    startY: yPos, head: [['Event Name', 'Position', 'Student / Team Name', 'Class', 'Group', 'Chest No']],
-                    body: tableData, theme: 'grid', styles: { fontSize: 9, cellPadding: 2 },
-                    headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
-                    columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 15 }, 2: { cellWidth: 50 } }, margin: { left: 14, right: 14 }
-                });
-                yPos = doc.lastAutoTable.finalY + 10;
+                htmlContent += `</tbody></table>`;
             }
-            doc.save(`Prize_Distribution_${festName.replace(/\s+/g, '_')}.pdf`);
+
+            if(!hasData) {
+                alert("No approved results found to generate the report.");
+                return;
+            }
+
+            htmlContent += `</body></html>`;
+
+            // പുതിയ ടാബിൽ തുറന്ന് പ്രിന്റ് ഡയലോഗ് കൊണ്ടുവരുന്നു
+            let printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            
+            // ഫോണ്ടുകൾ ലോഡാകാൻ ഒരു ചെറിയ ഡിലേ നൽകുന്നു
+            printWindow.setTimeout(() => printWindow.print(), 800);
         }
+
+        // 🟢 ടേബിളുകളിൽ ഡാറ്റ സെർച്ച് ചെയ്യാനുള്ള ലൈവ് ഫിൽറ്റർ ഫംഗ്ഷൻ
+function searchTableData(inputId, tableId) {
+    let input = document.getElementById(inputId);
+    let filter = input.value.toUpperCase();
+    let table = document.getElementById(tableId);
+    if (!table) return;
+
+    // tbody-യിലെ tr മാത്രം എടുക്കുക (header ഒഴിവാക്കാൻ)
+    let tbody = table.getElementsByTagName("tbody")[0];
+    if (!tbody) return;
+    
+    let trs = tbody.getElementsByTagName("tr");
+
+    for (let i = 0; i < trs.length; i++) {
+        let tds = trs[i].getElementsByTagName("td");
+        let rowContainsFilter = false;
+        
+        // എല്ലാ കോളങ്ങളിലും സെർച്ച് ചെയ്യാൻ
+        for (let j = 0; j < tds.length; j++) {
+            if (tds[j]) {
+                let txtValue = tds[j].textContent || tds[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    rowContainsFilter = true;
+                    break;
+                }
+            }
+        }
+        
+        // ഫിൽറ്റർ റിസൾട്ട് ഉണ്ടെങ്കിൽ കാണിക്കുക, ഇല്ലെങ്കിൽ ഹൈഡ് ചെയ്യുക
+        trs[i].style.display = rowContainsFilter ? "" : "none";
+    }
+}
+
+// 🟢 Pending Approvals ലൈവ് സെർച്ച് ഫംഗ്ഷൻ
+        function searchPendingApprovals() {
+            let input = document.getElementById('searchPendingInput');
+            if(!input) return;
+            let filter = input.value.toUpperCase();
+            let cards = document.querySelectorAll('.pending-item-card');
+            
+            cards.forEach(card => {
+                let text = card.textContent || card.innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
