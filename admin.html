@@ -417,10 +417,15 @@
                         </div>
                     </div>
 
-                    <div class="card">
-                        <div class="card-header"><h3><i class="fas fa-keyboard"></i> Manual Result Entry</h3></div>
-                        <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Publishing results manually here will overwrite any existing or pending judge results for the selected event.</p>
-                        <form id="resultForm">
+                    <!-- 2. Manual Result Entry Accordion (Closed by default) -->
+        <div class="card accordion-card" style="border-left: 4px solid #3b82f6;" onclick="this.classList.toggle('active')">
+            <div class="accordion-header">
+                <h3><i class="fas fa-keyboard" style="color: #3b82f6;"></i> Manual Result Entry</h3>
+                <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-body" onclick="event.stopPropagation()">
+                <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Publishing results manually here will overwrite any existing or pending judge results for the selected event.</p>
+                <form id="resultForm">
                             <div style="margin-bottom: 15px;">
                                 <label style="font-size: 0.85rem; color: #64748b; cursor: pointer;">
                                     <input type="checkbox" id="hidePublishedEv" onchange="populateDropdowns()"> Hide already published events
@@ -478,18 +483,26 @@
 
                             <button type="submit" class="primary-btn" style="margin-top: 20px; width: 100%;"><i class="fas fa-upload"></i> Force Publish Result</button>
                         </form>
+                        </div>
                     </div>
 
-                    <div class="card">
-                        <div class="card-header"><h3><i class="fas fa-gift"></i> Manual Bonus / Penalty (For Groups)</h3></div>
-                        <form id="bonusForm">
-                            <div class="form-grid">
+                    <!-- 3. Manual Bonus Accordion (Closed by default) -->
+        <div class="card accordion-card" style="border-left: 4px solid #f59e0b;" onclick="this.classList.toggle('active')">
+            <div class="accordion-header">
+                <h3><i class="fas fa-gift" style="color: #f59e0b;"></i> Manual Bonus / Penalty</h3>
+                <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-body" onclick="event.stopPropagation()">
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Award extra points or apply penalties to groups directly.</p>
+                <form id="bonusForm">
+                    <div class="form-grid">
                                 <div class="input-group"><label>Select Group (House)</label><select id="bonusGroupSelect" required><option value="">Loading...</option></select></div>
                                 <div class="input-group"><label>Points (Use - for penalty)</label><input type="number" id="bonusPointsVal" placeholder="e.g., 5 or -5" required></div>
                                 <div class="input-group"><label>Reason / Detail</label><input type="text" id="bonusReasonVal" placeholder="e.g., March Past" required></div>
                             </div>
                             <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Add Points to Group</button>
                         </form>
+                        </div>
                     </div>
                 </section>
 
@@ -3597,22 +3610,31 @@ function searchTableData(inputId, tableId) {
                 return;
             }
             
-            // 🟢 പുതിയ സെർച്ച് ബാർ ചേർക്കുന്നു
             let html = `
-            <div style="position: relative; margin-bottom: 15px;">
+            <div style="position: relative; margin-bottom: 10px;">
                 <i class="fas fa-search" style="position: absolute; left: 10px; top: 10px; color: var(--muted); font-size: 0.9rem;"></i>
-                <input type="text" id="simulatorSearchInput" onkeyup="searchSimulatorEvents()" placeholder="Search event or code..." style="width: 100%; padding: 8px 10px 8px 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 0.85rem;">
+                <input type="text" id="simulatorSearchInput" onkeyup="searchSimulatorEvents()" placeholder="Search event, code, category, gender or mode..." style="width: 100%; padding: 8px 10px 8px 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 0.85rem;">
             </div>
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 5px 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: var(--primary); background: rgba(4, 106, 56, 0.05); border-radius: 6px; border: 1px dashed var(--primary);">
+                <input type="checkbox" id="selectAllSim" onchange="toggleAllSimEvents(this)" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                Select All Visible Events
+            </label>
+            
             <div id="simulatorEventsList" style="display: flex; flex-direction: column; gap: 8px;">`;
             
             pendingEvents.forEach(evCode => {
                 const evDetails = events.find(e => getVal(e,0) === evCode);
                 const evName = evDetails ? getVal(evDetails, 1) : evCode;
-                // 🟢 ഫിൽറ്റർ ചെയ്യാൻ എളുപ്പത്തിന് ഒരു ക്ലാസ് നൽകുന്നു (sim-event-item)
+                const evCat = evDetails ? getVal(evDetails, 2) : "";
+                const evGen = evDetails ? getVal(evDetails, 3) : ""; // 🟢 Gender കൂടി എടുക്കുന്നു
+                const evMode = evDetails ? getVal(evDetails, 5) : "";
+                
+                // 🟢 ഡാറ്റ ആട്രിബ്യൂട്ടിലേക്ക് Gender കൂടി പാസ്സ് ചെയ്യുന്നു
                 html += `
-                <label class="sim-event-item" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                <label class="sim-event-item" data-search="${evName} ${evCode} ${evCat} ${evGen} ${evMode}" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
                     <input type="checkbox" class="sim-checkbox" value="${evCode}" onchange="calculateAndShowSimulation()" style="width: 16px; height: 16px; accent-color: #8b5cf6;">
-                    <span>${evName} (${evCode})</span>
+                    <span>${evName} (${evCode}) <small style="color:var(--muted); font-size:0.75rem;">[${evCat} - ${evGen} - ${evMode}]</small></span>
                 </label>`;
             });
             
@@ -3625,17 +3647,45 @@ function searchTableData(inputId, tableId) {
         function searchSimulatorEvents() {
             let input = document.getElementById('simulatorSearchInput');
             if(!input) return;
-            let filter = input.value.toUpperCase();
+            let filter = input.value.toUpperCase().trim();
+            let items = document.querySelectorAll('.sim-event-item');
+            
+            // സെർച്ച് ചെയ്യുമ്പോൾ "Select All" ബട്ടൺ അൺടിക് ചെയ്യുക
+            let selectAllBtn = document.getElementById('selectAllSim');
+            if(selectAllBtn) selectAllBtn.checked = false;
+            
+            items.forEach(item => {
+                // ഡാറ്റ ആട്രിബ്യൂട്ടിൽ നിന്നും വാല്യൂ എടുക്കുന്നു
+                let text = item.getAttribute('data-search').toUpperCase();
+                
+                if (filter === "" || text.indexOf(filter) > -1) {
+                    item.style.display = "flex"; 
+                } else {
+                    item.style.display = "none";
+                    // ഹൈഡ് ആവുന്ന എലമെൻ്റിലെ ടിക് ഒഴിവാക്കുന്നു
+                    let cb = item.querySelector('.sim-checkbox');
+                    if(cb) cb.checked = false;
+                }
+            });
+            
+            calculateAndShowSimulation(); // സെർച്ച് ചെയ്യുമ്പോഴും സ്കോർ അപ്ഡേറ്റ് ആവാൻ
+        }
+
+        // 🟢 Select All പ്രവർത്തിക്കാനുള്ള ഫംഗ്ഷൻ (Visible ആയത് മാത്രം)
+        function toggleAllSimEvents(source) {
             let items = document.querySelectorAll('.sim-event-item');
             
             items.forEach(item => {
-                let text = item.textContent || item.innerText;
-                if (text.toUpperCase().indexOf(filter) > -1) {
-                    item.style.display = "flex"; // label ആയതുകൊണ്ട് flex നിലനിർത്തണം
-                } else {
-                    item.style.display = "none";
+                // 🟢 സ്ക്രീനിൽ കാണുന്ന എലമെൻ്റുകൾ മാത്രം (display none അല്ലാത്തവ) സെലക്ട് ചെയ്യുന്നു
+                let isVisible = window.getComputedStyle(item).display !== 'none';
+                
+                if(isVisible) {
+                    let cb = item.querySelector('.sim-checkbox');
+                    if(cb) cb.checked = source.checked;
                 }
             });
+            
+            calculateAndShowSimulation();
         }
 
         function calculateAndShowSimulation() {
