@@ -2083,44 +2083,49 @@
         }
 
         // ==========================================
-// SMART REGISTRATION (CAPTAIN + MEMBERS)
-// ==========================================
-function addRegistrationField() {
-    const container = document.getElementById('registrationStudentsContainer');
-    const firstSelect = container.querySelector('select.reg-student-select');
-    const div = document.createElement('div');
-    div.style.display = 'flex';
-    div.style.gap = '5px';
-    div.style.marginBottom = '8px';
-    
-    // Select2 ഇഷ്യൂ ഒഴിവാക്കാൻ പുതിയ select ഉണ്ടാക്കുന്നു
-    div.innerHTML = `<select class="reg-student-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${firstSelect.innerHTML}</select>
-    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-    container.appendChild(div);
+        // SMART REGISTRATION (CAPTAIN + MEMBERS)
+        // ==========================================
+        function addRegistrationField() {
+            const container = document.getElementById('registrationStudentsContainer');
+            const firstSelect = container.querySelector('select.reg-student-select');
+            
+            // 🟢 BUG FIX: Select2 ഉണ്ടാക്കുന്ന ഡ്യൂപ്ലിക്കേറ്റ് ID-കൾ കോപ്പി ആവാതിരിക്കാൻ അത് ഒഴിവാക്കുന്നു
+            let cleanOptions = firstSelect.innerHTML.replace(/ data-select2-id="[^"]*"/g, "");
+            
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.gap = '5px';
+            div.style.marginBottom = '8px';
+            
+            div.innerHTML = `<select class="reg-student-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${cleanOptions}</select>
+            <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
 
-    // 🟢 പുതിയ ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
-    if(window.jQuery && $.fn.select2) {
-        $(div.querySelector('.reg-student-select')).select2();
-    }
-}
+            if(window.jQuery && $.fn.select2) {
+                $(div.querySelector('.reg-student-select')).select2();
+            }
+        }
 
-function addMemberField() {
-    const container = document.getElementById('regMembersContainer');
-    const firstSelect = container.querySelector('select.reg-member-select');
-    const div = document.createElement('div');
-    div.style.display = 'flex';
-    div.style.gap = '5px';
-    div.style.marginBottom = '8px';
-    
-    div.innerHTML = `<select class="reg-member-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${firstSelect.innerHTML}</select>
-    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-    container.appendChild(div);
+        function addMemberField() {
+            const container = document.getElementById('regMembersContainer');
+            const firstSelect = container.querySelector('select.reg-member-select');
+            
+            // 🟢 BUG FIX: ഡ്യൂപ്ലിക്കേറ്റ് ID-കൾ ഒഴിവാക്കുന്നു
+            let cleanOptions = firstSelect.innerHTML.replace(/ data-select2-id="[^"]*"/g, "");
+            
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.gap = '5px';
+            div.style.marginBottom = '8px';
+            
+            div.innerHTML = `<select class="reg-member-select" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${cleanOptions}</select>
+            <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
 
-    // 🟢 പുതിയ ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
-    if(window.jQuery && $.fn.select2) {
-        $(div.querySelector('.reg-member-select')).select2();
-    }
-}
+            if(window.jQuery && $.fn.select2) {
+                $(div.querySelector('.reg-member-select')).select2();
+            }
+        }
 
         document.getElementById('regEventSelect').addEventListener('change', function() {
             const evCode = this.value; const events = globalDbData.Events || []; const students = globalDbData.Students || [];
@@ -2445,28 +2450,6 @@ function addWinnerField(containerId, posNum, optionsHtml = null) {
     return div;
 }
 
-function addOtherGradeField(optionsHtml = null) {
-    const container = document.getElementById('otherGradesContainer');
-    const firstSelect = document.querySelector('.pos-1'); 
-    if(!optionsHtml && firstSelect) optionsHtml = firstSelect.innerHTML;
-    
-    const div = document.createElement('div');
-    div.className = 'res-row';
-    div.style.display = 'flex';
-    div.style.gap = '5px';
-    div.style.marginTop = '8px';
-    div.innerHTML = `<select class="other-grade-sel" required style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
-    <select class="grade-sel" required style="width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-    <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
-    container.appendChild(div);
-    
-    // 🟢 പുതിയ Graded ഫീൽഡിൽ Select2 ആക്റ്റീവ് ആക്കുന്നു
-    if(window.jQuery && $.fn.select2) {
-        $(div.querySelector('.other-grade-sel')).select2();
-    }
-    return div;
-}
-
         // ഡാറ്റാബേസിലേക്ക് സേവ് ചെയ്യുന്ന ഭാഗം (ഗ്രേഡ് കൂടി ഉൾപ്പെടുത്തി)
         document.getElementById('resultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -2514,13 +2497,55 @@ function addOtherGradeField(optionsHtml = null) {
             } catch (error) { alert("Failed to save results. Check your connection."); } finally { btn.innerHTML = oText; btn.disabled = false; }
         });
 
-        function addWinnerField(containerId) {
+        // പുതിയതായി ബോക്സുകൾ ആഡ് ചെയ്യാനുള്ള ഫംഗ്ഷനുകൾ
+        function addWinnerField(containerId, posNum, optionsHtml = null) {
             const container = document.getElementById(containerId);
-            const firstSelect = container.querySelector('select');
-            const div = document.createElement('div'); div.style.display = 'flex'; div.style.gap = '5px';
-            const newSelect = firstSelect.cloneNode(true); newSelect.value = ""; newSelect.removeAttribute('required');
-            div.appendChild(newSelect); div.innerHTML += `<button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            const firstSelect = container.querySelector(`select.pos-${posNum}`);
+            
+            // 🟢 BUG FIX: ഡ്യൂപ്ലിക്കേറ്റ് ID-കൾ ഒഴിവാക്കുന്നു
+            if(!optionsHtml && firstSelect) {
+                optionsHtml = firstSelect.innerHTML.replace(/ data-select2-id="[^"]*"/g, "");
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'res-row';
+            div.style.display = 'flex';
+            div.style.gap = '5px';
+            div.style.marginTop = '8px';
+            div.innerHTML = `<select class="pos-${posNum}" style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+            <select class="grade-sel" style="display:${isGradeSystemEnabled() ? 'block' : 'none'}; width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+            <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
             container.appendChild(div);
+            
+            if(window.jQuery && $.fn.select2) {
+                $(div.querySelector(`select.pos-${posNum}`)).select2();
+            }
+            return div;
+        }
+
+        function addOtherGradeField(optionsHtml = null) {
+            const container = document.getElementById('otherGradesContainer');
+            const firstSelect = document.querySelector('.pos-1'); 
+            
+            // 🟢 BUG FIX: ഡ്യൂപ്ലിക്കേറ്റ് ID-കൾ ഒഴിവാക്കുന്നു
+            if(!optionsHtml && firstSelect) {
+                optionsHtml = firstSelect.innerHTML.replace(/ data-select2-id="[^"]*"/g, "");
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'res-row';
+            div.style.display = 'flex';
+            div.style.gap = '5px';
+            div.style.marginTop = '8px';
+            div.innerHTML = `<select class="other-grade-sel" required style="flex-grow:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">${optionsHtml}</select>
+            <select class="grade-sel" required style="width:70px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:bold;"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+            <button type="button" onclick="this.parentElement.remove()" style="background:#ff5a5f; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer;"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
+            
+            if(window.jQuery && $.fn.select2) {
+                $(div.querySelector('.other-grade-sel')).select2();
+            }
+            return div;
         }
 
         // ==========================================
